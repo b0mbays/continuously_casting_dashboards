@@ -3,6 +3,10 @@ from homeassistant import config_entries
 from homeassistant.data_entry_flow import FlowResult
 from .const import DOMAIN
 
+async def _async_has_devices(hass) -> bool:
+    """Devices are setup manually, just return true."""
+    return True
+
 class HaContinuousCastingDashboardConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Chromecast Dashboard Cast."""
 
@@ -18,13 +22,8 @@ class HaContinuousCastingDashboardConfigFlow(config_entries.ConfigFlow, domain=D
             data_schema=vol.Schema(
                 {
                     vol.Optional("cast_delay", default=10): int,
-                    vol.Required("devices"): vol.All(
-                        [vol.Schema(
-                            {
-                                vol.Required("name"): str,
-                                vol.Required("dashboard_url"): str,
-                            }
-                        )],
+                    vol.Required("devices"): vol.Schema(
+                        {vol.Required(vol.Match(r"^.+$")): vol.Url()}, extra=vol.ALLOW_EXTRA
                     ),
                 }
             ),
