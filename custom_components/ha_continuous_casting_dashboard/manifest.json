@@ -1,0 +1,10 @@
+{
+    "domain": "ha_continuous-casting-dashboard",
+    "name": "Continuously Cast Dashboards",
+    "config_flow": true,
+    "documentation": "https://github.com/b0mbays/ha-continuous-casting-dashboard",
+    "requirements": ["PyYAML", "catt"],
+    "dependencies": [],
+    "codeowners": ["@b0mbays"]
+  }
+  
