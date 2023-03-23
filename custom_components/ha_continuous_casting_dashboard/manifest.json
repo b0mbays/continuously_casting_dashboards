@@ -3,7 +3,7 @@
     "name": "Continuously Cast Dashboards",
     "config_flow": true,
     "documentation": "https://github.com/b0mbays/ha-continuous-casting-dashboard",
-    "requirements": ["PyYAML", "catt"],
+    "requirements": ["PyYAML==6.0", "catt==0.12.10"],
     "version": "0.1.0",
     "dependencies": [],
     "codeowners": ["@b0mbays"]
