@@ -6,7 +6,7 @@ import logging.handlers
 
 from datetime import datetime
 
-class ChromecastDashboardCaster:
+class HaContinuousCastingDashboard:
     def __init__(self, hass, config):
         self.hass = hass
         self.config = config

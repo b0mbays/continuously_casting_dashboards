@@ -4,6 +4,7 @@
     "config_flow": true,
     "documentation": "https://github.com/b0mbays/ha-continuous-casting-dashboard",
     "requirements": ["PyYAML", "catt"],
+    "version": "0.1.0",
     "dependencies": [],
     "codeowners": ["@b0mbays"]
   }
