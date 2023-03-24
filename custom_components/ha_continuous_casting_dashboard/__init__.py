@@ -1,6 +1,6 @@
 """The Continuously Cast Dashboards integration."""
 from .const import DOMAIN, PLATFORMS
-from .cast import HaContinuousCastingDashboard
+from .dashboard_caster import HaContinuousCastingDashboard
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.config_entries import ConfigEntry
