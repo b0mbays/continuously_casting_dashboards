@@ -16,7 +16,7 @@ class HaContinuousCastingDashboard:
         self.max_retries = 5
         self.retry_delay = 30
 
-    def check_status(device_name, state):
+    def check_status(self, device_name, state):
         try:
             status_output = subprocess.check_output(["catt", "-d", device_name, "status"]).decode()
             if state in status_output:
@@ -41,7 +41,7 @@ class HaContinuousCastingDashboard:
         except TypeError:
             return None
 
-    def cast_dashboard(device_name, dashboard_url):
+    def cast_dashboard(self, device_name, dashboard_url):
         try:
             logging.info(f"Casting dashboard to {device_name}")
             subprocess.call(["catt", "-d", device_name, "stop"])
@@ -70,7 +70,7 @@ class HaContinuousCastingDashboard:
                         if self.check_both_states(device_name) is None:
                             retry_count += 1
                             logging.warning(f"Retrying in {self.retry_delay} seconds for {retry_count} time(s) due to previous errors")
-                            asyncio.sleep(self.retry_delay)
+                            await asyncio.sleep(self.retry_delay)
                             continue
                         elif self.check_both_states(device_name):
                             logging.info(f"HA Dashboard (or media) is playing on {device_name}...")
@@ -98,7 +98,7 @@ class HaContinuousCastingDashboard:
                     else:
                         logging.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
                         continue
-                    asyncio.sleep(self.cast_delay)
+                    await asyncio.sleep(self.cast_delay)
                 if not ha_cast_active:
                     logging.info("No active HA cast sessions found. Sleeping for 5 minutes...")
                     await asyncio.sleep(self.cast_delay)
