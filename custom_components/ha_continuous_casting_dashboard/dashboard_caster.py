@@ -26,14 +26,16 @@ class HaContinuousCastingDashboard:
             raise ValueError(f"Invalid log level: {log_level}")
         _LOGGER.setLevel(numeric_log_level)
 
-    def check_status(self, device_name, state):
+    async def check_status(self, device_name, state):
         try:
-            status_output = subprocess.check_output(["catt", "-d", device_name, "status"], timeout=10).decode()
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "status", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
+            status_output = stdout.decode()
             if state in status_output:
                 return True
             return False
         except subprocess.CalledProcessError as e:
-            _LOGGER.error(f"Error checking {state} state for {device_name}: {e}")
+            _LOGGER.error(f"Error checking {state} state for {device_name}: {e}\nOutput: {e.output.decode()}")
             return None
         except subprocess.TimeoutExpired as e:
             _LOGGER.error(f"Timeout checking {state} state for {device_name}: {e}")
@@ -42,33 +44,45 @@ class HaContinuousCastingDashboard:
             _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
             return None
 
-    def check_dashboard_state(self, device_name):
-        return self.check_status(device_name, "Dummy")
 
-    def check_media_state(self, device_name):
-        return self.check_status(device_name, "PLAYING")
+    async def check_dashboard_state(self, device_name):
+        return await self.check_status(device_name, "Dummy")
 
-    def check_both_states(self, device_name):
+    async def check_media_state(self, device_name):
+        return await self.check_status(device_name, "PLAYING")
+
+    async def check_both_states(self, device_name):
         try:
-            return self.check_dashboard_state(device_name) or self.check_media_state(device_name)
+            return await self.check_dashboard_state(device_name) or await self.check_media_state(device_name)
         except TypeError:
             return None
 
-    def cast_dashboard(self, device_name, dashboard_url):
+
+    async def cast_dashboard(self, device_name, dashboard_url):
         try:
             _LOGGER.info(f"Casting dashboard to {device_name}")
-            subprocess.call(["catt", "-d", device_name, "stop"])
-            subprocess.call(["catt", "-d", device_name, "volume", "0"])
-            subprocess.call(["catt", "-d", device_name, "cast_site", dashboard_url])
-            subprocess.call(["catt", "-d", device_name, "volume", "50"])
+
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
+            await asyncio.wait_for(process.wait(), timeout=10)
+
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "0")
+            await asyncio.wait_for(process.wait(), timeout=10)
+
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "cast_site", dashboard_url)
+            await asyncio.wait_for(process.wait(), timeout=10)
+
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "50")
+            await asyncio.wait_for(process.wait(), timeout=10)
         except subprocess.CalledProcessError as e:
             _LOGGER.error(f"Error casting dashboard to {device_name}: {e}")
             return None
         except ValueError as e:
             _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
             return None
+        except asyncio.TimeoutError as e:
+            _LOGGER.error(f"Timeout casting dashboard to {device_name}: {e}")
+            return None
 
-    # Create a loop to continuously check the media and dashboard state and cast the dashboard if necessary
     max_retries = 5
     retry_delay = 30
     retry_count = 0
@@ -80,16 +94,16 @@ class HaContinuousCastingDashboard:
                 for device_name, dashboard_url in self.device_map.items():
                     retry_count = 0
                     while retry_count < self.max_retries:
-                        if self.check_both_states(device_name) is None:
+                        if (await self.check_both_states(device_name)) is None:
                             retry_count += 1
                             _LOGGER.warning(f"Retrying in {self.retry_delay} seconds for {retry_count} time(s) due to previous errors")
                             await asyncio.sleep(self.retry_delay)
                             continue
-                        elif self.check_both_states(device_name):
+                        elif await self.check_both_states(device_name):
                             _LOGGER.info(f"HA Dashboard (or media) is playing on {device_name}...")
                         else:
                             _LOGGER.info(f"HA Dashboard (or media) is NOT playing on {device_name}!")
-                            self.cast_dashboard(device_name, dashboard_url)
+                            await self.cast_dashboard(device_name, dashboard_url)
                         break
                     else:
                         _LOGGER.error(f"Max retries exceeded for {device_name}. Skipping...")
@@ -99,7 +113,7 @@ class HaContinuousCastingDashboard:
                 _LOGGER.info("Local time is outside of allowed range for casting the screen. Checking for any active HA cast sessions...")
                 ha_cast_active = False
                 for device_name, dashboard_url in self.device_map.items():
-                    if self.check_dashboard_state(device_name):
+                    if await self.check_dashboard_state(device_name):
                         _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
                         try:
                             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
