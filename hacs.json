@@ -1,4 +1,6 @@
 {
-    "name": "Continuously Cast Dashboards",
-    "render_readme": true
+  "name": "Continuously Casting Dashboard",
+  "domains": ["ha-continuous-casting-dashboard"],
+  "documentation": "https://github.com/b0mbays/ha-continuously-casting-dashboard/blob/main/README.md",
+  "version": "1.0.0"
 }
