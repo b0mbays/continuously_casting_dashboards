@@ -4,6 +4,11 @@ This custom integration for Home Assistant continuously casts dashboards to Chro
 
 I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8 & two 1st Gen Google Nest Hubs.
 
+<p align="center">
+  <img src="https://i.imgur.com/U63Z7aF.jpg" width=75% height=75%>
+</p>
+<br/><br/>
+
 ## Features
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
