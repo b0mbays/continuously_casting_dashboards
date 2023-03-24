@@ -15,6 +15,8 @@ class HaContinuousCastingDashboard:
 
         self.device_map = self.config['devices']
         self.cast_delay = self.config['cast_delay']
+        self.start_time = self.config['start_time']
+        self.end_time = self.config['end_time']
         self.max_retries = 5
         self.retry_delay = 30
 
