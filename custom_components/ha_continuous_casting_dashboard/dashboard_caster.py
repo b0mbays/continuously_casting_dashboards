@@ -18,6 +18,12 @@ class HaContinuousCastingDashboard:
         self.max_retries = 5
         self.retry_delay = 30
 
+        log_level = config.get("logging_level", "info")
+        numeric_log_level = getattr(logging, log_level.upper(), None)
+        if not isinstance(numeric_log_level, int):
+            raise ValueError(f"Invalid log level: {log_level}")
+        _LOGGER.setLevel(numeric_log_level)
+
     def check_status(self, device_name, state):
         try:
             status_output = subprocess.check_output(["catt", "-d", device_name, "status"]).decode()
