@@ -20,13 +20,3 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     caster = HaContinuousCastingDashboard(hass, conf)
     hass.loop.create_task(caster.start())
     return True
-
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up the Continuously Cast Dashboards integration from a config entry."""
-    conf = entry.data
-
-    # Start the HaContinuousCastingDashboard
-    caster = HaContinuousCastingDashboard(hass, conf)
-    hass.loop.create_task(caster.start())
-
-    return True
