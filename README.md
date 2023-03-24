@@ -1,4 +1,4 @@
-# Home Assistant - Continuoulsy Casting Dashboards
+# Home Assistant - Continuously Casting Dashboards
 
 This custom integration for Home Assistant continuously casts dashboards to Chromecast devices during a specified time window. It ensures that the dashboard is always displayed during the active time window, even if the Chromecast device is accidentally interrupted or disconnected. It will ignore any devices that are currently playing any media/timers/recipes etc.
 
