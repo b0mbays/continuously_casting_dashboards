@@ -9,7 +9,8 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 </p>
 <br/><br/>
 
-## Features
+Features:
+============
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
@@ -17,7 +18,19 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 - Configurable casting interval.
 - Debug logging support.
 
-## Installation
+<br/><br/>
+
+Requirements: 
+============
+
+1. **Home Assistant** (with https [external access setup](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) required for casting) and the HACS Addon installed.
+2. **Trusted network setup** for each Chromecast device to avoid logging in. See guide [here](https://blog.fuzzymistborn.com/homeassistant-and-catt-cast-all-the-things/) and follow the 'Trusted Networks' section half way down. You can either do your entire home network, or individual devices. You can find the IP address for each device by going to Settings -> Device Information -> Technical Information on the device.
+3. **ha-catt-fix** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install this from [here](https://github.com/swiergot/ha-catt-fix)
+
+<br/><br/>
+
+Installation
+============
 
 ### HACS (Recommended)
 
@@ -36,14 +49,20 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 3. Configure the integration in your `configuration.yaml` file (see the "Configuration" section below).
 4. Restart again to start the integration.
 
-## How does it work?
+<br/><br/>
+
+How does it work?
+============
 
 The project uses [CATT](https://github.com/skorokithakis/catt) (cast all the things) to cast the dashboard to your Chromecast compatible device. Home Assistant does offer an in-built casting option but I found this to be unreliable for me and I couldn't get it working properly without paying for a Nabu Casu subscription... Instead, I wanted to host HA externally myself for free. (well, $1 p/year). The guide I used is [here](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) and I bought a domain for $1 from [here](https://gen.xyz/).
 
 This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast)
 
 
-## Configuration
+<br/><br/>
+
+Configuration
+============
 
 To configure the integration, add the following to your `configuration.yaml` file:
 
