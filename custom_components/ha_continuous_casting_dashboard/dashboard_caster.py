@@ -71,7 +71,7 @@ class HaContinuousCastingDashboard:
     async def start(self):
         while True:
             now = datetime.now().time()
-            if datetime.strptime('06:30', '%H:%M').time() <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < datetime.strptime('02:00', '%H:%M').time():        
+            if self.start_time <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < self.end_time:        
                 for device_name, dashboard_url in self.device_map.items():
                     retry_count = 0
                     while retry_count < self.max_retries:
