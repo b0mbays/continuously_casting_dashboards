@@ -14,6 +14,7 @@ Features:
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
+- Supports different dashboards for different devices (eg; kitchen dashboard, office dashboard..)
 - Configurable time window for active casting.
 - Configurable casting interval.
 - Debug logging support.
