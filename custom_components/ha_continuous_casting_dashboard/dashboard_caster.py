@@ -28,12 +28,15 @@ class HaContinuousCastingDashboard:
 
     def check_status(self, device_name, state):
         try:
-            status_output = subprocess.check_output(["catt", "-d", device_name, "status"]).decode()
+            status_output = subprocess.check_output(["catt", "-d", device_name, "status"], timeout=10).decode()
             if state in status_output:
                 return True
             return False
         except subprocess.CalledProcessError as e:
             _LOGGER.error(f"Error checking {state} state for {device_name}: {e}")
+            return None
+        except subprocess.TimeoutExpired as e:
+            _LOGGER.error(f"Timeout checking {state} state for {device_name}: {e}")
             return None
         except ValueError as e:
             _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
