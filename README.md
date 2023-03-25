@@ -1,4 +1,4 @@
-# HA - Continuously Casting Dashboards
+# **HA - Continuously Casting Dashboards**
 
 This custom integration for Home Assistant continuously casts dashboards to Chromecast devices during a specified time window. It ensures that the dashboard is always displayed during the active time window, even if the Chromecast device is accidentally interrupted or disconnected. It will ignore any devices that are currently playing any media/timers/recipes etc.
 
@@ -9,7 +9,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 </p>
 <br/><br/>
 
-Features:
+**Features:**
 ============
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
@@ -20,19 +20,21 @@ Features:
 
 <br/><br/>
 
-Requirements: 
+**Requirements:**
 ============
 
 1. **Home Assistant** (with https [external access setup](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) required for casting) and the HACS Addon installed.
+
 2. **Trusted network setup** for each Chromecast device to avoid logging in. See guide [here](https://blog.fuzzymistborn.com/homeassistant-and-catt-cast-all-the-things/) and follow the 'Trusted Networks' section half way down. You can either do your entire home network, or individual devices. You can find the IP address for each device by going to Settings -> Device Information -> Technical Information on the device.
+
 3. **ha-catt-fix** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install this from [here](https://github.com/swiergot/ha-catt-fix)
 
 <br/><br/>
 
-Installation
+**Installation**
 ============
 
-### HACS (Recommended)
+### **HACS (Recommended)**
 
 1. Go to the HACS panel in Home Assistant.
 2. Click on the three dots in the top right corner and choose "Custom repositories".
@@ -42,7 +44,7 @@ Installation
 6. Setup your devices inside the configuration.yaml file, follow the steps from the configuration section below.
 4. Restart again to start the integration.
 
-### Manual
+### **Manual**
 
 1. Copy the `ha_continuous_casting_dashboard` folder into your `custom_components` directory within your Home Assistant configuration directory.
 2. Restart Home Assistant to load the custom integration.
@@ -51,7 +53,7 @@ Installation
 
 <br/><br/>
 
-How does it work?
+**How does it work?**
 ============
 
 This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast). However, I have had no issues running this on my Home Assistant instance.
@@ -63,7 +65,7 @@ The casting functionality within Home Assistant requires your instance to be acc
 
 <br/><br/>
 
-Configuration
+**Configuration**
 ============
 
 To configure the integration, add the following to your `configuration.yaml` file:
@@ -78,9 +80,11 @@ ha-continuous-casting-dashboard:
     "<Display_Name": #Required: Display name of your device. Find this under device settings -> Information -> Device Name
         dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted
         dashboard_state_name: "Dummy" #Optional: The default is "Dummy". This is the "state name" that your chromecast device has when a dashboard is "active".
-    "<Display_Name": #You can then add more devices repeating the above format
+    "<Display_Name": 
         dashboard_url: "<Dashboard_URL>"
-        dashboard_state_name: "Dummy" #Optional: The default is "Dummy"
+        dashboard_state_name: "Dummy"
+
+    #You can then add more devices repeating the above format
 
     # Examples:
     # "Office display":
@@ -95,14 +99,22 @@ ha-continuous-casting-dashboard:
 
 <br/><br/>
 
-Troubleshooting
+**Troubleshooting**
 ============
 
 - The dashboard starts on my device and then stops within a few seconds.
 
-If this is happening, your device might be using a different state name for when a dashboard is "active". The default (from my experience) is "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for the dashboard state. For example, mine looks like this:
+    If this is happening, your device might be using a different state name for when a dashboard is "active". The default (from my experience) is "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for the dashboard state. For example, mine looks like this:
 
-```DEBUG (MainThread) [custom_components.ha-continuous-casting-dashboard.dashboard_caster] Status output for Office display when checking for dashboard state 'Dummy': Title: Dummy 22:27:13 GMT+0000 (Greenwich Mean Time)
-Volume: 50```
 
-The text after "Title" is the status that your dashboard is when your dashboard is active. This could be something different such as "Home" etc. If this is the case, then add a new field underneath your "dashboard_url": ```dashboard_state_name: "Home"```
+    ```
+    DEBUG (MainThread) [custom_components.ha-continuous-casting-dashboard.dashboard_caster] Status output for Office display when checking for dashboard state 'Dummy': Title: Dummy 22:27:13 GMT+0000 (Greenwich Mean Time)
+    Volume: 50
+    ```
+
+    The text _after_ "Title" is the status that your dashboard is when your dashboard is active. This could be something different such as "Home" etc. If this is the case, then add a new field (dashboard_state_name) underneath your existing "dashboard_url": 
+    ```
+    "<Display-Name>"
+        dashboard_url: "<Dashboard_URL>"
+        dashboard_state_name: "Home"
+    ```
