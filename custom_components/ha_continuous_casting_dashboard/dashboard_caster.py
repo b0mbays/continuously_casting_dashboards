@@ -13,12 +13,18 @@ class HaContinuousCastingDashboard:
         self.hass = hass
         self.config = config
 
-        self.device_map = self.config['devices']
+        self.device_map = {}
         self.cast_delay = self.config['cast_delay']
         self.start_time = datetime.strptime(self.config['start_time'], '%H:%M').time()
         self.end_time = datetime.strptime(self.config['end_time'], '%H:%M').time()
         self.max_retries = 5
         self.retry_delay = 30
+
+        for device_name, device_info in self.config['devices'].items():
+            self.device_map[device_name] = {
+                "dashboard_url": device_info["dashboard_url"],
+                "dashboard_state_name": device_info.get("dashboard_state_name", "Dummy"),
+            }
 
         log_level = config.get("logging_level", "info")
         numeric_log_level = getattr(logging, log_level.upper(), None)
@@ -26,14 +32,13 @@ class HaContinuousCastingDashboard:
             raise ValueError(f"Invalid log level: {log_level}")
         _LOGGER.setLevel(numeric_log_level)
 
+
     async def check_status(self, device_name, state):
         try:
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "status", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
             status_output = stdout.decode()
-            if state in status_output:
-                return True
-            return False
+            return status_output
         except subprocess.CalledProcessError as e:
             _LOGGER.error(f"Error checking {state} state for {device_name}: {e}\nOutput: {e.output.decode()}")
             return None
@@ -46,16 +51,27 @@ class HaContinuousCastingDashboard:
 
 
     async def check_dashboard_state(self, device_name):
-        return await self.check_status(device_name, "Dummy")
+        dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
+        return await self.check_status(device_name, dashboard_state_name)
+
 
     async def check_media_state(self, device_name):
         return await self.check_status(device_name, "PLAYING")
 
+
     async def check_both_states(self, device_name):
-        try:
-            return await self.check_dashboard_state(device_name) or await self.check_media_state(device_name)
-        except TypeError:
-            return None
+        dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
+        status_output = await self.check_status(device_name, dashboard_state_name)
+        
+        if status_output is None or not status_output:
+            return False
+
+        _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{dashboard_state_name}': {status_output}")
+
+        is_dashboard_state = dashboard_state_name in status_output
+        is_media_state = "PLAYING" in status_output
+
+        return is_dashboard_state or is_media_state
 
 
     async def cast_dashboard(self, device_name, dashboard_url):
@@ -83,15 +99,16 @@ class HaContinuousCastingDashboard:
             _LOGGER.error(f"Timeout casting dashboard to {device_name}: {e}")
             return None
 
+
+
     max_retries = 5
     retry_delay = 30
     retry_count = 0
-
     async def start(self):
         while True:
             now = datetime.now().time()
             if self.start_time <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < self.end_time:        
-                for device_name, dashboard_url in self.device_map.items():
+                for device_name, device_info in self.device_map.items():
                     retry_count = 0
                     while retry_count < self.max_retries:
                         if (await self.check_both_states(device_name)) is None:
@@ -103,7 +120,7 @@ class HaContinuousCastingDashboard:
                             _LOGGER.info(f"HA Dashboard (or media) is playing on {device_name}...")
                         else:
                             _LOGGER.info(f"HA Dashboard (or media) is NOT playing on {device_name}!")
-                            await self.cast_dashboard(device_name, dashboard_url)
+                            await self.cast_dashboard(device_name, device_info["dashboard_url"])
                         break
                     else:
                         _LOGGER.error(f"Max retries exceeded for {device_name}. Skipping...")

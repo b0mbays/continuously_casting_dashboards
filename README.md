@@ -14,7 +14,6 @@ Features:
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
-- Supports different dashboards for different devices (eg; kitchen dashboard, office dashboard..)
 - Configurable time window for active casting.
 - Configurable casting interval.
 - Debug logging support.
@@ -55,9 +54,11 @@ Installation
 How does it work?
 ============
 
-The project uses [CATT](https://github.com/skorokithakis/catt) (cast all the things) to cast the dashboard to your Chromecast compatible device. Home Assistant does offer an in-built casting option but I found this to be unreliable for me and I couldn't get it working properly without paying for a Nabu Casu subscription... Instead, I wanted to host HA externally myself for free. (well, $1 p/year). The guide I used is [here](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) and I bought a domain for $1 from [here](https://gen.xyz/).
+This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast). However, I have had no issues running this on my Home Assistant instance.
 
-This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast)
+The integration uses [CATT's](https://github.com/skorokithakis/catt) functionality to 'call' each of your Google Chromecast devices checking the status every 45 seconds (you can change this in the config) for any 'state' changes. If there is no media playing on the device, then the dashboard will be cast. If the device already has the dashboard casting then it will be ignored. And if there is youtube/recipes/spotfy playing on the device then it will also be ignored.
+
+The casting functionality within Home Assistant requires your instance to be accesible via HTTPS with either paying for a Nabu Casu subscription or setting this up yourself. Home Assistant does offer an in-built casting option but I found this to be unreliable for me and I couldn't get it working properly without paying for a Nabu Casu subscription... Instead, I wanted to host HA externally myself for free. (well, $1 p/year). The guide I used is [here](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) and I bought a domain for $1 from [here](https://gen.xyz/).
 
 
 <br/><br/>
@@ -69,12 +70,39 @@ To configure the integration, add the following to your `configuration.yaml` fil
 
 ```yaml
 ha-continuous-casting-dashboard:
-  logging_level: warning # Set the logging level (default is 'warning' - change this to 'debug' for more logs to debug issues)
-  cast_delay: 45 # Time (in seconds) between casting checks. Increase this if your dashboard takes longer than 45 seconds to cast.
-  start_time: "06:30" # Start time of the casting window (format: "HH:MM")
-  end_time: "02:00" # End time of the casting window (format: "HH:MM")
-  devices:
-    "Device Name": "Dashboard URL"
-    # Add more devices as needed
-    # eg: "Office display": "http://192.168.12.104:8123/office-dashboard/default_view?kiosk"
-    # eg: "Kitchen display": "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
+  logging_level: debug #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
+  cast_delay: 45 #Required: Time (in seconds) for casting checks between devices
+  start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
+  end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
+  devices: #Required
+    "<Display_Name": #Required: Display name of your device. Find this under device settings -> Information -> Device Name
+        dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted
+        dashboard_state_name: "Dummy" #Optional: The default is "Dummy". This is the "state name" that your chromecast device has when a dashboard is "active".
+    "<Display_Name": #You can then add more devices repeating the above format
+        dashboard_url: "<Dashboard_URL>"
+        dashboard_state_name: "Dummy" #Optional: The default is "Dummy"
+
+    # Examples:
+    # "Office display":
+    #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    # "Kitchen display":
+    #   dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
+    #   dashboard_state_name: "Home"
+    # "Basement display":
+    #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    #   dashboard_state_name: "Dummy"
+```
+
+<br/><br/>
+
+Troubleshooting
+============
+
+- The dashboard starts on my device and then stops within a few seconds.
+
+If this is happening, your device might be using a different state name for when a dashboard is "active". The default (from my experience) is "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for the dashboard state. For example, mine looks like this:
+
+```DEBUG (MainThread) [custom_components.ha-continuous-casting-dashboard.dashboard_caster] Status output for Office display when checking for dashboard state 'Dummy': Title: Dummy 22:27:13 GMT+0000 (Greenwich Mean Time)
+Volume: 50```
+
+The text after "Title" is the status that your dashboard is when your dashboard is active. This could be something different such as "Home" etc. If this is the case, then add a new field underneath your "dashboard_url": ```dashboard_state_name: "Home"```
