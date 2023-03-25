@@ -69,8 +69,8 @@ To configure the integration, add the following to your `configuration.yaml` fil
 
 ```yaml
 ha-continuous-casting-dashboard:
-  logging_level: debug # Optional: Set the logging level (default is 'info')
-  cast_delay: 30 # Optional: Time (in seconds) between casting checks (default is 60)
+  logging_level: warning # Set the logging level (default is 'warning' - change this to 'debug' for more logs to debug issues)
+  cast_delay: 45 # Time (in seconds) between casting checks. Increase this if your dashboard takes longer than 45 seconds to cast.
   start_time: "06:30" # Start time of the casting window (format: "HH:MM")
   end_time: "02:00" # End time of the casting window (format: "HH:MM")
   devices:
