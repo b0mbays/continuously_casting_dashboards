@@ -81,7 +81,7 @@ To configure the integration, add the following to your `configuration.yaml` fil
 
 ```yaml
 ha-continuous-casting-dashboard:
-  logging_level: debug #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
+  logging_level: warning #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
   cast_delay: 45 #Required: Time (in seconds) for casting checks between devices
   start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
   end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
