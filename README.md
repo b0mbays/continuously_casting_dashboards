@@ -27,7 +27,16 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 2. **Trusted network setup** for each Chromecast device to avoid logging in. See guide [here](https://blog.fuzzymistborn.com/homeassistant-and-catt-cast-all-the-things/) and follow the 'Trusted Networks' section half way down. You can either do your entire home network, or individual devices. You can find the IP address for each device by going to Settings -> Device Information -> Technical Information on the device.
 
-3. **ha-catt-fix** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install this from [here](https://github.com/swiergot/ha-catt-fix)
+3. **[ha-catt-fix](https://github.com/swiergot/ha-catt-fix)** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install steps:
+
+    1. Go to the HACS panel in Home Assistant
+    2. Click on the three dots in the top right corner and choose "Custom repositories"
+    3. Enter `swiergot/ha-catt-fix` in the "Add custom repository" field, select "Lovelace" from the "Category" dropdown, and click on the "Add" button.
+    4. Go to the "Frontend" tab within HACS, and click on 'Explore and download repositories" and search for 'ha-catt-fix'.
+    5. Click "Download"
+    6. Restart Home Assistant
+    7. Ensure that 'ha-catt-fix' is listed inside your dashboards resources. (_Your dashboard_ -> Three dots -> Edit -> Three dots -> Manage resources)
+
 
 <br/><br/>
 
@@ -76,13 +85,11 @@ ha-continuous-casting-dashboard:
   cast_delay: 45 #Required: Time (in seconds) for casting checks between devices
   start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
   end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
-  devices: #Required
+  devices:
     "<Display_Name": #Required: Display name of your device. Find this under device settings -> Information -> Device Name
         dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted
-        dashboard_state_name: "Dummy" #Optional: The default is "Dummy". This is the "state name" that your chromecast device has when a dashboard is "active".
     "<Display_Name": 
-        dashboard_url: "<Dashboard_URL>"
-        dashboard_state_name: "Dummy"
+        dashboard_url: "<Dashboard_URL>" 
 
     #You can then add more devices repeating the above format
 
@@ -91,10 +98,8 @@ ha-continuous-casting-dashboard:
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
     # "Kitchen display":
     #   dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
-    #   dashboard_state_name: "Home"
     # "Basement display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
-    #   dashboard_state_name: "Dummy"
 ```
 
 <br/><br/>
@@ -104,7 +109,7 @@ ha-continuous-casting-dashboard:
 
 - The dashboard starts on my device and then stops within a few seconds.
 
-    If this is happening, your device might be using a different state name for when a dashboard is "active". The default (from my experience) is "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for the dashboard state. For example, mine looks like this:
+    If this is happening, you may not have installed the ha-catt-fix correctly and your device will be using a different state name for when a dashboard is "active". The device should be reporting "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for a working dashboard state. For example, mine looks like this:
 
 
     ```
@@ -112,9 +117,4 @@ ha-continuous-casting-dashboard:
     Volume: 50
     ```
 
-    The text _after_ "Title" is the status that your dashboard is when your dashboard is active. This could be something different such as "Home" etc. If this is the case, then add a new field (dashboard_state_name) underneath your existing "dashboard_url": 
-    ```
-    "<Display-Name>"
-        dashboard_url: "<Dashboard_URL>"
-        dashboard_state_name: "Home"
-    ```
+    If "Dummy" is missing here, please ensure you have installed the ha-catt-fix correctly from following the instructions from the [requirements](#requirements) section.
