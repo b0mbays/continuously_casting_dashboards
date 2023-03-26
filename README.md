@@ -1,4 +1,9 @@
-# **HA - Continuously Casting Dashboards**
+# <center>**HA - Continuously Casting Dashboards** </center>
+
+<p align="center">
+  <img src="branding/logo.png" width=15% height=20%>
+</p>
+
 
 This custom integration for Home Assistant continuously casts dashboards to Chromecast devices during a specified time window. It ensures that the dashboard is always displayed during the active time window, even if the Chromecast device is accidentally interrupted or disconnected. It will ignore any devices that are currently playing any media/timers/recipes etc.
 
@@ -9,7 +14,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 </p>
 <br/><br/>
 
-**Features:**
+✨**Features:**
 ============
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
@@ -20,7 +25,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 <br/><br/>
 
-**Requirements:**
+✅ **Requirements:**
 ============
 
 1. **Home Assistant** (with https [external access setup](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1) required for casting) and the HACS Addon installed.
@@ -40,7 +45,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 <br/><br/>
 
-**Installation**
+🚀**Installation**
 ============
 
 ### **HACS (Recommended)**
@@ -62,7 +67,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 <br/><br/>
 
-**How does it work?**
+⚡️**How does it work?**
 ============
 
 This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast). However, I have had no issues running this on my Home Assistant instance.
@@ -74,7 +79,7 @@ The casting functionality within Home Assistant requires your instance to be acc
 
 <br/><br/>
 
-**Configuration**
+⚙️**Configuration**
 ============
 
 To configure the integration, add the following to your `configuration.yaml` file:
@@ -104,7 +109,7 @@ ha-continuous-casting-dashboard:
 
 <br/><br/>
 
-**Troubleshooting**
+⚠️**Troubleshooting**
 ============
 
 - The dashboard starts on my device and then stops within a few seconds.
