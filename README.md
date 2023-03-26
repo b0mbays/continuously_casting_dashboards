@@ -29,13 +29,13 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 3. **[ha-catt-fix](https://github.com/swiergot/ha-catt-fix)** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install steps:
 
-    1. Go to the HACS panel in Home Assistant
-    2. Click on the three dots in the top right corner and choose "Custom repositories"
-    3. Enter `swiergot/ha-catt-fix` in the "Add custom repository" field, select "Lovelace" from the "Category" dropdown, and click on the "Add" button.
-    4. Go to the "Frontend" tab within HACS, and click on 'Explore and download repositories" and search for 'ha-catt-fix'.
-    5. Click "Download"
-    6. Restart Home Assistant
-    7. Ensure that 'ha-catt-fix' is listed inside your dashboards resources. (_Your dashboard_ -> Three dots -> Edit -> Three dots -> Manage resources)
+    - Go to the HACS panel in Home Assistant
+    - Click on the three dots in the top right corner and choose "Custom repositories"
+    - Enter `swiergot/ha-catt-fix` in the "Add custom repository" field, select "Lovelace" from the "Category" dropdown, and click on the "Add" button.
+    - Go to the "Frontend" tab within HACS, and click on 'Explore and download repositories" and search for 'ha-catt-fix'.
+    - Click "Download"
+    - Restart Home Assistant
+    - Ensure that 'ha-catt-fix' is listed inside your dashboards resources. (_Your dashboard_ -> Three dots -> Edit -> Three dots -> Manage resources)
 
 
 <br/><br/>
