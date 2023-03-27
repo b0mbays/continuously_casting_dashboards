@@ -53,7 +53,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 
 1. Go to the HACS panel in Home Assistant.
 2. Click on the three dots in the top right corner and choose "Custom repositories".
-3. Enter `b0mbays/ha-continuously-casting-dashboard` in the "Add custom repository" field, select "Integration" from the "Category" dropdown, and click on the "Add" button.
+3. Enter `b0mbays/continuously-casting-dashboards` in the "Add custom repository" field, select "Integration" from the "Category" dropdown, and click on the "Add" button.
 4. Once the custom repository is added, you can install the integration through HACS. You should see "Continuously Cast Dashboards" in the "Integrations" tab. Click on "Download" to add it to your Home Assistant instance.
 5. Restart Home Assistant to load the custom integration.
 6. Setup your devices inside the configuration.yaml file, follow the steps from the configuration section below.
