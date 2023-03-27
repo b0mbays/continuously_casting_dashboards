@@ -20,6 +20,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
 - Configurable time window for active casting.
+- Entity changed dashboard casting (cast specific dashboards when an entity state changes).
 - Configurable casting interval.
 - Debug logging support.
 
@@ -106,6 +107,59 @@ ha-continuous-casting-dashboard:
     # "Basement display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
 ```
+
+**🔄 Entity changed dashboard casting**
+============
+
+
+With this feature, you can configure specific dashboards to be cast when the state of a specified entity changes. To enable this feature, add a new section to your configuration.yaml file:
+
+```yaml
+ha-continuous-casting-dashboard:
+  # ...
+  state_triggers:
+    "<Display_Name>"
+        - entity_id: "<Entity_ID>"
+          to_state: "<To_State>"
+          dashboard_url: "<Dashboard_URL>"
+          time_out: <Timeout_time> #Optional!
+```
+
+Replace <Display_Name> with the Chromecast device, <Entity_ID> with the desired entity ID, <To_State> with the state that triggers the casting and <Dashboard_URL> with the URL of the dashboard you want to cast.
+
+The <Timeout_time> is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
+
+You can add multiple entity-triggered casting configurations by adding more sections following the same format.
+
+Example:
+
+```yaml
+ha-continuous-casting-dashboard:
+  # ...
+  state_triggers:
+    "Living room display"
+        - entity_id: "sensor.samsung_tv"
+          to_state: "On"
+          dashboard_url: "http://192.168.12.104:8123/tv_remote_dashboard/default_view?kiosk"
+        - entity_id: "sensor.samsung_tv"
+          to_state: "Off"
+          dashboard_url: "http://192.168.12.104:8123/living_room_dashboard/default_view?kiosk"
+```
+The first example for the "Living room display" will cast my custom "tv_remote_dashboard" which has my TV remote controls to my Nest Hub when my TV entity reports the status of "On". When the TV turns off and now reports a status of "Off" then my normal "living_room_dashboard" will be casted.
+
+```yaml
+ha-continuous-casting-dashboard:
+  # ...
+  state_triggers:
+    "Office display"
+        - entity_id: "binary_sensor.front_door_ring"
+          to_state: "Detected"
+          dashboard_url: "http://192.168.12.104:8123/cctv_dashboard/default_view?kiosk"
+          time_out: 60
+```
+
+
+The second example will cast my custom "cctv_dashboard" which has cameras of the front door when my Ring doorbell is "Detected". I am using the optional "time_out" feature which will stop casting the CCTV display after 60 seconds. Once the dashboard has then stopped casting, the default dashboard will start casting to this display.
 
 <br/><br/>
 
