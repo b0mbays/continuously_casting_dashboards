@@ -108,6 +108,8 @@ ha-continuous-casting-dashboard:
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
 ```
 
+
+<br/><br/>
 **🔄 Entity changed dashboard casting**
 ============
 
@@ -125,9 +127,9 @@ ha-continuous-casting-dashboard:
           time_out: <Timeout_time> #Optional!
 ```
 
-Replace <Display_Name> with the Chromecast device, <Entity_ID> with the desired entity ID, <To_State> with the state that triggers the casting and <Dashboard_URL> with the URL of the dashboard you want to cast.
+Replace **<Display_Name>** with the Chromecast device, **<Entity_ID>** with the desired entity ID, **<To_State>** with the state that triggers the casting and **<Dashboard_URL>** with the URL of the dashboard you want to cast.
 
-The <Timeout_time> is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
+**<Timeout_time>** is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
 
 You can add multiple entity-triggered casting configurations by adding more sections following the same format.
 
