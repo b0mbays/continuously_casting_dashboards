@@ -27,8 +27,8 @@ class HaContinuousCastingDashboard:
             }
 
         # Initialize state_triggers_map to keep track of state triggers
-        self.casting_triggered_by_state_change = False
         self.state_triggers_map = {}
+        self.casting_triggered_by_state_change = False
         for device_name, state_triggers_config in config.get("state_triggers", {}).items():
             self.state_triggers_map[device_name] = [
                 {
@@ -176,53 +176,76 @@ class HaContinuousCastingDashboard:
         while True:
             now = datetime.now().time()
             # Check if the current time is within the allowed casting range
-            if self.start_time <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < self.end_time:        
+            if self.start_time <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < self.end_time:
                 for device_name, device_info in self.device_map.items():
                     # Skip normal flow if casting is triggered by state change
                     if self.casting_triggered_by_state_change:
                         _LOGGER.debug("Skipping normal flow as casting is triggered by state change")
-                        await asyncio.sleep(self.cast_delay)
+                        try:
+                            await asyncio.sleep(self.cast_delay)
+                        except asyncio.CancelledError:
+                            _LOGGER.error("Casting delayed, task cancelled.")
                         continue
 
                     # Retry casting in case of errors
                     retry_count = 0
                     while retry_count < self.max_retries:
-                        if (await self.check_both_states(device_name)) is None:
-                            retry_count += 1
-                            _LOGGER.warning(f"Retrying in {self.retry_delay} seconds for {retry_count} time(s) due to previous errors")
-                            await asyncio.sleep(self.retry_delay)
-                            continue
-                        elif await self.check_both_states(device_name):
-                            _LOGGER.info(f"HA Dashboard (or media) is playing on {device_name}...")
-                        else:
-                            _LOGGER.info(f"HA Dashboard (or media) is NOT playing on {device_name}!")
-                            await self.cast_dashboard(device_name, device_info["dashboard_url"])
-                        break
+                        try:
+                            if (await self.check_both_states(device_name)) is None:
+                                retry_count += 1
+                                _LOGGER.warning(f"Retrying in {self.retry_delay} seconds for {retry_count} time(s) due to previous errors")
+                                try:
+                                    await asyncio.sleep(self.cast_delay)
+                                except asyncio.CancelledError:
+                                    _LOGGER.error("Casting delayed, task cancelled.")
+                                continue
+                            elif await self.check_both_states(device_name):
+                                _LOGGER.info(f"HA Dashboard (or media) is playing on {device_name}...")
+                            else:
+                                _LOGGER.info(f"HA Dashboard (or media) is NOT playing on {device_name}!")
+                                await self.cast_dashboard(device_name, device_info["dashboard_url"])
+                            break 
+                        except TypeError as e:
+                            _LOGGER.error(f"Error encountered while checking both states for {device_name}: {e}")
+                            break
                     else:
                         _LOGGER.error(f"Max retries exceeded for {device_name}. Skipping...")
                         continue
-                    await asyncio.sleep(self.cast_delay)
+                    try:
+                        await asyncio.sleep(self.cast_delay)
+                    except asyncio.CancelledError:
+                        _LOGGER.error("Casting delayed, task cancelled.")
 
             # If the current time is outside the allowed range, check for active HA cast sessions
             else:
                 _LOGGER.info("Local time is outside of allowed range for casting the screen. Checking for any active HA cast sessions...")
                 ha_cast_active = False
                 for device_name in self.device_map.items():
-                    if await self.check_dashboard_state(device_name):
-                        _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
-                        try:
-                            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
-                            await process.wait()
-                            ha_cast_active = True
-                        except subprocess.CalledProcessError as e:
-                            _LOGGER.error(f"Error stopping dashboard on {device_name}: {e}")
+                    try:
+                        if await self.check_dashboard_state(device_name):
+                            _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
+                            try:
+                                process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
+                                await process.wait()
+                                ha_cast_active = True
+                            except subprocess.CalledProcessError as e:
+                                _LOGGER.error(f"Error stopping dashboard on {device_name}: {e}")
+                                continue
+                        else:
+                            _LOGGER.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
                             continue
-                    else:
-                        _LOGGER.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
+                    except TypeError as e:
+                        _LOGGER.error(f"Error encountered while checking dashboard state for {device_name}: {e}")
                         continue
-                    await asyncio.sleep(self.cast_delay)
+                    try:
+                        await asyncio.sleep(self.cast_delay)
+                    except asyncio.CancelledError:
+                        _LOGGER.error("Casting delayed, task cancelled.")
 
                 # If no active HA cast sessions are found, sleep for 5 minutes
                 if not ha_cast_active:
                     _LOGGER.info("No active HA cast sessions found. Sleeping for 5 minutes...")
-                    await asyncio.sleep(self.cast_delay)
+                    try:
+                        await asyncio.sleep(self.cast_delay)
+                    except asyncio.CancelledError:
+                        _LOGGER.error("Casting delayed, task cancelled.")
