@@ -118,8 +118,24 @@ class HaContinuousCastingDashboard:
 
     # Function to check if the dashboard state is active
     async def check_dashboard_state(self, device_name):
-        dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
-        return await self.check_status(device_name, dashboard_state_name)
+        try:
+            dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
+            status_output = await self.check_status(device_name, dashboard_state_name)
+
+            if status_output is not None and dashboard_state_name in status_output:
+                _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{dashboard_state_name}': {status_output}")
+                _LOGGER.debug("Dashboard active")
+                return True
+        except subprocess.CalledProcessError as e:
+            _LOGGER.error(f"Error checking state for {device_name}: {e}\nOutput: {e.output.decode()}")
+            return None
+        except subprocess.TimeoutExpired as e:
+            _LOGGER.error(f"Timeout checking state for {device_name}: {e}")
+            return None
+        except ValueError as e:
+            _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
+            return None
+        return None
 
     # Function to check if media is playing on the device
     async def check_media_state(self, device_name):
@@ -129,7 +145,7 @@ class HaContinuousCastingDashboard:
     async def check_both_states(self, device_name):
         dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
         status_output = await self.check_status(device_name, dashboard_state_name)
-        
+
         if status_output is None or not status_output:
             return False
 
@@ -146,15 +162,19 @@ class HaContinuousCastingDashboard:
             _LOGGER.info(f"Casting dashboard to {device_name}")
 
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
+            _LOGGER.debug("Executing stop command...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "0")
+            _LOGGER.debug("Setting volume to 0...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "cast_site", dashboard_url)
+            _LOGGER.info("Executing the dashboard cast command...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "50")
+            _LOGGER.info("Setting volume back to 5...")
             await asyncio.wait_for(process.wait(), timeout=10)
         except subprocess.CalledProcessError as e:
             _LOGGER.error(f"Error casting dashboard to {device_name}: {e}")
@@ -220,7 +240,7 @@ class HaContinuousCastingDashboard:
             else:
                 _LOGGER.info("Local time is outside of allowed range for casting the screen. Checking for any active HA cast sessions...")
                 ha_cast_active = False
-                for device_name in self.device_map.items():
+                for device_name in self.device_map.keys():
                     try:
                         if await self.check_dashboard_state(device_name):
                             _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
@@ -246,6 +266,6 @@ class HaContinuousCastingDashboard:
                 if not ha_cast_active:
                     _LOGGER.info("No active HA cast sessions found. Sleeping for 5 minutes...")
                     try:
-                        await asyncio.sleep(self.cast_delay)
+                        await asyncio.sleep(300)
                     except asyncio.CancelledError:
                         _LOGGER.error("Casting delayed, task cancelled.")
