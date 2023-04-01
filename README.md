@@ -120,7 +120,7 @@ With this feature, you can configure specific dashboards to be cast when the sta
 ha-continuous-casting-dashboard:
   # ...
   state_triggers:
-    "<Display_Name>"
+    "<Display_Name>":
         - entity_id: "<Entity_ID>"
           to_state: "<To_State>"
           dashboard_url: "<Dashboard_URL>"
@@ -139,7 +139,7 @@ Example:
 ha-continuous-casting-dashboard:
   # ...
   state_triggers:
-    "Living room display"
+    "Living room display":
         - entity_id: "sensor.samsung_tv"
           to_state: "On"
           dashboard_url: "http://192.168.12.104:8123/tv_remote_dashboard/default_view?kiosk"
@@ -153,7 +153,7 @@ The first example for the "Living room display" will cast my custom "tv_remote_d
 ha-continuous-casting-dashboard:
   # ...
   state_triggers:
-    "Office display"
+    "Office display":
         - entity_id: "binary_sensor.front_door_ring"
           to_state: "Detected"
           dashboard_url: "http://192.168.12.104:8123/cctv_dashboard/default_view?kiosk"
