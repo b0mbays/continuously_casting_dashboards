@@ -24,6 +24,7 @@ class HaContinuousCastingDashboard:
             self.device_map[device_name] = {
                 "dashboard_url": device_info["dashboard_url"],
                 "dashboard_state_name": device_info.get("dashboard_state_name", "Dummy"),
+                "media_state_name": device_info.get("media_state_name", "PLAYING")
             }
 
         # Initialize state_triggers_map to keep track of state triggers
@@ -35,7 +36,8 @@ class HaContinuousCastingDashboard:
                     "entity_id": trigger["entity_id"],
                     "to_state": trigger["to_state"],
                     "dashboard_url": trigger["dashboard_url"],
-                    "time_out": int(trigger["time_out"]) if "time_out" in trigger else None,                }
+                    "time_out": int(trigger["time_out"]) if "time_out" in trigger else None,
+                    "force_cast": trigger.get("force_cast", False),                }
                 for trigger in state_triggers_config
             ]
 
@@ -73,13 +75,20 @@ class HaContinuousCastingDashboard:
         for device_name, state_triggers in self.state_triggers_map.items():
             for trigger in state_triggers:
                 if trigger["entity_id"] == entity_id and trigger["to_state"] == new_state.state:
-                    _LOGGER.debug(f"Matched state for entity '{entity_id}', casting dashboard to {device_name}")
-                    self.casting_triggered_by_state_change = True
-                    await self.cast_dashboard(device_name, trigger["dashboard_url"])
-                    if "time_out" in trigger:
-                        self.hass.loop.create_task(self.stop_casting_after_timeout(device_name, trigger["time_out"]))
-                    self.casting_triggered_by_state_change = False
-                    break
+                    force_cast = trigger.get("force_cast", False)
+                    media_playing = await self.check_media_state(device_name)
+
+                    # Only cast the dashboard if force_cast is True or media is not playing
+                    if force_cast or not media_playing:
+                        _LOGGER.debug(f"Matched state for entity '{entity_id}', casting dashboard to {device_name}")
+                        self.casting_triggered_by_state_change = True
+                        await self.cast_dashboard(device_name, trigger["dashboard_url"])
+                        if "time_out" in trigger:
+                            self.hass.loop.create_task(self.stop_casting_after_timeout(device_name, trigger["time_out"]))
+                        self.casting_triggered_by_state_change = False
+                        break
+                    else:
+                        _LOGGER.debug(f"Media is playing on {device_name}, not casting dashboard due to force_cast being set to False")
 
     # Function to stop casting after a configured timeout for the triggered casting functionality
     async def stop_casting_after_timeout(self, device_name, timeout):
@@ -139,7 +148,24 @@ class HaContinuousCastingDashboard:
 
     # Function to check if media is playing on the device
     async def check_media_state(self, device_name):
-        return await self.check_status(device_name, "PLAYING")
+        try:
+            media_state_name = self.device_map[device_name]["media_state_name"]
+            status_output = await self.check_status(device_name, media_state_name)
+
+            if status_output is not None and media_state_name in status_output:
+                _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{media_state_name}': {status_output}")
+                _LOGGER.debug("Media is playing!")
+                return True
+        except subprocess.CalledProcessError as e:
+            _LOGGER.error(f"Error checking state for {device_name}: {e}\nOutput: {e.output.decode()}")
+            return None
+        except subprocess.TimeoutExpired as e:
+            _LOGGER.error(f"Timeout checking state for {device_name}: {e}")
+            return None
+        except ValueError as e:
+            _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
+            return None
+        return None
 
     # Function to check if either dashboard or media state is active
     async def check_both_states(self, device_name):

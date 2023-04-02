@@ -125,11 +125,14 @@ ha-continuous-casting-dashboard:
           to_state: "<To_State>"
           dashboard_url: "<Dashboard_URL>"
           time_out: <Timeout_time> #Optional!
+          force_cast: <true or false> #Optional!
 ```
 
 Replace **<Display_Name>** with the Chromecast device, **<Entity_ID>** with the desired entity ID, **<To_State>** with the state that triggers the casting and **<Dashboard_URL>** with the URL of the dashboard you want to cast.
 
-**<Timeout_time>** is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
+**<time_out>** is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
+
+**<force_cast>** is another optional field to indicate if the dashboard should be casted even if media is playing on the device. This is set to 'false' by default.
 
 You can add multiple entity-triggered casting configurations by adding more sections following the same format.
 
@@ -158,10 +161,11 @@ ha-continuous-casting-dashboard:
           to_state: "Detected"
           dashboard_url: "http://192.168.12.104:8123/cctv_dashboard/default_view?kiosk"
           time_out: 60
+          force_cast: true
 ```
 
 
-The second example will cast my custom "cctv_dashboard" which has cameras of the front door when my Ring doorbell is "Detected". I am using the optional "time_out" feature which will stop casting the CCTV display after 60 seconds. Once the dashboard has then stopped casting, the default dashboard will start casting to this display.
+The second example will cast my custom "cctv_dashboard" which has cameras of the front door when my Ring doorbell is "Detected". I am using the optional "time_out" feature which will stop casting the CCTV display after 60 seconds. Once the dashboard has then stopped casting, the default dashboard will start casting to this display. I also have the 'force_cast' set to 'true' to ensure that even if media is playing on this device, then the CCTV dashboard will be casted.
 
 <br/><br/>
 
