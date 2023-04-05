@@ -86,7 +86,7 @@ The casting functionality within Home Assistant requires your instance to be acc
 To configure the integration, add the following to your `configuration.yaml` file:
 
 ```yaml
-ha-continuous-casting-dashboard:
+continuously_casting_dashboards:
   logging_level: warning #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
   cast_delay: 45 #Required: Time (in seconds) for casting checks between devices
   start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
@@ -117,7 +117,7 @@ ha-continuous-casting-dashboard:
 With this feature, you can configure specific dashboards to be cast when the state of a specified entity changes. To enable this feature, add a new section to your configuration.yaml file:
 
 ```yaml
-ha-continuous-casting-dashboard:
+continuously_casting_dashboards:
   # ...
   state_triggers:
     "<Display_Name>":
@@ -139,7 +139,7 @@ You can add multiple entity-triggered casting configurations by adding more sect
 Example:
 
 ```yaml
-ha-continuous-casting-dashboard:
+continuously_casting_dashboards:
   # ...
   state_triggers:
     "Living room display":
@@ -153,7 +153,7 @@ ha-continuous-casting-dashboard:
 The first example for the "Living room display" will cast my custom "tv_remote_dashboard" which has my TV remote controls to my Nest Hub when my TV entity reports the status of "On". When the TV turns off and now reports a status of "Off" then my normal "living_room_dashboard" will be casted.
 
 ```yaml
-ha-continuous-casting-dashboard:
+continuously_casting_dashboards:
   # ...
   state_triggers:
     "Office display":
@@ -178,7 +178,7 @@ The second example will cast my custom "cctv_dashboard" which has cameras of the
 
 
     ```
-    DEBUG (MainThread) [custom_components.ha-continuous-casting-dashboard.dashboard_caster] Status output for Office display when checking for dashboard state 'Dummy': Title: Dummy 22:27:13 GMT+0000 (Greenwich Mean Time)
+    DEBUG (MainThread) [custom_components.continuously_casting_dashboards.dashboard_caster] Status output for Office display when checking for dashboard state 'Dummy': Title: Dummy 22:27:13 GMT+0000 (Greenwich Mean Time)
     Volume: 50
     ```
 

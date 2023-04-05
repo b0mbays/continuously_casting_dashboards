@@ -7,8 +7,8 @@ _LOGGER = logging.getLogger(__name__)
 
 from datetime import datetime
 
-# Define the HaContinuousCastingDashboard class
-class HaContinuousCastingDashboard:
+# Define the ContinuouslyCastingDashboards class
+class ContinuouslyCastingDashboards:
     def __init__(self, hass, config):
         self.hass = hass
         self.config = config
@@ -178,7 +178,7 @@ class HaContinuousCastingDashboard:
         _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{dashboard_state_name}': {status_output}")
 
         is_dashboard_state = dashboard_state_name in status_output
-        is_media_state = "PLAYING" in status_output
+        is_media_state = "PLAYING" in status_output or "Netflix" in status_output
 
         return is_dashboard_state or is_media_state
 

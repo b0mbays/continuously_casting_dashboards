@@ -1,9 +1,9 @@
 {
-    "domain": "ha-continuous-casting-dashboard",
+    "domain": "continuously_casting_dashboards",
     "name": "Continuously Cast Dashboards",
-    "documentation": "https://github.com/b0mbays/ha-continuous-casting-dashboard",
+    "documentation": "https://github.com/b0mbays/continuously_casting_dashboards",
     "requirements": ["PyYAML==6.0", "catt==0.12.10"],
-    "version": "1.1.0",
+    "version": "1.1.4",
     "dependencies": [],
     "codeowners": ["@b0mbays"]
   }

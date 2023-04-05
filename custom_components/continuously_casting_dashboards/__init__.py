@@ -1,6 +1,6 @@
 """The Continuously Cast Dashboards integration."""
 from .const import DOMAIN, PLATFORMS
-from .dashboard_caster import HaContinuousCastingDashboard
+from .dashboard_caster import ContinuouslyCastingDashboards
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 from homeassistant.config_entries import ConfigEntry
@@ -16,7 +16,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     hass.data.setdefault(DOMAIN, {})
 
-    # Start the HaContinuousCastingDashboard
-    caster = HaContinuousCastingDashboard(hass, conf)
+    # Start the ContinuouslyCastingDashboards
+    caster = ContinuouslyCastingDashboards(hass, conf)
     hass.loop.create_task(caster.start())
     return True

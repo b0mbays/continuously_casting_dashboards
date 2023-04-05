@@ -1,3 +1,3 @@
 """Constants for the Continuously Cast Dashboards integration."""
-DOMAIN = "ha-continuous-casting-dashboard"
+DOMAIN = "continuously_casting_dashboards"
 PLATFORMS = []
