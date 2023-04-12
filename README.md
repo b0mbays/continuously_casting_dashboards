@@ -92,7 +92,7 @@ continuously_casting_dashboards:
   start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
   end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
   devices:
-    "<Display_Name": #Required: Display name of your device. Find this under device settings -> Information -> Device Name
+    "<Display_Name": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
         dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted
     "<Display_Name": 
         dashboard_url: "<Dashboard_URL>" 
