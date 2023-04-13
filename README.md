@@ -43,6 +43,7 @@ I'm using this myself for 3 different chromecast devices: Lenovo Smart Display 8
     - Restart Home Assistant
     - Ensure that 'ha-catt-fix' is listed inside your dashboards resources. (_Your dashboard_ -> Three dots -> Edit -> Three dots -> Manage resources)
 
+4. **[Kiosk Mode](https://github.com/NemesisRE/kiosk-mode)** for hiding the navigations bars for fullscreen dashboards on your displays.
 
 <br/><br/>
 
