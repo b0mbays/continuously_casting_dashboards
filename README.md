@@ -89,12 +89,12 @@ To configure the integration, add the following to your `configuration.yaml` fil
 ```yaml
 continuously_casting_dashboards:
   logging_level: warning #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
-  cast_delay: 45 #Required: Time (in seconds) for casting checks between devices
+  cast_delay: 45 #Required: Time (in seconds) for casting checks between each device.
   start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
   end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
   devices:
     "<Display_Name": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
-        dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted
+        dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
     "<Display_Name": 
         dashboard_url: "<Dashboard_URL>" 
 
