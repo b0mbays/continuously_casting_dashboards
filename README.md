@@ -19,9 +19,11 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
-- Configurable time window for active casting.
 - Entity changed dashboard casting (cast specific dashboards when an entity state changes).
+- Configurable global time window for active casting.
 - Configurable casting interval.
+- Configurable volume per device.
+- Configurable start and end times per device.
 - Debug logging support.
 
 <br/><br/>
@@ -50,7 +52,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 🚀**Installation**
 ============
 
-### **HACS (Recommended)**
+### **HACS**
 
 1. Go to the HACS panel in Home Assistant.
 2. Click on the three dots in the top right corner and choose "Custom repositories".
@@ -58,13 +60,6 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 4. Once the custom repository is added, you can install the integration through HACS. You should see "Continuously Cast Dashboards" in the "Integrations" tab. Click on "Download" to add it to your Home Assistant instance.
 5. Restart Home Assistant to load the custom integration.
 6. Setup your devices inside the configuration.yaml file, follow the steps from the configuration section below.
-4. Restart again to start the integration.
-
-### **Manual**
-
-1. Copy the `ha_continuous_casting_dashboard` folder into your `custom_components` directory within your Home Assistant configuration directory.
-2. Restart Home Assistant to load the custom integration.
-3. Configure the integration in your `configuration.yaml` file (see the "Configuration" section below).
 4. Restart again to start the integration.
 
 <br/><br/>
@@ -90,23 +85,38 @@ To configure the integration, add the following to your `configuration.yaml` fil
 continuously_casting_dashboards:
   logging_level: warning #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
   cast_delay: 45 #Required: Time (in seconds) for casting checks between each device.
-  start_time: "06:30" #Required: Start time of the casting window (format: "HH:MM")
-  end_time: "02:00" #Required: End time of the casting window (format: "HH:MM") and must be after "00:00"
+  start_time: "07:00" #Optional: Global start time of the casting window (format: "HH:MM") - Default is set to "07.00" and can be individually overwritten per device below.
+  end_time: "01:00" #Optional: Global end time of the casting window (format: "HH:MM") and must be after "00:00". Default is set to "01.00" and can be individually overwritten per device below.
   devices:
     "<Display_Name": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
         dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
+        volume: <Volume> #Optional: Volume to set the display. (Default is 5)
+        start_time: "<Start_Time>" #Optional: Set the start time for this device
+        end_time: "<End_Time>" #Optional: Set the end time for this device
     "<Display_Name": 
         dashboard_url: "<Dashboard_URL>" 
+        volume: <Volume>
+        start_time: "<Start_Time>" 
+        end_time: "<End_Time>"
 
-    #You can then add more devices repeating the above format
+    #You can then add more devices repeating the above format:
 
     # Examples:
     # "Office display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    #   volume: 7
+    #   start_time: "06.00" 
+    #   end_time: "18.00"
     # "Kitchen display":
     #   dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
+    #   volume: 9
+    #   start_time: "06.00" 
+    #   end_time: "22.00"
     # "Basement display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    #   volume: 4
+    #   start_time: "18.00" 
+    #   end_time: "03.00"
 ```
 
 

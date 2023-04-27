@@ -14,17 +14,25 @@ class ContinuouslyCastingDashboards:
         self.config = config
         self.device_map = {}
         self.cast_delay = self.config['cast_delay']
-        self.start_time = datetime.strptime(self.config['start_time'], '%H:%M').time()
-        self.end_time = datetime.strptime(self.config['end_time'], '%H:%M').time()
         self.max_retries = 5
         self.retry_delay = 30
+        global_start_time = config.get("start_time", "07:00")
+        global_end_time = config.get("end_time", "01:00")
 
-         # Parse devices from the configuration
+        # Parse devices from the configuration
         for device_name, device_info in self.config['devices'].items():
+
+            # Use device-specific start and end times if provided, otherwise use global values
+            start_time = datetime.strptime(device_info.get("start_time", global_start_time), '%H:%M').time()
+            end_time = datetime.strptime(device_info.get("end_time", global_end_time), '%H:%M').time()
+
             self.device_map[device_name] = {
                 "dashboard_url": device_info["dashboard_url"],
                 "dashboard_state_name": device_info.get("dashboard_state_name", "Dummy"),
-                "media_state_name": device_info.get("media_state_name", "PLAYING")
+                "media_state_name": device_info.get("media_state_name", "PLAYING"),
+                "volume": device_info.get("volume", 5),
+                "start_time": start_time,
+                "end_time": end_time
             }
 
         # Initialize state_triggers_map to keep track of state triggers
@@ -112,7 +120,7 @@ class ContinuouslyCastingDashboards:
     async def check_status(self, device_name, state):
         try:
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "status", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30)
             status_output = stdout.decode()
             return status_output
         except subprocess.CalledProcessError as e:
@@ -124,6 +132,9 @@ class ContinuouslyCastingDashboards:
         except ValueError as e:
             _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
             return None
+        except asyncio.exceptions.TimeoutError as e:  # Add proper exception handling for TimeoutError
+                _LOGGER.error(f"Asyncio TimeoutError checking {state} state for {device_name}: {e}")
+                return None
 
     # Function to check if the dashboard state is active
     async def check_dashboard_state(self, device_name):
@@ -199,8 +210,10 @@ class ContinuouslyCastingDashboards:
             _LOGGER.info("Executing the dashboard cast command...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
-            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "50")
-            _LOGGER.info("Setting volume back to 5...")
+            custom_volume = self.device_map[device_name].get("volume", 5) * 10
+            custom_volume_str = str(custom_volume)
+            process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", custom_volume_str)            
+            _LOGGER.info(f"Setting volume to {custom_volume_str}...")          
             await asyncio.wait_for(process.wait(), timeout=10)
         except subprocess.CalledProcessError as e:
             _LOGGER.error(f"Error casting dashboard to {device_name}: {e}")
@@ -221,9 +234,21 @@ class ContinuouslyCastingDashboards:
         self.hass.bus.async_listen('state_changed', self.handle_state_change_event)
         while True:
             now = datetime.now().time()
-            # Check if the current time is within the allowed casting range
-            if self.start_time <= now <= datetime.strptime('23:59', '%H:%M').time() or datetime.strptime('00:00', '%H:%M').time() <= now < self.end_time:
-                for device_name, device_info in self.device_map.items():
+            for device_name, device_info in self.device_map.items():
+                # Get device-specific start and end times
+                start_time = device_info["start_time"]
+                end_time = device_info["end_time"]
+
+                # Check if the current time is within the allowed casting range for the device
+                is_time_in_range = False
+                if start_time <= end_time:
+                    is_time_in_range = start_time <= now <= end_time
+                else:
+                    is_time_in_range = start_time <= now or now <= end_time
+
+                if is_time_in_range:
+                    _LOGGER.info(f"Current local time: {now}")
+                    _LOGGER.info(f"Local time is inside the allowed casting time for {device_name}. Start time: {start_time} - End time: {end_time}")
                     # Skip normal flow if casting is triggered by state change
                     if self.casting_triggered_by_state_change:
                         _LOGGER.debug("Skipping normal flow as casting is triggered by state change")
@@ -262,36 +287,30 @@ class ContinuouslyCastingDashboards:
                     except asyncio.CancelledError:
                         _LOGGER.error("Casting delayed, task cancelled.")
 
-            # If the current time is outside the allowed range, check for active HA cast sessions
-            else:
-                _LOGGER.info("Local time is outside of allowed range for casting the screen. Checking for any active HA cast sessions...")
-                ha_cast_active = False
-                for device_name in self.device_map.keys():
-                    try:
-                        if await self.check_dashboard_state(device_name):
-                            _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
-                            try:
-                                process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
-                                await process.wait()
-                                ha_cast_active = True
-                            except subprocess.CalledProcessError as e:
-                                _LOGGER.error(f"Error stopping dashboard on {device_name}: {e}")
-                                continue
-                        else:
-                            _LOGGER.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
-                            continue
-                    except TypeError as e:
-                        _LOGGER.error(f"Error encountered while checking dashboard state for {device_name}: {e}")
-                        continue
-                    try:
-                        await asyncio.sleep(self.cast_delay)
-                    except asyncio.CancelledError:
-                        _LOGGER.error("Casting delayed, task cancelled.")
+                # If the current time is outside the allowed range, check for active HA cast sessions
+                else:
+                    _LOGGER.info(f"Current local time: {now}")
+                    _LOGGER.info(f"Local time is outside the allowed casting time for {device_name}. Start time: {start_time} - End time: {end_time}")
+                    _LOGGER.info(f"Checking for any active HA cast sessions on {device_name} to stop if necessary...")
 
-                # If no active HA cast sessions are found, sleep for 5 minutes
-                if not ha_cast_active:
-                    _LOGGER.info("No active HA cast sessions found. Sleeping for 5 minutes...")
+                    if not is_time_in_range:
+                        try:
+                            if await self.check_dashboard_state(device_name):
+                                _LOGGER.info(f"HA Dashboard is currently being cast on {device_name}. Stopping...")
+                                try:
+                                    process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
+                                    await process.wait()
+                                except subprocess.CalledProcessError as e:
+                                    _LOGGER.error(f"Error stopping dashboard on {device_name}: {e}")
+                                    continue
+                            else:
+                                _LOGGER.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
+                                continue
+                        except TypeError as e:
+                            _LOGGER.error(f"Error encountered while checking dashboard state for {device_name}: {e}")
+                            continue
+
                     try:
-                        await asyncio.sleep(300)
+                        await asyncio.sleep(5)
                     except asyncio.CancelledError:
                         _LOGGER.error("Casting delayed, task cancelled.")
