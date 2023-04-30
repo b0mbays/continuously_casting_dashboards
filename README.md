@@ -85,8 +85,8 @@ To configure the integration, add the following to your `configuration.yaml` fil
 continuously_casting_dashboards:
   logging_level: warning #Required: Set the logging level - debug/info/warning (default is 'warning' - try 'debug' for debugging)
   cast_delay: 45 #Required: Time (in seconds) for casting checks between each device.
-  start_time: "07:00" #Optional: Global start time of the casting window (format: "HH:MM") - Default is set to "07.00" and can be individually overwritten per device below.
-  end_time: "01:00" #Optional: Global end time of the casting window (format: "HH:MM") and must be after "00:00". Default is set to "01.00" and can be individually overwritten per device below.
+  start_time: "07:00" #Optional: Global start time of the casting window (format: "HH:MM") - Default is set to "07:00" and can be individually overwritten per device below.
+  end_time: "01:00" #Optional: Global end time of the casting window (format: "HH:MM") and must be after "00:00". Default is set to "01:00" and can be individually overwritten per device below.
   devices:
     "<Display_Name": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
         dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
@@ -105,18 +105,18 @@ continuously_casting_dashboards:
     # "Office display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
     #   volume: 7
-    #   start_time: "06.00" 
-    #   end_time: "18.00"
+    #   start_time: "06:00" 
+    #   end_time: "18:00"
     # "Kitchen display":
     #   dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
     #   volume: 9
-    #   start_time: "06.00" 
-    #   end_time: "22.00"
+    #   start_time: "06:00" 
+    #   end_time: "22:00"
     # "Basement display":
     #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
     #   volume: 4
-    #   start_time: "18.00" 
-    #   end_time: "03.00"
+    #   start_time: "18:00" 
+    #   end_time: "03:00"
 ```
 
 
