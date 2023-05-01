@@ -223,9 +223,6 @@ class ContinuouslyCastingDashboards:
             _LOGGER.info("Executing the dashboard cast command...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
-            if status_output is not None and media_state_name in status_output:
-                _LOGGER.debug(f"My Status output for {device_name} when checking for dashboard state '{media_state_name}': {status_output}")
-                _LOGGER.debug(type(status_output))
             # if the config didn't set a volume use the current device volume
             if self.device_map[device_name].get("volume",5) != -1:
                 custom_volume = self.device_map[device_name].get("volume", 5) * 10
