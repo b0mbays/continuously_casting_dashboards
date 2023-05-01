@@ -25,15 +25,16 @@ class ContinuouslyCastingDashboards:
             # Use device-specific start and end times if provided, otherwise use global values
             start_time = datetime.strptime(device_info.get("start_time", global_start_time), '%H:%M').time()
             end_time = datetime.strptime(device_info.get("end_time", global_end_time), '%H:%M').time()
-
+            #uses -1 as a default volume if not configured by user.
             self.device_map[device_name] = {
                 "dashboard_url": device_info["dashboard_url"],
                 "dashboard_state_name": device_info.get("dashboard_state_name", "Dummy"),
                 "media_state_name": device_info.get("media_state_name", "PLAYING"),
-                "volume": device_info.get("volume", 5),
+                "volume": device_info.get("volume", -1),
                 "start_time": start_time,
                 "end_time": end_time
             }
+            
 
         # Initialize state_triggers_map to keep track of state triggers
         self.state_triggers_map = {}
@@ -141,7 +142,6 @@ class ContinuouslyCastingDashboards:
         try:
             dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
             status_output = await self.check_status(device_name, dashboard_state_name)
-
             if status_output is not None and dashboard_state_name in status_output:
                 _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{dashboard_state_name}': {status_output}")
                 _LOGGER.debug("Dashboard active")
@@ -162,7 +162,6 @@ class ContinuouslyCastingDashboards:
         try:
             media_state_name = self.device_map[device_name]["media_state_name"]
             status_output = await self.check_status(device_name, media_state_name)
-
             if status_output is not None and media_state_name in status_output:
                 _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{media_state_name}': {status_output}")
                 _LOGGER.debug("Media is playing!")
@@ -182,10 +181,9 @@ class ContinuouslyCastingDashboards:
     async def check_both_states(self, device_name):
         dashboard_state_name = self.device_map[device_name]["dashboard_state_name"]
         status_output = await self.check_status(device_name, dashboard_state_name)
-
+        
         if status_output is None or not status_output:
             return False
-
         _LOGGER.debug(f"Status output for {device_name} when checking for dashboard state '{dashboard_state_name}': {status_output}")
 
         is_dashboard_state = dashboard_state_name in status_output
@@ -201,7 +199,12 @@ class ContinuouslyCastingDashboards:
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "stop")
             _LOGGER.debug("Executing stop command...")
             await asyncio.wait_for(process.wait(), timeout=10)
-
+            
+            # check the current volume of the device, if fails, default to 5
+            media_state_name = self.device_map[device_name]["media_state_name"]
+            status_output = await self.check_status(device_name, media_state_name)
+            current_volume = status_output.rsplit(":",1)[1].strip()
+            current_volume = current_volume if current_volume.isdigit() else 5
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "0")
             _LOGGER.debug("Setting volume to 0...")
             await asyncio.wait_for(process.wait(), timeout=10)
@@ -210,8 +213,14 @@ class ContinuouslyCastingDashboards:
             _LOGGER.info("Executing the dashboard cast command...")
             await asyncio.wait_for(process.wait(), timeout=10)
 
-            custom_volume = self.device_map[device_name].get("volume", 5) * 10
+            # if the config didn't set a volume use the current device volume
+            if self.device_map[device_name].get("volume",5) != -1:
+                custom_volume = self.device_map[device_name].get("volume", 5) * 10
+            else:
+                custom_volume = current_volume
+            
             custom_volume_str = str(custom_volume)
+            
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", custom_volume_str)            
             _LOGGER.info(f"Setting volume to {custom_volume_str}...")          
             await asyncio.wait_for(process.wait(), timeout=10)
@@ -245,7 +254,7 @@ class ContinuouslyCastingDashboards:
                     is_time_in_range = start_time <= now <= end_time
                 else:
                     is_time_in_range = start_time <= now or now <= end_time
-
+                
                 if is_time_in_range:
                     _LOGGER.info(f"Current local time: {now}")
                     _LOGGER.info(f"Local time is inside the allowed casting time for {device_name}. Start time: {start_time} - End time: {end_time}")
@@ -274,6 +283,7 @@ class ContinuouslyCastingDashboards:
                                 _LOGGER.info(f"HA Dashboard (or media) is playing on {device_name}...")
                             else:
                                 _LOGGER.info(f"HA Dashboard (or media) is NOT playing on {device_name}!")
+                                
                                 await self.cast_dashboard(device_name, device_info["dashboard_url"])
                             break 
                         except TypeError as e:
