@@ -7,16 +7,6 @@ _LOGGER = logging.getLogger(__name__)
 
 from datetime import datetime
 
-def is_hour_between(start, end, now):
-    is_between = False
-    start = start.hour + start.minute / 60
-    end = end.hour + end.minute / 60
-    now = now.hour + now.minute / 60
-    _LOGGER.debug(start,"-",now,"-",end)
-    is_between |= start <= now <= end
-    is_between |= end < start and (start <= now or now <= end)
-    return is_between
-
 # Define the ContinuouslyCastingDashboards class
 class ContinuouslyCastingDashboards:
     def __init__(self, hass, config):
@@ -259,7 +249,11 @@ class ContinuouslyCastingDashboards:
                 end_time = device_info["end_time"]
 
                 # Check if the current time is within the allowed casting range for the device
-                is_time_in_range = is_hour_between(start_time, end_time, now)
+                is_time_in_range = False
+                if start_time <= end_time:
+                    is_time_in_range = start_time <= now <= end_time
+                else:
+                    is_time_in_range = start_time <= now or now <= end_time
                 
                 if is_time_in_range:
                     _LOGGER.info(f"Current local time: {now}")
