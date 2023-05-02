@@ -35,6 +35,25 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 
 2. **Trusted network setup** for each Chromecast device to avoid logging in. See guide [here](https://blog.fuzzymistborn.com/homeassistant-and-catt-cast-all-the-things/) and follow the 'Trusted Networks' section half way down. You can either do your entire home network, or individual devices. You can find the IP address for each device by going to Settings -> Device Information -> Technical Information on the device.
 
+    Your trusted networks section should then look something like this:
+
+    ```yaml
+    homeassistant:
+      external_url: "<your-external-url-for-home-assistant"
+      auth_providers:
+        - type: trusted_networks
+          trusted_networks:
+            - 192.168.12.236/32 #These are my display IP addresses, replace them with your own (including the /32)
+            - 192.168.12.22/32
+            - 192.168.12.217/32
+          trusted_users:
+            192.168.12.236: <your-user-id>
+            192.168.12.22: <your-user-id>
+            192.168.12.217: <your-user-id>
+          allow_bypass_login: true
+        - type: homeassistant
+    ```
+
 3. **[ha-catt-fix](https://github.com/swiergot/ha-catt-fix)** setup for your dashboard to keep the display 'awake' and not time out after 10 minutes. Install steps:
 
     - Go to the HACS panel in Home Assistant
