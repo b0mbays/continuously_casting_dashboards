@@ -203,8 +203,13 @@ class ContinuouslyCastingDashboards:
             # check the current volume of the device, if fails, default to 5
             media_state_name = self.device_map[device_name]["media_state_name"]
             status_output = await self.check_status(device_name, media_state_name)
-            current_volume = status_output.rsplit(":",1)[1].strip()
-            current_volume = current_volume if current_volume.isdigit() else 5
+            try:
+                current_volume = status_output.rsplit(":",1)[1].strip()
+                current_volume = current_volume if current_volume.isdigit() else 5
+            except IndexError:
+                _LOGGER.warning(f"Failed to extract volume information from status_output for {device_name}. Using default volume 5.")
+                current_volume = 5
+
             process = await asyncio.create_subprocess_exec("catt", "-d", device_name, "volume", "0")
             _LOGGER.debug("Setting volume to 0...")
             await asyncio.wait_for(process.wait(), timeout=10)
