@@ -31,7 +31,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 ✅ **Requirements:**
 ============
 
-1. **Home Assistant** - Latest stable release or lower than: **2023.4.6** - Beta versions of HA are currently not supported.
+1. **Home Assistant** - **2023.4.6** - 2023.5.x is currently not supported! I am working on a fix.
 
 2. **[HTTPS External Access](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1)** which HA requires for casting and the HACS Addon installed.
 
