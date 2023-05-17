@@ -320,12 +320,11 @@ class ContinuouslyCastingDashboards:
                                     continue
                             else:
                                 _LOGGER.info(f"HA Dashboard is NOT currently being cast on {device_name}. Skipping...")
-                                continue
                         except TypeError as e:
                             _LOGGER.error(f"Error encountered while checking dashboard state for {device_name}: {e}")
                             continue
 
                     try:
-                        await asyncio.sleep(5)
+                        await asyncio.sleep(self.cast_delay)
                     except asyncio.CancelledError:
                         _LOGGER.error("Casting delayed, task cancelled.")
