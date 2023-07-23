@@ -3,7 +3,7 @@
     "name": "Continuously Cast Dashboards",
     "documentation": "https://github.com/b0mbays/continuously_casting_dashboards",
     "requirements": ["catt==0.12.11"],
-    "version": "1.2.5",
+    "version": "1.2.6",
     "dependencies": [],
     "codeowners": ["@b0mbays"]
   }
