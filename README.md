@@ -204,6 +204,10 @@ The second example will cast my custom "cctv_dashboard" which has cameras of the
 ⚠️**Troubleshooting**
 ============
 
+- I have an annoying notification on my phone for 'DashCast'?
+
+   On your Android phone, go to Settings > Google > All Services > Devices & sharing > Cast options > Turn off Media controls for Cast devices. This will turn off controls for any other casting device      although I don't find myself using it for anything else so I have it disabled.
+
 - The dashboard starts on my device and then stops within a few seconds.
 
     If this is happening, you may not have installed the ha-catt-fix correctly and your device will be using a different state name for when a dashboard is "active". The device should be reporting "Dummy". You can find out what your device is reporting by changing the "logging_level" to "debug"; then going to the Home Assistant logs and you will see logs for this integration. In the logs you should find a log checking the status output for a working dashboard state. For example, mine looks like this:
