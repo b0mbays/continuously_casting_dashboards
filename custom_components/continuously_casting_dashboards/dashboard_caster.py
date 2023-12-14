@@ -37,7 +37,6 @@ class ContinuouslyCastingDashboards:
                     {
                         "dashboard_url": device_info["dashboard_url"],
                         "dashboard_state_name": device_info.get(
-                            # "dashboard_state_name", "Dashid_" + str(dashid)
                             "dashboard_state_name",
                             "Dummy",
                         ),
