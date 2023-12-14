@@ -37,7 +37,9 @@ class ContinuouslyCastingDashboards:
                     {
                         "dashboard_url": device_info["dashboard_url"],
                         "dashboard_state_name": device_info.get(
-                            "dashboard_state_name", "Dashid_" + str(dashid)
+                            # "dashboard_state_name", "Dashid_" + str(dashid)
+                            "dashboard_state_name",
+                            "Dummy",
                         ),
                         "media_state_name": device_info.get(
                             "media_state_name", "PLAYING"
@@ -45,9 +47,13 @@ class ContinuouslyCastingDashboards:
                         "volume": device_info.get("volume", -1),
                         "start_time": start_time,
                         "end_time": end_time,
+                        "instance_change": False,
                     }
                 )
-            self.all_device_map[device_name] = device_instaces
+            self.all_device_map[device_name] = {
+                "instances": device_instaces,
+                "current_instance": 0,
+            }
 
         # fill the working device map with entries from all_device_map
         self.updatecurrentdevicemap()
@@ -327,25 +333,41 @@ class ContinuouslyCastingDashboards:
         return is_time_in_range, d_info[0]
 
     def updatecurrentdevicemap(self):
-        device_map = {}
+        d_map = {}
         now = datetime.now().time()
+
+
         for device_name, d_info in self.all_device_map.items():
-            selected_entity = d_info[0]
-            for device_entity in d_info:
+            selected_idx = 0
+            
+            for i, device_entity in enumerate(d_info["instances"]):
                 start_time = device_entity.get("start_time")
                 end_time = device_entity.get("end_time")
+                
+                device_entity["instance_change"] = False
+                
                 if start_time <= end_time:
                     is_time_in_range = start_time <= now <= end_time
                 else:
                     is_time_in_range = start_time <= now or now <= end_time
 
                 if is_time_in_range:
-                    selected_entity = device_entity
+                    selected_idx = i
 
-            device_map[device_name] = selected_entity
-        self.device_map = device_map
+            # update entity and set to true if instance changed
+            d_map[device_name] = d_info['instances'][selected_idx]            
+            if d_info['current_instance'] != selected_idx:
+                d_map[device_name]['instance_change'] = True
+            else:
+                d_map[device_name]['instance_change'] = False
+     
+            self.all_device_map[device_name]["current_instance"] = selected_idx
+
+
+            
+        self.device_map = d_map
         _LOGGER.debug(
-            f"All device map: {self.all_device_map}"
+            f"All device map: {self.all_device_map}\n"
             f"Current device map: {self.device_map}"
         )
 
@@ -363,6 +385,7 @@ class ContinuouslyCastingDashboards:
                 # Get device-specific start and end times
                 start_time = device_info["start_time"]
                 end_time = device_info["end_time"]
+                force_stop_start = device_info["instance_change"]
 
                 # Check if the current time is within the allowed casting range for the device
                 is_time_in_range = False
@@ -401,7 +424,10 @@ class ContinuouslyCastingDashboards:
                                 except asyncio.CancelledError:
                                     _LOGGER.error("Casting delayed, task cancelled.")
                                 continue
-                            elif await self.check_both_states(device_name):
+                            elif (
+                                await self.check_both_states(device_name)
+                                & ~force_stop_start
+                            ):
                                 _LOGGER.info(
                                     f"HA Dashboard (or media) is playing on {device_name}..."
                                 )
