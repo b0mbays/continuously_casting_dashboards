@@ -20,6 +20,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
 - Entity changed dashboard casting (cast specific dashboards when an entity state changes).
+- Multiple dashboard casting for the same device (cast different dashboards at different times).
 - Configurable global time window for active casting.
 - Configurable casting interval.
 - Configurable volume per device.
@@ -200,6 +201,33 @@ continuously_casting_dashboards:
 The second example will cast my custom "cctv_dashboard" which has cameras of the front door when my Ring doorbell is "Detected". I am using the optional "time_out" feature which will stop casting the CCTV display after 60 seconds. Once the dashboard has then stopped casting, the default dashboard will start casting to this display. I also have the 'force_cast' set to 'true' to ensure that even if media is playing on this device, then the CCTV dashboard will be casted.
 
 <br/><br/>
+
+
+<br/><br/>
+**↕️ Multiple dashboard casting**
+============
+
+
+With this feature, you can configure multiple dashboards to be cast at different times for the same device. To enable this feature, add multiple dashboards and time windows to each devices configuration, for example:
+
+```yaml
+devices:
+  # ...
+    # "Office display":
+    #   dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
+    #   volume: 7
+    #   start_time: "07:00" 
+    #   end_time: "00:00"
+    #   dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
+    #   volume: 7
+    #   start_time: "00:01" 
+    #   end_time: "03:00"
+```
+
+<br/><br/>
+
+
+
 
 ⚠️**Troubleshooting**
 ============
