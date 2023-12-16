@@ -111,12 +111,12 @@ continuously_casting_dashboards:
   end_time: "01:00" #Optional: Global end time of the casting window (format: "HH:MM") and must be after "00:00". Default is set to "01:00" and can be individually overwritten per device below.
   devices:
     "<Display_Name>": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
-        dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
+      - dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
         volume: 5 #Optional: Volume to set the display. (If you remove this, the device will remain the same volume)
         start_time: "07:00" #Optional: Set the start time for this device
         end_time: "01:00" #Optional: Set the end time for this device
     "<Display_Name>": 
-        dashboard_url: "<Dashboard_URL>" 
+      - dashboard_url: "<Dashboard_URL>" 
         volume: <Volume>
         start_time: "<Start_Time>" 
         end_time: "<End_Time>"
@@ -125,20 +125,20 @@ continuously_casting_dashboards:
 
     # Examples:
     # "Office display":
-    #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
-    #   volume: 7
-    #   start_time: "06:00" 
-    #   end_time: "18:00"
+    #   - dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    #     volume: 7
+    #     start_time: "06:00" 
+    #     end_time: "18:00"
     # "Kitchen display":
-    #   dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
-    #   volume: 9
-    #   start_time: "06:00" 
-    #   end_time: "22:00"
+    #   - dashboard_url: "http://192.168.12.104:8123/kitchen-dashboard/default_view?kiosk"
+    #     volume: 9
+    #     start_time: "06:00" 
+    #     end_time: "22:00"
     # "Basement display":
-    #   dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
-    #   volume: 4
-    #   start_time: "18:00" 
-    #   end_time: "03:00"
+    #   - dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
+    #     volume: 4
+    #     start_time: "18:00" 
+    #     end_time: "03:00"
 ```
 
 
@@ -214,14 +214,14 @@ With this feature, you can configure multiple dashboards to be cast at different
 devices:
   # ...
     # "Office display":
-    #   dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
-    #   volume: 7
-    #   start_time: "07:00" 
-    #   end_time: "00:00"
-    #   dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
-    #   volume: 7
-    #   start_time: "00:01" 
-    #   end_time: "03:00"
+    #   - dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
+    #     volume: 7
+    #     start_time: "07:00" 
+    #     end_time: "00:00"
+    #   - dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
+    #     volume: 7
+    #     start_time: "00:01" 
+    #     end_time: "03:00"
 ```
 
 <br/><br/>
