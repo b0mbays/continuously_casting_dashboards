@@ -34,7 +34,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 
 1. **Home Assistant**
 
-2. **[HTTPS External Access](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1)** which HA requires for casting and the HACS Addon installed.
+2. **[HTTPS External Access](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1)** which HA requires for casting and the HACS Addon installed. **Alternatively, if you have a Nabu Casa subscription then this is already set up for you.**
 
 2. **Trusted network setup** for each Chromecast device to avoid logging in. See guide [here](https://blog.fuzzymistborn.com/homeassistant-and-catt-cast-all-the-things/) and follow the 'Trusted Networks' section half way down. You can either do your entire home network, or individual devices. You can find the IP address for each device by going to Settings -> Device Information -> Technical Information on the device.
 
