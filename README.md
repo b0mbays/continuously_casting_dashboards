@@ -212,16 +212,16 @@ With this feature, you can configure multiple dashboards to be cast at different
 
 ```yaml
 devices:
-  # ...
-    # "Office display":
-    #   - dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
-    #     volume: 7
-    #     start_time: "07:00" 
-    #     end_time: "00:00"
-    #   - dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
-    #     volume: 7
-    #     start_time: "00:01" 
-    #     end_time: "03:00"
+   ...
+     "Office display":
+       - dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
+         volume: 7
+         start_time: "07:00" 
+         end_time: "00:00"
+       - dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
+         volume: 7
+         start_time: "00:01" 
+         end_time: "03:00"
 ```
 
 <br/><br/>
