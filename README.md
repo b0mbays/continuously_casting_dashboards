@@ -50,7 +50,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
             - 192.168.12.22/32
             - 192.168.12.217/32
           trusted_users:
-            192.168.12.236: <your-user-id>
+            192.168.12.236: <your-user-id>  #Ensure this user has admin rights too
             192.168.12.22: <your-user-id>
             192.168.12.217: <your-user-id>
           allow_bypass_login: true
