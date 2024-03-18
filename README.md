@@ -25,6 +25,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 - Configurable casting interval.
 - Configurable volume per device.
 - Configurable start and end times per device.
+- Google Home Speaker Group support.
 - Debug logging support.
 
 <br/><br/>
@@ -120,6 +121,9 @@ continuously_casting_dashboards:
         volume: <Volume>
         start_time: "<Start_Time>" 
         end_time: "<End_Time>"
+        speaker_groups: #Optional: Here you can set speaker groups that your device might be a member of to skip casting if they are active.
+          - "<Speaker group name>" #Optional: Speaker group name
+          - "<Speaker group name>" #Optional: Extra speaker group names
 
     #You can then add more devices repeating the above format:
 
@@ -139,6 +143,9 @@ continuously_casting_dashboards:
     #     volume: 4
     #     start_time: "18:00" 
     #     end_time: "03:00"
+    #     speaker_groups:
+    #       - "Upstairs Speakers"
+    #       - "Downstairs Speakers"
 ```
 
 
