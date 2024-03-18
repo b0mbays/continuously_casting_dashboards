@@ -33,9 +33,9 @@ class ContinuouslyCastingDashboards:
                     device_info.get("end_time", global_end_time), "%H:%M"
                 ).time()
                 # uses -1 as a default volume if not configured by user.
-                speaker_group = device_info.get("speaker_group")
-                if speaker_group is not None:
-                    speaker_group = [speaker_group]
+                speaker_groups = device_info.get("speaker_groups")
+                if speaker_groups is not None and not isinstance(speaker_groups, list):
+                    speaker_groups = [speaker_groups]
                 device_instances.append(
                     {
                         "dashboard_url": device_info["dashboard_url"],
@@ -50,7 +50,7 @@ class ContinuouslyCastingDashboards:
                         "start_time": start_time,
                         "end_time": end_time,
                         "instance_change": False,
-                        "speaker_group": speaker_group,
+                        "speaker_groups": speaker_groups,
                     }
                 )
             self.all_device_map[device_name] = {
@@ -261,42 +261,45 @@ class ContinuouslyCastingDashboards:
     
     # Function to check if speaker group is active
     async def check_speaker_group_state(self, device_name):
-        speaker_group = self.device_map[device_name]["speaker_group"]
-        try:
-            process = await asyncio.create_subprocess_exec(
-                "catt",
-                "-d",
-                *speaker_group,
-                "status",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30)
-            status_output = stdout.decode()
-            if "PLAYING" in status_output:
-                _LOGGER.debug(f"Speaker group is active on {device_name} for speaker group {speaker_group}")
-                return True
-            else:
-                _LOGGER.debug(f"Speaker group is NOT active on {device_name} for speaker group {speaker_group}")
-                return False
-        except subprocess.CalledProcessError as e:
-            _LOGGER.error(
-                f"Error checking PLAYING state for {speaker_group}: {e}\nOutput: {e.output.decode()}"
-            )
-            return None
-        except subprocess.TimeoutExpired as e:
-            _LOGGER.error(f"Timeout checking PLAYING state for {device_name} for speaker group {speaker_group}: {e}")
-            return None
-        except ValueError as e:
-            _LOGGER.error(f"Invalid file descriptor for {device_name} for speaker group {speaker_group}: {e}")
-            return None
-        except (
-            asyncio.exceptions.TimeoutError
-        ) as e:  # Add proper exception handling for TimeoutError
-            _LOGGER.error(
-                f"Asyncio TimeoutError checking PLAYING state for {device_name} for speaker group {speaker_group}: {e}"
-            )
-            return None
+        speaker_groups = self.device_map[device_name]["speaker_groups"]
+        for speaker_group in speaker_groups:
+            _LOGGER.debug(f"Checking Speaker Group: {speaker_group} (type: {type(speaker_group)})")
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    "catt",
+                    "-d",
+                    speaker_group,
+                    "status",
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                )
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30)
+                status_output = stdout.decode()
+                _LOGGER.debug(f"Status output for Speaker Group: {speaker_group}: {status_output}")
+                if "PLAYING" in status_output:
+                    _LOGGER.debug(f"Speaker Group playback is active on {device_name} for Speaker Group: {speaker_group}")
+                    return True
+                else:
+                    _LOGGER.debug(f"Speaker Group playback is NOT active on {device_name} for Speaker Group: {speaker_group}")
+            except subprocess.CalledProcessError as e:
+                _LOGGER.error(
+                    f"Error checking PLAYING state for {speaker_group}: {e}\nOutput: {e.output.decode()}"
+                )
+                return None
+            except subprocess.TimeoutExpired as e:
+                _LOGGER.error(f"Timeout checking PLAYING state for {device_name} for Speaker Group: {speaker_group}: {e}")
+                return None
+            except ValueError as e:
+                _LOGGER.error(f"Invalid file descriptor for {device_name} for Speaker Group: {speaker_group}: {e}")
+                return None
+            except (
+                asyncio.exceptions.TimeoutError
+            ) as e:  # Add proper exception handling for TimeoutError
+                _LOGGER.error(
+                    f"Asyncio TimeoutError checking PLAYING state for {device_name} for Speaker Group: {speaker_group}: {e}"
+                )
+                return None
+        return False
 
 
     # Function to cast the dashboard to the device
@@ -454,12 +457,10 @@ class ContinuouslyCastingDashboards:
                         continue
                 
                     # Skip casting if speaker group is active
-                    # speaker_group = self.device_map[device_name]["speaker_group"]
-
-                    if self.device_map[device_name]["speaker_group"] is not None:
+                    if self.device_map[device_name]["speaker_groups"] is not None:
                         if await self.check_speaker_group_state(device_name):
                             _LOGGER.info(
-                                f"Speaker group is active on {device_name}. Skipping..."
+                                f"Speaker Group playback is active on {device_name}. Skipping..."
                             )
                             try:
                                 await asyncio.sleep(self.cast_delay)

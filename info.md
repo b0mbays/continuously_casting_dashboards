@@ -13,5 +13,6 @@ I'm using this myself for 5 different chromecast devices: Lenovo Smart Display 8
 - Configurable casting interval.
 - Configurable volume per device.
 - Configurable start and end times per device.
+- Google Home Speaker Group support.
 - Debug logging support.
 Please visit the [Github README](https://github.com/b0mbays/ha-continuously-casting-dashboard) for more information.
