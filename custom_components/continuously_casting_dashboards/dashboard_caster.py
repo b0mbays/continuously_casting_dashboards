@@ -18,6 +18,10 @@ class ContinuouslyCastingDashboards:
         self.cast_delay = self.config["cast_delay"]
         self.max_retries = 5
         self.retry_delay = 30
+        self.switch_entity_id = config.get("switch_entity_id", None)
+        self.was_casting_enabled = True  # Initialize the flag to True
+        self.device_was_casting_enabled = {}  # Initialize the dictionary to track each device
+        self.switch_configured = self.switch_entity_id is not None  # Check if the switch is configured
         global_start_time = config.get("start_time", "07:00")
         global_end_time = config.get("end_time", "01:00")
 
@@ -378,6 +382,45 @@ class ContinuouslyCastingDashboards:
 
         return is_time_in_range, d_info[0]
 
+    # Function to check the state of the switch entity
+    async def is_casting_enabled(self):
+        if not self.switch_configured:
+            return True  # If the switch is not configured, always return True
+        state = self.hass.states.get(self.switch_entity_id)
+        return state and state.state == "on"
+
+    # Function to stop casting on all devices
+    async def stop_casting_on_all_devices(self):
+        _LOGGER.info("Stopping casting on all devices.")
+        for device_name in self.device_map.keys():
+            try:
+                process = await asyncio.create_subprocess_exec(
+                    "catt", "-d", device_name, "stop"
+                )
+                await process.wait()
+                _LOGGER.info(f"Stopped casting on {device_name}.")
+            except subprocess.CalledProcessError as e:
+                _LOGGER.error(f"Error stopping casting on {device_name}: {e}")
+            except ValueError as e:
+                _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
+            except asyncio.TimeoutError as e:
+                _LOGGER.error(f"Timeout stopping casting on {device_name}: {e}")
+
+    # Function to stop casting on a specific device
+    async def stop_casting_on_device(self, device_name):
+        try:
+            process = await asyncio.create_subprocess_exec(
+                "catt", "-d", device_name, "stop"
+            )
+            await process.wait()
+            _LOGGER.info(f"Stopped casting on {device_name}.")
+        except subprocess.CalledProcessError as e:
+            _LOGGER.error(f"Error stopping casting on {device_name}: {e}")
+        except ValueError as e:
+            _LOGGER.error(f"Invalid file descriptor for {device_name}: {e}")
+        except asyncio.TimeoutError as e:
+            _LOGGER.error(f"Timeout stopping casting on {device_name}: {e}")
+
     def updatecurrentdevicemap(self):
         d_map = {}
         now = datetime.now().time()
@@ -425,9 +468,41 @@ class ContinuouslyCastingDashboards:
     async def start(self):
         self.hass.bus.async_listen("state_changed", self.handle_state_change_event)
         while True:
+            # Check if casting is enabled
+            is_enabled = await self.is_casting_enabled()
+            if not is_enabled and self.was_casting_enabled:
+                _LOGGER.info(f"Casting is disabled by the switch {self.switch_entity_id}. Stopping all casts.")
+                await self.stop_casting_on_all_devices()  # Stop casting on all devices
+                self.was_casting_enabled = False  # Update the flag to indicate casting is now disabled
+
+            elif is_enabled:
+                self.was_casting_enabled = True  # Update the flag to indicate casting is enabled
+
+            if not is_enabled:
+                try:
+                    await asyncio.sleep(self.cast_delay)
+                    continue
+                except asyncio.CancelledError:
+                    _LOGGER.error("Casting delayed, task cancelled.")
+                    return
+
             now = datetime.now().time()
             self.updatecurrentdevicemap()
             for device_name, device_info in self.device_map.items():
+                # Initialize the device-specific flag if not already done
+                if device_name not in self.device_was_casting_enabled:
+                    self.device_was_casting_enabled[device_name] = True
+
+                # Check if casting is enabled before each device
+                if not await self.is_casting_enabled():
+                    if self.device_was_casting_enabled[device_name]:
+                        _LOGGER.info(f"Casting is disabled by the switch {self.switch_entity_id} during operation. Stopping cast for {device_name}.")
+                        await self.stop_casting_on_device(device_name)  # Stop casting on this device
+                        self.device_was_casting_enabled[device_name] = False  # Update the flag to indicate casting is now disabled for this device
+                    continue
+
+                self.device_was_casting_enabled[device_name] = True  # Update the flag to indicate casting is enabled for this device
+
                 # Get device-specific start and end times
                 start_time = device_info["start_time"]
                 end_time = device_info["end_time"]
