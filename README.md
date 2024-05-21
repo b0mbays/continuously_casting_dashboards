@@ -26,6 +26,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 - Configurable volume per device.
 - Configurable start and end times per device.
 - Google Home Speaker Group support.
+- Control casting based on entity state.
 - Debug logging support.
 
 <br/><br/>
@@ -233,7 +234,42 @@ devices:
 
 <br/><br/>
 
+<br/><br/>
+**🎮Casting control based on entity state**
+============
 
+
+With this feature, you can control if the casting will stop or start based on a boolean HA entity. Firstly, you need to add a new boolean entity inside your configuration.yaml file - for example:
+
+```yaml
+input_boolean:
+  ccd_cast:
+    name: "CCD cast"
+    initial: on
+```
+
+For the above entity we have named it 'ccd_cast' and configured it to be initiallty set to 'on'. This means that if Home Assistant restarts, then casting will always be enabled. And then if we were to switch the entity to 'off' then casting will be stopped.
+
+Now we need to add this entity to the CCD section inside your configuration.yaml file:
+
+```yaml
+continuously_casting_dashboards:
+  logging_level: debug
+  cast_delay: 25
+  start_time: "06:00"
+  end_time: "02:00"
+  switch_entity_id: "input_boolean.ccd_cast"
+  devices:
+    ...
+```
+
+We have added the 'switch_entity_id' field to our main section with the CCD configuration.
+
+The naming of the entity if you have followed above will be 'input_boolean.ccd_cast' but change this if you have named yours differently.
+
+That's it! You should be able to now control whether the casting will be stopped/started and you can now use this in automations etc. For example, stopping the casting for when a doorbell detects motion and you want to display something else.
+
+<br/><br/>
 
 
 ⚠️**Troubleshooting**
