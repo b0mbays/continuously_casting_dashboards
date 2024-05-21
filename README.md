@@ -239,7 +239,7 @@ devices:
 ============
 
 
-With this feature, you can control if the casting will stop or start based on a boolean HA entity. Firstly, you need to add a new boolean entity inside your configuration.yaml file - for example:
+With this feature, you can control if the casting will start or stop based on a boolean HA entity. Firstly, you need to add a new boolean entity inside your configuration.yaml file - for example:
 
 ```yaml
 input_boolean:
