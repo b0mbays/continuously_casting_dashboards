@@ -2,5 +2,5 @@
   "name": "Continuously Casting Dashboard",
   "domains": ["continuously_casting_dashboards"],
   "documentation": "https://github.com/b0mbays/continuously-casting-dashboards/blob/main/README.md",
-  "version": "1.3.1"
+  "version": "1.3.2"
 }
