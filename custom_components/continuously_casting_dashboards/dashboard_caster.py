@@ -305,9 +305,37 @@ class ContinuouslyCastingDashboards:
                 return None
         return False
 
+    async def is_media_playing(self, device_name):
+        try:
+            _LOGGER.debug(f"Checking media status for {device_name}")
+            media_state_name = self.device_map[device_name]["media_state_name"]
+            status_output = await self.check_status(device_name, media_state_name)
+
+            if status_output:
+                if "PLAYING" in status_output or "PAUSED" in status_output:
+                    _LOGGER.debug(f"Media is currently playing or paused on {device_name}")
+                    return True
+
+                _LOGGER.debug(f"Media is not playing, waiting 5 seconds before re-checking...")
+                await asyncio.sleep(5)
+
+                # Re-check the media status
+                status_output = await self.check_status(device_name, media_state_name)
+                if status_output and ("PLAYING" in status_output or "PAUSED" in status_output):
+                    _LOGGER.debug(f"Media is now playing or paused on {device_name} after delay")
+                    return True
+
+            _LOGGER.debug(f"Media is not playing on {device_name}")
+            return False
+        except Exception as e:
+            _LOGGER.error(f"Error checking media status for {device_name}: {e}")
+            return False
 
     # Function to cast the dashboard to the device
     async def cast_dashboard(self, device_name, dashboard_url):
+        if await self.is_media_playing(device_name):
+            _LOGGER.info(f"Skipping cast to {device_name} because media is playing or paused.")
+            return
         try:
             _LOGGER.info(f"Casting dashboard to {device_name}")
 
@@ -566,7 +594,7 @@ class ContinuouslyCastingDashboards:
                                 )
                             else:
                                 _LOGGER.info(
-                                    f"HA Dashboard (or media) is NOT playing on {device_name}!"
+                                    f"HA Dashboard is NOT active on {device_name}..."
                                 )
 
                                 await self.cast_dashboard(
