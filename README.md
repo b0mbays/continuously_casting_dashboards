@@ -151,7 +151,7 @@ continuously_casting_dashboards:
 
 
 <br/><br/>
-**🔄 Entity changed dashboard casting**
+**🔄 Entity changed dashboard casting (Removed in version 2.0.0, use previous versions if you use this)**
 ============
 
 
