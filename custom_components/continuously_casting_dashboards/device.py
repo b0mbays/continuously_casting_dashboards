@@ -2,6 +2,7 @@
 import asyncio
 import logging
 import time
+from datetime import datetime
 from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
@@ -209,6 +210,42 @@ class DeviceManager:
         except Exception as e:
             _LOGGER.warning(f"Error checking device status at {ip}: {str(e)}")
             return False
+    
+    async def async_check_speaker_group_state(self, ip, speaker_groups):
+        """Check if any of the speaker groups is active."""
+        if not speaker_groups or not isinstance(speaker_groups, list):
+            return False
+            
+        for speaker_group in speaker_groups:
+            _LOGGER.debug(f"Checking Speaker Group: {speaker_group}")
+            try:
+                cmd = ['catt', '-d', speaker_group, 'status']
+                _LOGGER.debug(f"Executing command: {' '.join(cmd)}")
+                
+                process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30)
+                
+                # Log full output
+                stdout_str = stdout.decode().strip()
+                stderr_str = stderr.decode().strip()
+                _LOGGER.debug(f"Status command stdout for Speaker Group {speaker_group}: {stdout_str}")
+                _LOGGER.debug(f"Status command stderr for Speaker Group {speaker_group}: {stderr_str}")
+                
+                if "PLAYING" in stdout_str:
+                    _LOGGER.info(f"Speaker Group playback is active on {speaker_group}")
+                    return True
+                else:
+                    _LOGGER.debug(f"Speaker Group playback is NOT active on {speaker_group}")
+            except asyncio.TimeoutError:
+                _LOGGER.warning(f"Timeout checking PLAYING state for Speaker Group: {speaker_group}")
+            except Exception as e:
+                _LOGGER.error(f"Error checking speaker group {speaker_group}: {str(e)}")
+                
+        return False
             
     def get_active_device(self, device_key):
         """Get active device info by key."""

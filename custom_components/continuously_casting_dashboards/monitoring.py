@@ -73,6 +73,14 @@ class MonitoringManager:
                 _LOGGER.info(f"Outside all casting time windows for {device_name}, skipping initial cast")
                 continue
             
+            # Check if device is within casting time window
+            is_in_time_window = await self.time_window_checker.async_is_within_time_window(device_name, current_config)
+            
+            # Skip devices outside their time window
+            if not is_in_time_window:
+                _LOGGER.info(f"Outside casting time window for {device_name}, skipping initial cast")
+                continue
+            
             # Check if media is playing
             if await self.device_manager.async_is_media_playing(ip):
                 _LOGGER.info(f"Media is currently playing on {device_name}, skipping initial cast")
@@ -87,6 +95,23 @@ class MonitoringManager:
                     reconnect_attempts=0
                 )
                 continue
+                
+            # Check if the device is part of an active speaker group
+            speaker_groups = current_config.get('speaker_groups')
+            if speaker_groups:
+                if await self.device_manager.async_check_speaker_group_state(ip, speaker_groups):
+                    _LOGGER.info(f"Speaker Group playback is active for {device_name}, skipping initial cast")
+                    device_key = f"{device_name}_{ip}"
+                    self.device_manager.update_active_device(
+                        device_key=device_key,
+                        status='speaker_group_active',
+                        name=device_name,
+                        ip=ip,
+                        first_seen=datetime.now().isoformat(),
+                        last_checked=datetime.now().isoformat(),
+                        reconnect_attempts=0
+                    )
+                    continue
             
             # Create task for each device
             self.hass.async_create_task(
@@ -280,6 +305,31 @@ class MonitoringManager:
             # Handle device within its allowed time window
             _LOGGER.debug(f"Inside casting time window for {device_name}, continuing with normal checks")
             
+            # Check if the device is part of an active speaker group
+            speaker_groups = current_config.get('speaker_groups')
+            if speaker_groups:
+                if await self.device_manager.async_check_speaker_group_state(ip, speaker_groups):
+                    _LOGGER.info(f"Speaker Group playback is active for {device_name}, skipping status check")
+                    active_device = self.device_manager.get_active_device(device_key)
+                    if active_device:
+                        if active_device.get('status') != 'speaker_group_active':
+                            self.device_manager.update_active_device(
+                                device_key=device_key,
+                                status='speaker_group_active',
+                                last_checked=datetime.now().isoformat()
+                            )
+                    else:
+                        self.device_manager.update_active_device(
+                            device_key=device_key,
+                            status='speaker_group_active',
+                            name=device_name,
+                            ip=ip,
+                            first_seen=datetime.now().isoformat(),
+                            last_checked=datetime.now().isoformat(),
+                            reconnect_attempts=0
+                        )
+                    continue
+            
             # Check if media is playing before attempting to reconnect
             is_media_playing = await self.device_manager.async_is_media_playing(ip)
             if is_media_playing:
@@ -434,6 +484,16 @@ class MonitoringManager:
         if not await self.time_window_checker.async_is_within_time_window(device_name, device_config):
             _LOGGER.info(f"Outside casting time window for {device_name}, skipping reconnect")
             return False
+        
+        # Check if the device is part of an active speaker group
+        speaker_groups = device_config.get('speaker_groups')
+        if speaker_groups:
+            if await self.device_manager.async_check_speaker_group_state(ip, speaker_groups):
+                _LOGGER.info(f"Speaker Group playback is active for {device_name}, skipping reconnect")
+                active_device = self.device_manager.get_active_device(device_key)
+                if active_device:
+                    self.device_manager.update_active_device(device_key, 'speaker_group_active')
+                return False
         
         # Check if media is playing before attempting to reconnect
         if await self.device_manager.async_is_media_playing(ip):

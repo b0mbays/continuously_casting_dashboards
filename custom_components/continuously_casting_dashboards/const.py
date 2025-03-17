@@ -26,6 +26,7 @@ STATUS_MEDIA_PLAYING = "media_playing"
 STATUS_OTHER_CONTENT = "other_content"
 STATUS_UNKNOWN = "unknown"
 STATUS_STOPPED = "stopped"
+STATUS_SPEAKER_GROUP_ACTIVE = "speaker_group_active"
 
 # Health stats event types
 EVENT_CONNECTION_ATTEMPT = "connection_attempt"
