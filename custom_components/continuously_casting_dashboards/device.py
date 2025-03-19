@@ -2,10 +2,14 @@
 import asyncio
 import logging
 import time
+import re
 from datetime import datetime
 from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
+
+# Simple IPv4 validation regex
+IP_PATTERN = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
 
 class DeviceManager:
     """Class to manage device discovery and status checks."""
@@ -18,14 +22,27 @@ class DeviceManager:
         self.active_devices = {}   # Track active devices
         self.active_checks = {}    # Track active status checks
     
-    async def async_get_device_ip(self, device_name):
-        """Get IP address for a device name using catt scan without relying on cached mappings."""
+    async def async_get_device_ip(self, device_name_or_ip):
+        """Get IP address for a device name or directly use IP if provided.
+        
+        Arguments:
+            device_name_or_ip: Either a device name like "Kitchen display" or an IP address like "192.168.1.10"
+        
+        Returns:
+            IP address as string or None if not found
+        """
+        # Check if the provided value is already an IP address
+        if IP_PATTERN.match(device_name_or_ip):
+            _LOGGER.info(f"Using direct IP address: {device_name_or_ip}")
+            return device_name_or_ip
+        
+        # If not an IP, treat as a device name and look it up
         try:
-            _LOGGER.info(f"Scanning for device: {device_name}")
+            _LOGGER.info(f"Scanning for device by name: {device_name_or_ip}")
             # Check if we've already cached the device to speed up lookups
-            if device_name in self.device_ip_cache and self.device_ip_cache[device_name]['timestamp'] > (time.time() - 300):
-                _LOGGER.debug(f"Using cached IP for {device_name}: {self.device_ip_cache[device_name]['ip']}")
-                return self.device_ip_cache[device_name]['ip']
+            if device_name_or_ip in self.device_ip_cache and self.device_ip_cache[device_name_or_ip]['timestamp'] > (time.time() - 300):
+                _LOGGER.debug(f"Using cached IP for {device_name_or_ip}: {self.device_ip_cache[device_name_or_ip]['ip']}")
+                return self.device_ip_cache[device_name_or_ip]['ip']
                 
             # Do a fresh scan
             process = await asyncio.create_subprocess_exec(
@@ -37,7 +54,7 @@ class DeviceManager:
             try:
                 stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=20.0)
             except asyncio.TimeoutError:
-                _LOGGER.warning(f"Scan for device {device_name} timed out after 20s")
+                _LOGGER.warning(f"Scan for device {device_name_or_ip} timed out after 20s")
                 process.terminate()
                 try:
                     await asyncio.wait_for(process.wait(), timeout=5.0)
@@ -77,14 +94,14 @@ class DeviceManager:
                 }
                 
                 # Exact match check (case-insensitive)
-                if found_name.lower() == device_name.lower():
-                    _LOGGER.info(f"Matched device '{device_name}' with IP {ip}")
+                if found_name.lower() == device_name_or_ip.lower():
+                    _LOGGER.info(f"Matched device '{device_name_or_ip}' with IP {ip}")
                     return ip
             
             # If we get here, no exact match was found
             found_names = [name for name, _ in found_devices]
-            _LOGGER.warning(f"Device '{device_name}' not found in scan results. Found devices: {found_names}")
-            _LOGGER.warning(f"Make sure the name matches exactly what appears in the scan output.")
+            _LOGGER.warning(f"Device '{device_name_or_ip}' not found in scan results. Found devices: {found_names}")
+            _LOGGER.warning(f"Make sure the name matches exactly what appears in the scan output, or provide a direct IP address.")
             return None
         except Exception as e:
             _LOGGER.warning(f"Error scanning for devices: {str(e)}")
