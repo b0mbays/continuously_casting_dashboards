@@ -139,7 +139,7 @@ continuously_casting_dashboards:
     #     volume: 9
     #     start_time: "06:00" 
     #     end_time: "22:00"
-    # "Basement display":
+    # "192.168.12.217":  //IP address can also be used
     #   - dashboard_url: "http://192.168.12.104:8123/nest-dashboard/default_view?kiosk"
     #     volume: 4
     #     start_time: "18:00" 
