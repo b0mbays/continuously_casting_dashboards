@@ -16,6 +16,7 @@ class DeviceManager:
         self.config = config
         self.device_ip_cache = {}  # Cache for device IPs
         self.active_devices = {}   # Track active devices
+        self.active_checks = {}    # Track active status checks
     
     async def async_get_device_ip(self, device_name):
         """Get IP address for a device name using catt scan without relying on cached mappings."""
@@ -32,7 +33,17 @@ class DeviceManager:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=20.0)
+            except asyncio.TimeoutError:
+                _LOGGER.warning(f"Scan for device {device_name} timed out after 20s")
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=5.0)
+                except asyncio.TimeoutError:
+                    process.kill()
+                return None
             
             scan_output = stdout.decode()
             _LOGGER.debug(f"Full scan output: {scan_output}")
@@ -81,6 +92,28 @@ class DeviceManager:
 
     async def async_is_media_playing(self, ip):
         """Check if media (like Spotify or YouTube) is playing or paused on the device."""
+        # Check if there's already a status check in progress for this device
+        check_id = f"{ip}_media_check"
+        if check_id in self.active_checks:
+            _LOGGER.debug(f"Media check already in progress for {ip}, waiting...")
+            try:
+                # Wait for a max of 10 seconds for the check to complete
+                for _ in range(10):
+                    if check_id not in self.active_checks:
+                        break
+                    await asyncio.sleep(1)
+                
+                if check_id in self.active_checks:
+                    _LOGGER.warning(f"Previous media check for {ip} did not complete in time, proceeding with new check")
+                    # Clean up the stale check
+                    self.active_checks.pop(check_id, None)
+            except Exception as e:
+                _LOGGER.error(f"Error waiting for previous media check: {str(e)}")
+                self.active_checks.pop(check_id, None)
+        
+        # Mark this check as active
+        self.active_checks[check_id] = time.time()
+        
         try:
             _LOGGER.debug(f"Checking if media is playing on device at {ip}")
             cmd = ['catt', '-d', ip, 'status']
@@ -91,7 +124,17 @@ class DeviceManager:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=15.0)
+            except asyncio.TimeoutError:
+                _LOGGER.warning(f"Media status check timed out for {ip}")
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=5.0)
+                except asyncio.TimeoutError:
+                    process.kill()
+                return False
             
             # Log full output
             stdout_str = stdout.decode().strip()
@@ -153,9 +196,34 @@ class DeviceManager:
         except Exception as e:
             _LOGGER.warning(f"Error checking media status on device at {ip}: {str(e)}")
             return False
+        finally:
+            # Clear the active check marker
+            self.active_checks.pop(check_id, None)
 
     async def async_check_device_status(self, ip):
         """Check if a device is still casting our dashboard specifically."""
+        # Check if there's already a status check in progress for this device
+        check_id = f"{ip}_dashboard_check"
+        if check_id in self.active_checks:
+            _LOGGER.debug(f"Dashboard status check already in progress for {ip}, waiting...")
+            try:
+                # Wait for a max of 10 seconds for the check to complete
+                for _ in range(10):
+                    if check_id not in self.active_checks:
+                        break
+                    await asyncio.sleep(1)
+                
+                if check_id in self.active_checks:
+                    _LOGGER.warning(f"Previous dashboard check for {ip} did not complete in time, proceeding with new check")
+                    # Clean up the stale check
+                    self.active_checks.pop(check_id, None)
+            except Exception as e:
+                _LOGGER.error(f"Error waiting for previous dashboard check: {str(e)}")
+                self.active_checks.pop(check_id, None)
+        
+        # Mark this check as active
+        self.active_checks[check_id] = time.time()
+        
         try:
             _LOGGER.debug(f"Checking status for device at {ip}")
             cmd = ['catt', '-d', ip, 'status']
@@ -166,7 +234,17 @@ class DeviceManager:
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
-            stdout, stderr = await process.communicate()
+            
+            try:
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=15.0)
+            except asyncio.TimeoutError:
+                _LOGGER.warning(f"Dashboard status check timed out for {ip}")
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=5.0)
+                except asyncio.TimeoutError:
+                    process.kill()
+                return False
             
             # Log full output
             stdout_str = stdout.decode().strip()
@@ -210,6 +288,9 @@ class DeviceManager:
         except Exception as e:
             _LOGGER.warning(f"Error checking device status at {ip}: {str(e)}")
             return False
+        finally:
+            # Clear the active check marker
+            self.active_checks.pop(check_id, None)
     
     async def async_check_speaker_group_state(self, ip, speaker_groups):
         """Check if any of the speaker groups is active."""
@@ -227,7 +308,17 @@ class DeviceManager:
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE
                 )
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=30)
+                
+                try:
+                    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=15.0)
+                except asyncio.TimeoutError:
+                    _LOGGER.warning(f"Speaker group check timed out for {speaker_group}")
+                    process.terminate()
+                    try:
+                        await asyncio.wait_for(process.wait(), timeout=5.0)
+                    except asyncio.TimeoutError:
+                        process.kill()
+                    continue
                 
                 # Log full output
                 stdout_str = stdout.decode().strip()
@@ -240,8 +331,6 @@ class DeviceManager:
                     return True
                 else:
                     _LOGGER.debug(f"Speaker Group playback is NOT active on {speaker_group}")
-            except asyncio.TimeoutError:
-                _LOGGER.warning(f"Timeout checking PLAYING state for Speaker Group: {speaker_group}")
             except Exception as e:
                 _LOGGER.error(f"Error checking speaker group {speaker_group}: {str(e)}")
                 
