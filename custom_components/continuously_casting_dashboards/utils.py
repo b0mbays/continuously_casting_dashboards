@@ -116,9 +116,9 @@ class SwitchEntityChecker:
         
         state = self.hass.states.get(self.switch_entity_id)
         if state is None:
-            _LOGGER.error(f"Switch entity {self.switch_entity_id} not found in Home Assistant states")
+            _LOGGER.debug(f"Switch entity {self.switch_entity_id} not found in Home Assistant states")
             return True  # If entity doesn't exist, default to enabled
         
         is_enabled = state.state == 'on'
-        _LOGGER.warning(f"Continuously Casting Dashbords - Switch Entity: {self.switch_entity_id} state = {state.state}, casting enabled: {is_enabled}")
+        _LOGGER.debug(f"Continuously Casting Dashbords - Switch Entity: {self.switch_entity_id} state = {state.state}, casting enabled: {is_enabled}")
         return is_enabled
