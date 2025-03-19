@@ -89,6 +89,25 @@ class SwitchEntityChecker:
         """Initialize the switch entity checker."""
         self.hass = hass
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
+        
+        # Immediately log the switch entity config for diagnostics
+        if self.switch_entity_id:
+            _LOGGER.debug(f"SWITCH ENTITY CONFIGURED: {self.switch_entity_id}")
+            
+            # Check if the entity exists in Home Assistant
+            state = self.hass.states.get(self.switch_entity_id)
+            if state is None:
+                _LOGGER.error(f"CRITICAL: Switch entity {self.switch_entity_id} NOT FOUND in Home Assistant!")
+            else:
+                _LOGGER.debug(f"SWITCH ENTITY CURRENT STATE: {state.state}")
+        else:
+            _LOGGER.debug("NO SWITCH ENTITY CONFIGURED - Casting will always be enabled")
+            
+        # Also log the raw config for debugging
+        if 'switch_entity_id' in config:
+            _LOGGER.debug(f"Found 'switch_entity_id' in config with value: {config['switch_entity_id']}")
+        else:
+            _LOGGER.debug("'switch_entity_id' not found in raw config. Check your configuration.yaml syntax.")
     
     async def async_check_switch_entity(self):
         """Check if the switch entity is enabled (if configured)."""
@@ -97,7 +116,9 @@ class SwitchEntityChecker:
         
         state = self.hass.states.get(self.switch_entity_id)
         if state is None:
-            _LOGGER.warning(f"Switch entity {self.switch_entity_id} not found")
+            _LOGGER.debug(f"Switch entity {self.switch_entity_id} not found in Home Assistant states")
             return True  # If entity doesn't exist, default to enabled
         
-        return state.state == 'on'
+        is_enabled = state.state == 'on'
+        _LOGGER.debug(f"Continuously Casting Dashbords - Switch Entity: {self.switch_entity_id} state = {state.state}, casting enabled: {is_enabled}")
+        return is_enabled

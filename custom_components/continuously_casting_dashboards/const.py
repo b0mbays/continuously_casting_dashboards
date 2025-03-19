@@ -1,7 +1,7 @@
 """Constants for the Continuously Casting Dashboards integration."""
 
 DOMAIN = "continuously_casting_dashboards"
-CONF_SWITCH_ENTITY = "switch_entity"
+CONF_SWITCH_ENTITY = "switch_entity_id"
 PLATFORMS = []
 
 # Default configuration values
@@ -13,6 +13,7 @@ DEFAULT_VOLUME = 5
 DEFAULT_MAX_RETRIES = 5
 DEFAULT_RETRY_DELAY = 10
 DEFAULT_VERIFICATION_WAIT_TIME = 15
+DEFAULT_CASTING_TIMEOUT = 60
 
 # File paths
 CONFIG_DIR = "/config/continuously_casting_dashboards"
@@ -27,6 +28,7 @@ STATUS_OTHER_CONTENT = "other_content"
 STATUS_UNKNOWN = "unknown"
 STATUS_STOPPED = "stopped"
 STATUS_SPEAKER_GROUP_ACTIVE = "speaker_group_active"
+STATUS_CASTING_IN_PROGRESS = "casting_in_progress"
 
 # Health stats event types
 EVENT_CONNECTION_ATTEMPT = "connection_attempt"
