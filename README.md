@@ -112,7 +112,7 @@ continuously_casting_dashboards:
   start_time: "07:00" #Optional: Global start time of the casting window (format: "HH:MM") - Default is set to "07:00" and can be individually overwritten per device below.
   end_time: "01:00" #Optional: Global end time of the casting window (format: "HH:MM") and must be after "00:00". Default is set to "01:00" and can be individually overwritten per device below.
   devices:
-    "<Display_Name>": #Required: Display name of your device. Find this on the actual device's settings or inside the Google Home app.
+    "<Display_Name>": #Required: Display name or IP address of your device. Find this on the actual device's settings or inside the Google Home app.
       - dashboard_url: "<Dashboard_URL>" #Required: Dashboard URL to be casted (This must be the local IP address of your HA instance, not homeassistant.local)
         volume: 5 #Optional: Volume to set the display. (If you remove this, the device will remain the same volume)
         start_time: "07:00" #Optional: Set the start time for this device
