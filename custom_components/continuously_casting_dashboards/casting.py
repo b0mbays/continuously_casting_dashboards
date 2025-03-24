@@ -53,8 +53,8 @@ class CastingManager:
             config_volume = device_config.get('volume', None)
             _LOGGER.debug(f"Config volume for {ip}: {config_volume}")
             
-            max_retries = self.config.get('max_retries', DEFAULT_MAX_RETRIES)
-            retry_delay = self.config.get('retry_delay', DEFAULT_RETRY_DELAY)
+            max_retries = 2
+            retry_delay = 5
             verification_wait_time = self.config.get('verification_wait_time', DEFAULT_VERIFICATION_WAIT_TIME)
             
             for attempt in range(max_retries):
