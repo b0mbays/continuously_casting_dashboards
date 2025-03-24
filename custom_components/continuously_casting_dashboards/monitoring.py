@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import CONF_DEVICES
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 from .const import (
     EVENT_CONNECTION_ATTEMPT, 
     EVENT_CONNECTION_SUCCESS, 
@@ -42,20 +42,87 @@ class MonitoringManager:
             self.setup_switch_entity_listener()
     
     def setup_switch_entity_listener(self):
-        """Set up a listener for the switch entity state changes."""
+        """Set up a listener for the global switch entity state changes."""
         @callback
-        async def switch_state_listener(entity_id, old_state, new_state):
+        async def switch_state_listener(event):
+            """Handle the state change event for global switch entity."""
+            new_state = event.data.get('new_state')
             if new_state is None:
                 return
             
-            if new_state.state == 'off':
-                _LOGGER.info(f"Switch entity {self.switch_entity_id} turned off, stopping all active dashboards")
-                await self.async_stop_all_dashboards()
+            if new_state.state.lower() not in ('on', 'true', 'home', 'open'):
+                _LOGGER.info(f"Global switch entity {self.switch_entity_id} turned off, stopping dashboards for devices without specific switches")
+                
+                # Only stop dashboards for devices without their own switch
+                for device_name, device_configs in self.devices.items():
+                    current_config, _ = self.time_window_checker.get_current_device_config(device_name, device_configs)
+                    if not current_config.get('switch_entity_id'):
+                        # This device uses the global switch, stop its dashboard
+                        ip = await self.device_manager.async_get_device_ip(device_name)
+                        if ip:
+                            is_casting = await self.device_manager.async_check_device_status(ip)
+                            if is_casting:
+                                _LOGGER.info(f"Stopping dashboard for {device_name} due to global switch off")
+                                await self.async_stop_casting(ip)
+                                
+                                device_key = f"{device_name}_{ip}"
+                                self.device_manager.update_active_device(
+                                    device_key=device_key,
+                                    status='stopped',
+                                    last_checked=datetime.now().isoformat()
+                                )
         
-        # Register the listener
-        async_track_state_change(self.hass, self.switch_entity_id, switch_state_listener)
-        _LOGGER.info(f"Registered state change listener for switch entity: {self.switch_entity_id}")
-    
+        # Register the listener for the global switch
+        if self.switch_entity_id:
+            self.hass.helpers.event.async_track_state_change_event(
+                self.switch_entity_id, switch_state_listener
+            )
+            _LOGGER.info(f"Registered state change listener for global switch entity: {self.switch_entity_id}")
+        
+        # Set up listeners for device-specific switches
+        for device_name, device_configs in self.devices.items():
+            for config in device_configs:
+                if 'switch_entity_id' in config:
+                    device_switch = config.get('switch_entity_id')
+                    if device_switch:
+                        # Use a closure to capture the current device_name and config
+                        @callback
+                        async def device_switch_listener(event, device=device_name, conf=config):
+                            """Handle the state change event for device-specific switch entity."""
+                            new_state = event.data.get('new_state')
+                            if new_state is None:
+                                return
+                            
+                            entity_id = event.data.get('entity_id')
+                            
+                            # Check if the device is active and should be stopped
+                            if new_state.state.lower() not in ('on', 'true', 'home', 'open'):
+                                # Find the device IP
+                                ip = await self.device_manager.async_get_device_ip(device)
+                                if ip:
+                                    # Check if it's currently casting
+                                    is_casting = await self.device_manager.async_check_device_status(ip)
+                                    if is_casting:
+                                        _LOGGER.info(f"Device switch entity {entity_id} turned off for {device}, stopping dashboard")
+                                        await self.async_stop_casting(ip)
+                                        
+                                        # Update device status
+                                        device_key = f"{device}_{ip}"
+                                        self.device_manager.update_active_device(
+                                            device_key=device_key,
+                                            status='stopped',
+                                            last_checked=datetime.now().isoformat()
+                                        )
+                            else:
+                                # If switch turned on, trigger a re-check of the device
+                                _LOGGER.info(f"Device switch entity {entity_id} turned on for {device}, scheduling check")
+                                self.hass.async_create_task(self.async_monitor_devices())
+                        
+                        # Register the listener for this device's switch
+                        self.hass.helpers.event.async_track_state_change_event(
+                            device_switch, device_switch_listener
+                        )
+                        _LOGGER.info(f"Registered state change listener for device {device_name} switch entity: {device_switch}")
     async def async_stop_all_dashboards(self):
         """Stop casting dashboards on all active devices."""
         _LOGGER.info("Stopping all active dashboard casts")
@@ -105,11 +172,6 @@ class MonitoringManager:
     
     async def initialize_devices(self):
         """Initialize all configured devices."""
-        # Check if switch entity allows casting
-        if not await self.switch_checker.async_check_switch_entity():
-            _LOGGER.info("Switch entity disabled, skipping initial device setup")
-            return True
-        
         # Perform a single scan to find all devices
         device_ip_map = {}
         for device_name in self.devices.keys():
@@ -138,6 +200,11 @@ class MonitoringManager:
                 'instance_change': False,  # No change on first run
                 'last_updated': datetime.now()
             }
+            
+            # Check if casting is enabled for this specific device
+            if not await self.switch_checker.async_check_switch_entity(device_name, current_config):
+                _LOGGER.info(f"Casting disabled for device {device_name}, skipping initial cast")
+                continue
             
             # Skip devices outside their time window
             if not is_in_window:
@@ -309,6 +376,7 @@ class MonitoringManager:
                 }
         
         return updated_devices
+
     async def async_monitor_devices(self, *args):
         """Monitor all devices and reconnect if needed."""
         # Use a lock to prevent monitoring cycles from overlapping
@@ -319,24 +387,30 @@ class MonitoringManager:
         async with self.monitor_lock:
             _LOGGER.debug("Running device status check")
             
-            # First check if switch entity allows casting
-            if not await self.switch_checker.async_check_switch_entity():
-                _LOGGER.info("Switch entity disabled, skipping device monitoring")
-                return
-            
             # Update device configurations based on time windows
             updated_devices = await self.async_update_device_configs()
             if updated_devices:
                 _LOGGER.info(f"Devices with updated dashboard configurations: {updated_devices}")
                 
-            # Scan for all devices at once and store IPs
+            # Scan for all devices at once and store IPs - with better error handling
             device_ip_map = {}
+            scan_futures = []
+            
+            # Start all IP lookups concurrently with timeouts
             for device_name in self.devices.keys():
-                ip = await self.device_manager.async_get_device_ip(device_name)
-                if ip:
-                    device_ip_map[device_name] = ip
-                else:
-                    _LOGGER.warning(f"Could not get IP for {device_name}, skipping check")
+                future = asyncio.ensure_future(self._get_device_ip_with_timeout(device_name))
+                scan_futures.append((device_name, future))
+            
+            # Wait for all lookups to complete
+            for device_name, future in scan_futures:
+                try:
+                    ip = await future
+                    if ip:
+                        device_ip_map[device_name] = ip
+                    else:
+                        _LOGGER.warning(f"Could not get IP for {device_name}, skipping check")
+                except Exception as e:
+                    _LOGGER.error(f"Error getting IP for {device_name}: {str(e)}, skipping check")
             
             # Process each device with its known IP
             for device_name in list(self.devices.keys()):
@@ -355,6 +429,26 @@ class MonitoringManager:
                 active_config_info = self.active_device_configs[device_name]
                 current_config = active_config_info['config']
                 instance_change = active_config_info['instance_change']
+                
+                # Check if casting is enabled for this specific device
+                if not await self.switch_checker.async_check_switch_entity(device_name, current_config):
+                    _LOGGER.info(f"Casting disabled for device {device_name}, checking if dashboard is active to stop it")
+                    
+                    # Check if our dashboard is currently active
+                    is_casting = await self.device_manager.async_check_device_status(ip)
+                    
+                    if is_casting:
+                        _LOGGER.info(f"Device {device_name} is casting our dashboard while casting is disabled. Stopping cast.")
+                        await self.async_stop_casting(ip)
+                        
+                        # Update device status
+                        self.device_manager.update_active_device(
+                            device_key=device_key,
+                            status='stopped',
+                            last_checked=datetime.now().isoformat()
+                        )
+                    
+                    continue  # Skip to the next device
                 
                 # Check if the current time is within any of the device's time windows
                 _, is_in_window = self.time_window_checker.get_current_device_config(device_name, self.devices[device_name])
@@ -747,3 +841,17 @@ class MonitoringManager:
             if self.stats_manager:
                 await self.stats_manager.async_update_health_stats(device_key, EVENT_RECONNECT_FAILED)
             return False
+
+    async def _get_device_ip_with_timeout(self, device_name, timeout=15):
+        """Get device IP with timeout to prevent hanging."""
+        try:
+            return await asyncio.wait_for(
+                self.device_manager.async_get_device_ip(device_name),
+                timeout=timeout
+            )
+        except asyncio.TimeoutError:
+            _LOGGER.error(f"Timed out getting IP for {device_name} after {timeout} seconds")
+            return None
+        except Exception as e:
+            _LOGGER.error(f"Error getting IP for {device_name}: {str(e)}")
+            return None
