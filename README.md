@@ -19,15 +19,13 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 
 - Automatically casts specified Home Assistant dashboards to Chromecast devices.
 - Monitors the casting state of each device and resumes casting if interrupted.
-- Entity changed dashboard casting (cast specific dashboards when an entity state changes).
+- Custom entity states for when to cast a dashboard (both globally and individual dashboards)
 - Multiple dashboard casting for the same device (cast different dashboards at different times).
 - Configurable global time window for active casting.
 - Configurable casting interval.
 - Configurable volume per device.
 - Configurable start and end times per device.
 - Google Home Speaker Group support.
-- Control casting based on entity state.
-- Debug logging support.
 
 <br/><br/>
 
@@ -91,8 +89,6 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 ⚡️**How does it work?**
 ============
 
-This integration runs in the background on your HA instance, so no external device is required. If you'd prefer to run it on a Raspberry Pi or similiar linux box then you can try out [HA-Pi-Continuously-Cast](https://github.com/b0mbays/ha-pi-continuously-cast). However, I have had no issues running this on my Home Assistant instance.
-
 The integration uses [CATT's](https://github.com/skorokithakis/catt) functionality to 'call' each of your Google Chromecast devices checking the status every 45 seconds (you can change this in the config) for any 'state' changes. If there is no media playing on the device, then the dashboard will be cast. If the device already has the dashboard casting then it will be ignored. And if there is youtube/recipes/spotify playing on the device then it will also be ignored.
 
 The casting functionality within Home Assistant requires your instance to be accesible via HTTPS with either paying for a Nabu Casa subscription or setting this up yourself. I opted to subscribe to Nabu Casa to help support HA development. Previously, I did set this up myself and the guide I used is [here](https://www.makeuseof.com/secure-home-assistant-installation-free-ssl-certificate/?newsletter_popup=1).
@@ -149,68 +145,6 @@ continuously_casting_dashboards:
     #       - "Downstairs Speakers"
 ```
 
-
-<br/><br/>
-**🔄 Entity changed dashboard casting (Removed in version 2.0.0, use previous versions if you use this)**
-============
-
-
-With this feature, you can configure specific dashboards to be cast when the state of a specified entity changes. To enable this feature, add a new section to your configuration.yaml file:
-
-```yaml
-continuously_casting_dashboards:
-  # ...
-  state_triggers:
-    "<Display_Name>":
-        - entity_id: "<Entity_ID>"
-          to_state: "<To_State>"
-          dashboard_url: "<Dashboard_URL>"
-          time_out: <Timeout_time> #Optional!
-          force_cast: <true or false> #Optional!
-```
-
-Replace **<Display_Name>** with the Chromecast device, **<Entity_ID>** with the desired entity ID, **<To_State>** with the state that triggers the casting and **<Dashboard_URL>** with the URL of the dashboard you want to cast.
-
-**<time_out>** is an optional field to "time out" a specific dashboard after a certain amount of time(in seconds). There is an example use case below.
-
-**<force_cast>** is another optional field to indicate if the dashboard should be casted even if media is playing on the device. This is set to 'false' by default.
-
-You can add multiple entity-triggered casting configurations by adding more sections following the same format.
-
-Example:
-
-```yaml
-continuously_casting_dashboards:
-  # ...
-  state_triggers:
-    "Living room display":
-        - entity_id: "sensor.samsung_tv"
-          to_state: "On"
-          dashboard_url: "http://192.168.12.104:8123/tv_remote_dashboard/default_view?kiosk"
-        - entity_id: "sensor.samsung_tv"
-          to_state: "Off"
-          dashboard_url: "http://192.168.12.104:8123/living_room_dashboard/default_view?kiosk"
-```
-The first example for the "Living room display" will cast my custom "tv_remote_dashboard" which has my TV remote controls to my Nest Hub when my TV entity reports the status of "On". When the TV turns off and now reports a status of "Off" then my normal "living_room_dashboard" will be casted.
-
-```yaml
-continuously_casting_dashboards:
-  # ...
-  state_triggers:
-    "Office display":
-        - entity_id: "binary_sensor.front_door_ring"
-          to_state: "Detected"
-          dashboard_url: "http://192.168.12.104:8123/cctv_dashboard/default_view?kiosk"
-          time_out: 60
-          force_cast: true
-```
-
-
-The second example will cast my custom "cctv_dashboard" which has cameras of the front door when my Ring doorbell is "Detected". I am using the optional "time_out" feature which will stop casting the CCTV display after 60 seconds. Once the dashboard has then stopped casting, the default dashboard will start casting to this display. I also have the 'force_cast' set to 'true' to ensure that even if media is playing on this device, then the CCTV dashboard will be casted.
-
-<br/><br/>
-
-
 <br/><br/>
 **↕️ Multiple dashboard casting**
 ============
@@ -225,7 +159,7 @@ devices:
        - dashboard_url: "http://192.168.12.104:8123/day-dashboard/default_view?kiosk"
          volume: 7
          start_time: "07:00" 
-         end_time: "00:00"
+         end_time: "23:59"
        - dashboard_url: "http://192.168.12.104:8123/night-dashboard/default_view?kiosk"
          volume: 7
          start_time: "00:01" 
@@ -235,22 +169,22 @@ devices:
 <br/><br/>
 
 <br/><br/>
-**🎮Casting control based on entity state**
+**🎮Casting based on entity states**
 ============
 
 
-With this feature, you can control if the casting will start or stop based on a boolean HA entity. Firstly, you need to add a new boolean entity inside your configuration.yaml file - for example:
+With this feature, you can control if the casting will start or stop based on a HA entity either globally or per device. For example, lets create a new boolean switch inside your configuration.yaml file of which you want to use to control the casting - for example:
 
 ```yaml
 input_boolean:
-  ccd_cast:
-    name: "CCD cast"
+  global_ccd_cast:
+    name: "CCD Global Casting"
     initial: on
 ```
 
-For the above entity we have named it 'ccd_cast' and configured it to be initiallty set to 'on'. This means that if Home Assistant restarts, then casting will always be enabled. And then if we were to switch the entity to 'off' then casting will be stopped.
+For the above entity we have named it 'global_ccd_cast' and configured it to be initiallty set to 'on'. This means that if Home Assistant restarts, then casting will always be enabled. And then if we were to switch the entity to 'off' then casting will be stopped globally for all devices.
 
-Now we need to add this entity to the CCD section inside your configuration.yaml file:
+Now we need to add this entity to the global CCD section inside your configuration.yaml file:
 
 ```yaml
 continuously_casting_dashboards:
@@ -258,16 +192,43 @@ continuously_casting_dashboards:
   cast_delay: 25
   start_time: "06:00"
   end_time: "02:00"
-  switch_entity_id: "input_boolean.ccd_cast"
+  switch_entity_id: "input_boolean.global_ccd_cast"
   devices:
     ...
 ```
 
-We have added the 'switch_entity_id' field to our main section with the CCD configuration.
+We have added the 'switch_entity_id' field to our main section with the CCD configuration. This means it will either start or stop casting based on whether this switch is enabled or disabled.
 
-The naming of the entity if you have followed above will be 'input_boolean.ccd_cast' but change this if you have named yours differently.
+By default, the integration considers an entity to be "enabled" when its state is one of: 'on', 'true', 'home', or 'open'. You can also specify a custom state to be considered as "enabled" using the `switch_entity_state` parameter.
 
-That's it! You should be able to now control whether the casting will be stopped/started and you can now use this in automations etc. For example, stopping the casting for when a doorbell detects motion and you want to display something else.
+```yaml
+continuously_casting_dashboards:
+  logging_level: debug
+  cast_delay: 25
+  start_time: "06:00"
+  end_time: "02:00"
+  switch_entity_id: "sensor.human_is_home"
+  switch_entity_state: "home"
+  devices:
+    ...
+```
+
+For the above example, you may have a sensor that detects if you are home. Then, whenever this sensor is "home" the integration will be enabled.
+
+You can also set entity states per dashboard on the device. This will ignore the global state entirely and depend only on this entity.
+
+For example:
+
+```yaml
+continuously_casting_dashboards:
+  # global configuration...
+  devices:
+    "Living Room Display":
+      - dashboard_url: "http://192.168.1.10:8123/lovelace/dashboard?kiosk"
+        switch_entity_id: "sensor.living_room_mode"
+        switch_entity_state: "entertainment"  # Custom state that enables casting
+    # other devices...
+```
 
 <br/><br/>
 

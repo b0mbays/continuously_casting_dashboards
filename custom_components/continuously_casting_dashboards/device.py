@@ -23,14 +23,7 @@ class DeviceManager:
         self.active_checks = {}    # Track active status checks
     
     async def async_get_device_ip(self, device_name_or_ip):
-        """Get IP address for a device name or directly use IP if provided.
-        
-        Arguments:
-            device_name_or_ip: Either a device name like "Kitchen display" or an IP address like "192.168.1.10"
-        
-        Returns:
-            IP address as string or None if not found
-        """
+        """Get IP address for a device name or directly use IP if provided."""
         # Check if the provided value is already an IP address
         if IP_PATTERN.match(device_name_or_ip):
             _LOGGER.info(f"Using direct IP address: {device_name_or_ip}")
@@ -52,12 +45,13 @@ class DeviceManager:
             )
             
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=20.0)
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=15.0)
             except asyncio.TimeoutError:
-                _LOGGER.warning(f"Scan for device {device_name_or_ip} timed out after 20s")
+                _LOGGER.warning(f"Scan for device {device_name_or_ip} timed out after 15s")
+                # Clean up the process more aggressively
                 process.terminate()
                 try:
-                    await asyncio.wait_for(process.wait(), timeout=5.0)
+                    await asyncio.wait_for(process.wait(), timeout=2.0)
                 except asyncio.TimeoutError:
                     process.kill()
                 return None
