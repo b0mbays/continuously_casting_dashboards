@@ -89,10 +89,13 @@ class SwitchEntityChecker:
         """Initialize the switch entity checker."""
         self.hass = hass
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
+        self.switch_entity_state = config.get(CONF_SWITCH_ENTITY_STATE)  # Get global custom state
         
-        # Immediately log the switch entity config for diagnostics
+        # Log configuration
         if self.switch_entity_id:
             _LOGGER.debug(f"GLOBAL SWITCH ENTITY CONFIGURED: {self.switch_entity_id}")
+            if self.switch_entity_state:
+                _LOGGER.debug(f"GLOBAL SWITCH CUSTOM STATE: {self.switch_entity_state}")
             
             # Check if the entity exists in Home Assistant
             state = self.hass.states.get(self.switch_entity_id)
@@ -102,30 +105,34 @@ class SwitchEntityChecker:
                 _LOGGER.debug(f"GLOBAL SWITCH ENTITY CURRENT STATE: {state.state}")
         else:
             _LOGGER.debug("NO GLOBAL SWITCH ENTITY CONFIGURED - Casting will be controlled per device")
-            
-        # Also log the raw config for debugging
-        if 'switch_entity_id' in config:
-            _LOGGER.debug(f"Found 'switch_entity_id' in config with value: {config['switch_entity_id']}")
-        else:
-            _LOGGER.debug("'switch_entity_id' not found in raw config. Check your configuration.yaml syntax.")
     
     async def async_check_switch_entity(self, device_name=None, device_config=None):
         """Check if the switch entity is enabled (if configured)."""
         # First check device-specific switch entity if provided
         if device_name and device_config and 'switch_entity_id' in device_config:
             device_switch = device_config.get('switch_entity_id')
+            device_state = device_config.get('switch_entity_state')  # Get device-specific custom state
+            
             _LOGGER.debug(f"Checking device-specific switch entity for {device_name}: {device_switch}")
+            if device_state:
+                _LOGGER.debug(f"Device-specific custom state for {device_name}: {device_state}")
             
             if device_switch:
                 state = self.hass.states.get(device_switch)
                 if state is None:
                     _LOGGER.warning(f"Device switch entity {device_switch} not found for {device_name}")
                 else:
-                    is_enabled = state.state.lower() in ('on', 'true', 'home', 'open')
+                    # If device has custom state configured, check against that
+                    if device_state:
+                        is_enabled = state.state == device_state
+                    else:
+                        # Otherwise use the standard states
+                        is_enabled = state.state.lower() in ('on', 'true', 'home', 'open')
+                        
                     _LOGGER.debug(f"Device {device_name} - Switch Entity: {device_switch} state = {state.state}, casting enabled: {is_enabled}")
                     return is_enabled
         
-        # If no device-specific switch, use the global switch
+        # Fall back to global switch if no device-specific switch or device-specific switch not found
         if not self.switch_entity_id:
             return True  # No global switch configured, enabled by default
         
@@ -134,6 +141,12 @@ class SwitchEntityChecker:
             _LOGGER.debug(f"Global switch entity {self.switch_entity_id} not found in Home Assistant states")
             return True  # If entity doesn't exist, default to enabled
         
-        is_enabled = state.state.lower() in ('on', 'true', 'home', 'open')
-        _LOGGER.debug(f"Continuously Casting Dashboards - Global Switch Entity: {self.switch_entity_id} state = {state.state}, casting enabled: {is_enabled}")
+        # If global switch has custom state configured, check against that
+        if self.switch_entity_state:
+            is_enabled = state.state == self.switch_entity_state
+        else:
+            # Otherwise use the standard states
+            is_enabled = state.state.lower() in ('on', 'true', 'home', 'open')
+            
+        _LOGGER.debug(f"Global Switch Entity: {self.switch_entity_id} state = {state.state}, casting enabled: {is_enabled}")
         return is_enabled
