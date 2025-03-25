@@ -3,7 +3,7 @@ import logging
 from datetime import time as dt_time, datetime
 from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
-from .const import DEFAULT_START_TIME, DEFAULT_END_TIME, CONF_SWITCH_ENTITY
+from .const import DEFAULT_START_TIME, DEFAULT_END_TIME, CONF_SWITCH_ENTITY, CONF_SWITCH_ENTITY_STATE
 
 _LOGGER = logging.getLogger(__name__)
 
