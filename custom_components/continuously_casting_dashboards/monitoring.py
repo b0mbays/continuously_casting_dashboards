@@ -74,8 +74,8 @@ class MonitoringManager:
         
         # Register the listener for the global switch
         if self.switch_entity_id:
-            self.hass.helpers.event.async_track_state_change_event(
-                self.switch_entity_id, switch_state_listener
+            async_track_state_change_event(
+                self.hass, self.switch_entity_id, switch_state_listener
             )
             _LOGGER.info(f"Registered state change listener for global switch entity: {self.switch_entity_id}")
         
@@ -119,8 +119,8 @@ class MonitoringManager:
                                 self.hass.async_create_task(self.async_monitor_devices())
                         
                         # Register the listener for this device's switch
-                        self.hass.helpers.event.async_track_state_change_event(
-                            device_switch, device_switch_listener
+                        async_track_state_change_event(
+                            self.hass, device_switch, device_switch_listener
                         )
                         _LOGGER.info(f"Registered state change listener for device {device_name} switch entity: {device_switch}")
     async def async_stop_all_dashboards(self):
