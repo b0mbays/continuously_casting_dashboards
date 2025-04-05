@@ -61,7 +61,7 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 
     - Go to the HACS panel in Home Assistant
     - Click on the three dots in the top right corner and choose "Custom repositories"
-    - Enter `swiergot/ha-catt-fix` in the "Add custom repository" field, select "Lovelace" from the "Category" dropdown, and click on the "Add" button.
+    - Enter `swiergot/ha-catt-fix` in the "Add custom repository" field, select "Dashboard" from the "Category" dropdown, and click on the "Add" button.
     - Go to the "Frontend" tab within HACS, and click on 'Explore and download repositories" and search for 'ha-catt-fix'.
     - Click "Download"
     - Restart Home Assistant
