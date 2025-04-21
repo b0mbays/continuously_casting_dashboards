@@ -15,6 +15,10 @@ DEFAULT_MAX_RETRIES = 5
 DEFAULT_RETRY_DELAY = 10
 DEFAULT_VERIFICATION_WAIT_TIME = 15
 DEFAULT_CASTING_TIMEOUT = 60
+DEFAULT_LOGGING_LEVEL = "warning"
+
+# Logging levels
+LOGGING_LEVELS = ["debug", "info", "warning", "error", "critical"]
 
 # File paths
 CONFIG_DIR = "/config/continuously_casting_dashboards"
@@ -38,3 +42,17 @@ EVENT_DISCONNECTED = "disconnected"
 EVENT_RECONNECT_ATTEMPT = "reconnect_attempt"
 EVENT_RECONNECT_SUCCESS = "reconnect_success"
 EVENT_RECONNECT_FAILED = "reconnect_failed"
+
+# Configuration keys
+CONF_LOGGING_LEVEL = "logging_level"
+CONF_CAST_DELAY = "cast_delay"
+CONF_START_TIME = "start_time"
+CONF_END_TIME = "end_time"
+CONF_SWITCH_ENTITY_ID = "switch_entity_id"
+CONF_SWITCH_ENTITY_STATE = "switch_entity_state"
+CONF_DASHBOARD_URL = "dashboard_url"
+CONF_VOLUME = "volume"
+CONF_SPEAKER_GROUPS = "speaker_groups"
+
+# Translation strings
+ERR_DEVICE_ALREADY_EXISTS = "device_already_exists"
