@@ -1,28 +1,76 @@
 {
     "config": {
+        "title": "Continuously Casting Dashboards",
         "step": {
             "user": {
-                "title": "Continuously Cast Dashboards",
-                "description": "Configure global settings for Continuously Cast Dashboards",
+                "title": "Continuously Casting Dashboards",
+                "description": "Configure global settings for Continuously Casting Dashboards",
                 "data": {
                     "logging_level": "Logging Level",
                     "cast_delay": "Cast Delay (seconds)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Switch Entity ID",
-                    "switch_entity_state": "Switch Entity State"
+                    "switch_entity_id": "Control Switch",
+                    "switch_entity_state": "Required Switch State"
+                },
+                "options": {
+                    "logging_level": {
+                        "debug": "Debug",
+                        "info": "Info",
+                        "warning": "Warning",
+                        "error": "Error",
+                        "critical": "Critical"
+                    },
+                    "switch_entity_state": {
+                        "not_required": "Not Required",
+                        "on": "On",
+                        "off": "Off",
+                        "unavailable": "Unavailable",
+                        "unknown": "Unknown"
+                    }
                 }
-            },
+            }
+        },
+        "error": {
+            "invalid_device_name": "Invalid device name",
+            "device_already_exists": "Device already exists",
+            "missing_dashboard_url": "Dashboard URL is required",
+            "missing_dashboard_selection": "Please select a dashboard",
+            "missing_device_selection": "Please select a device",
+            "unknown": "Unknown error occurred"
+        },
+        "abort": {
+            "single_instance_allowed": "Only a single configuration of Continuously Casting Dashboards is allowed."
+        }
+    },
+    "options": {
+        "step": {
             "main_options": {
                 "title": "Global Options",
-                "description": "Configure global settings for Continuously Cast Dashboards",
+                "description": "Configure global settings for Continuously Casting Dashboards",
                 "data": {
                     "logging_level": "Logging Level",
                     "cast_delay": "Cast Delay (seconds)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Switch Entity ID",
-                    "switch_entity_state": "Switch Entity State"
+                    "switch_entity_id": "Control Switch",
+                    "switch_entity_state": "Required Switch State"
+                },
+                "options": {
+                    "logging_level": {
+                        "debug": "Debug",
+                        "info": "Info",
+                        "warning": "Warning",
+                        "error": "Error",
+                        "critical": "Critical"
+                    },
+                    "switch_entity_state": {
+                        "not_required": "Not Required",
+                        "on": "On",
+                        "off": "Off",
+                        "unavailable": "Unavailable",
+                        "unknown": "Unknown"
+                    }
                 }
             },
             "device_menu": {
@@ -31,6 +79,14 @@
                 "data": {
                     "action": "Action",
                     "device": "Device"
+                },
+                "options": {
+                    "action": {
+                        "add_device": "Add a new device",
+                        "edit_device": "Edit an existing device",
+                        "remove_device": "Remove an existing device",
+                        "finish": "Finish configuration"
+                    }
                 }
             },
             "add_device": {
@@ -60,6 +116,14 @@
                 "data": {
                     "action": "Action",
                     "dashboard": "Dashboard"
+                },
+                "options": {
+                    "action": {
+                        "add_dashboard": "Add a new dashboard",
+                        "edit_dashboard": "Edit an existing dashboard",
+                        "remove_dashboard": "Remove an existing dashboard",
+                        "back": "Back to device menu"
+                    }
                 }
             },
             "add_dashboard": {
@@ -67,12 +131,22 @@
                 "description": "Add a new dashboard to {device}",
                 "data": {
                     "dashboard_url": "Dashboard URL",
-                    "volume": "Volume",
+                    "volume": "Volume Level",
+                    "enable_time_window": "Use Custom Time Window",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Switch Entity ID",
-                    "switch_entity_state": "Switch Entity State",
+                    "switch_entity_id": "Control Switch",
+                    "switch_entity_state": "Required Switch State",
                     "speaker_groups": "Speaker Groups (comma-separated)"
+                },
+                "options": {
+                    "switch_entity_state": {
+                        "not_required": "Not Required",
+                        "on": "On",
+                        "off": "Off",
+                        "unavailable": "Unavailable",
+                        "unknown": "Unknown"
+                    }
                 }
             },
             "edit_dashboard": {
@@ -80,12 +154,22 @@
                 "description": "Edit dashboard settings for {device}",
                 "data": {
                     "dashboard_url": "Dashboard URL",
-                    "volume": "Volume",
+                    "volume": "Volume Level",
+                    "enable_time_window": "Dashboard Schedule (if different from Global setting)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Switch Entity ID",
-                    "switch_entity_state": "Switch Entity State",
+                    "switch_entity_id": "Control Switch",
+                    "switch_entity_state": "Required Switch State",
                     "speaker_groups": "Speaker Groups (comma-separated)"
+                },
+                "options": {
+                    "switch_entity_state": {
+                        "not_required": "Not Required",
+                        "on": "On",
+                        "off": "Off",
+                        "unavailable": "Unavailable",
+                        "unknown": "Unknown"
+                    }
                 }
             },
             "remove_dashboard": {
@@ -100,13 +184,12 @@
             "invalid_device_name": "Invalid device name",
             "device_already_exists": "Device already exists",
             "missing_dashboard_url": "Dashboard URL is required",
-            "missing_device_selection": "Please select a device",
             "missing_dashboard_selection": "Please select a dashboard",
+            "missing_device_selection": "Please select a device",
             "unknown": "Unknown error occurred"
         },
         "abort": {
-            "single_instance_allowed": "Only a single configuration of Continuously Cast Dashboards is allowed.",
             "options_updated": "Configuration Updated"
         }
     }
-}
+} 

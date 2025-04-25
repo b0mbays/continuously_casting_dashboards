@@ -333,18 +333,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(
                     "switch_entity_state",
                     default=self._base_config.get("switch_entity_state", ""),
-                ): selector.SelectSelector(
-                    selector.SelectSelectorConfig(
-                        options=[
-                            {"label": "Select if Required", "value": ""},
-                            {"label": "On", "value": "on"},
-                            {"label": "Off", "value": "off"},
-                            {"label": "Unavailable", "value": "unavailable"},
-                            {"label": "Unknown", "value": "unknown"},
-                        ],
-                        mode=selector.SelectSelectorMode.DROPDOWN,
-                    )
-                ),
+                ): cv.string,  # Allow any valid state
             }
         )
 
@@ -427,6 +416,12 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                         log_config_entry_state(
                             self.hass, self._entry.entry_id, "Before updating config"
                         )
+
+                        # Check if there are actual changes
+                        current_options = self._entry.options
+                        if new_options == current_options:
+                            _LOGGER.debug("No changes detected, skipping reload")
+                            return self.async_abort(reason="options_updated")
 
                         # Update the config entry (this returns a bool, don't await it)
                         self.hass.config_entries.async_update_entry(
@@ -738,6 +733,13 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     k: v for k, v in user_input.items() if v != "" and v is not None
                 }
 
+                # If time window is disabled, remove time settings
+                if not cleaned_input.get("enable_time_window", False):
+                    cleaned_input.pop("start_time", None)
+                    cleaned_input.pop("end_time", None)
+                # Remove enable_time_window as it's only for UI
+                cleaned_input.pop("enable_time_window", None)
+
                 # Ensure required field is present
                 if (
                     "dashboard_url" not in cleaned_input
@@ -775,11 +777,14 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional("volume", default=3): vol.All(
                     vol.Coerce(int), vol.Range(min=0, max=10)
                 ),
+                vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
-                    "start_time", default=DEFAULT_START_TIME
+                    "start_time",
+                    default=self._base_config.get("start_time", DEFAULT_START_TIME),
                 ): selector.TimeSelector(),
                 vol.Optional(
-                    "end_time", default=DEFAULT_END_TIME
+                    "end_time",
+                    default=self._base_config.get("end_time", DEFAULT_END_TIME),
                 ): selector.TimeSelector(),
                 vol.Optional(
                     "switch_entity_id",
@@ -796,19 +801,26 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 ),
                 vol.Optional(
                     "switch_entity_state", default=""
+                ): cv.string,  # Allow any valid state
+                vol.Optional(
+                    "speaker_groups",
+                    default="",
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            {"label": "Not required", "value": ""},
-                            {"label": "On", "value": "on"},
-                            {"label": "Off", "value": "off"},
-                            {"label": "Unavailable", "value": "unavailable"},
-                            {"label": "Unknown", "value": "unknown"},
+                        options=[""]
+                        + [
+                            f"{self.hass.states.get(entity_id).attributes.get('friendly_name', entity_id)}"
+                            for entity_id in self.hass.states.async_entity_ids(
+                                "media_player"
+                            )
+                            if not self.hass.states.get(entity_id).attributes.get(
+                                "device_class"
+                            )
+                            and "group" in entity_id.lower()
                         ],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
-                vol.Optional("speaker_groups"): cv.string,  # Comma-separated list
             }
         )
 
@@ -851,6 +863,13 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     k: v for k, v in user_input.items() if v != "" and v is not None
                 }
 
+                # If time window is disabled, remove time settings
+                if not cleaned_input.get("enable_time_window", False):
+                    cleaned_input.pop("start_time", None)
+                    cleaned_input.pop("end_time", None)
+                # Remove enable_time_window as it's only for UI
+                cleaned_input.pop("enable_time_window", None)
+
                 # Ensure required field is present
                 if (
                     "dashboard_url" not in cleaned_input
@@ -875,6 +894,15 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                         **cleaned_input,
                     }
 
+                    # If time window is disabled, ensure time settings are removed from the saved config
+                    if not cleaned_input.get("enable_time_window", False):
+                        device_dashboards[self._current_dashboard_index].pop(
+                            "start_time", None
+                        )
+                        device_dashboards[self._current_dashboard_index].pop(
+                            "end_time", None
+                        )
+
                     # Return to dashboard menu
                     return await self.async_step_dashboard_menu()
             except Exception as ex:
@@ -897,12 +925,25 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     "volume", default=current_dashboard.get("volume", 3)
                 ): vol.All(vol.Coerce(int), vol.Range(min=0, max=10)),
                 vol.Optional(
+                    "enable_time_window",
+                    default=bool(
+                        current_dashboard.get("start_time")
+                        or current_dashboard.get("end_time")
+                    ),
+                ): cv.boolean,
+                vol.Optional(
                     "start_time",
-                    default=current_dashboard.get("start_time", DEFAULT_START_TIME),
+                    default=current_dashboard.get(
+                        "start_time",
+                        self._base_config.get("start_time", DEFAULT_START_TIME),
+                    ),
                 ): selector.TimeSelector(),
                 vol.Optional(
                     "end_time",
-                    default=current_dashboard.get("end_time", DEFAULT_END_TIME),
+                    default=current_dashboard.get(
+                        "end_time",
+                        self._base_config.get("end_time", DEFAULT_END_TIME),
+                    ),
                 ): selector.TimeSelector(),
                 vol.Optional(
                     "switch_entity_id",
@@ -920,21 +961,26 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 vol.Optional(
                     "switch_entity_state",
                     default=current_dashboard.get("switch_entity_state", ""),
+                ): cv.string,  # Allow any valid state
+                vol.Optional(
+                    "speaker_groups",
+                    default="",
                 ): selector.SelectSelector(
                     selector.SelectSelectorConfig(
-                        options=[
-                            {"label": "Not required", "value": ""},
-                            {"label": "On", "value": "on"},
-                            {"label": "Off", "value": "off"},
-                            {"label": "Unavailable", "value": "unavailable"},
-                            {"label": "Unknown", "value": "unknown"},
+                        options=[""]
+                        + [
+                            f"{self.hass.states.get(entity_id).attributes.get('friendly_name', entity_id)}"
+                            for entity_id in self.hass.states.async_entity_ids(
+                                "media_player"
+                            )
+                            if not self.hass.states.get(entity_id).attributes.get(
+                                "device_class"
+                            )
+                            and "group" in entity_id.lower()
                         ],
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
-                vol.Optional(
-                    "speaker_groups", default=speaker_groups_str
-                ): cv.string,  # Comma-separated list
             }
         )
 
