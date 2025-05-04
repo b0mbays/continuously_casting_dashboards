@@ -38,7 +38,7 @@
             },
             "validation": {
                 "title": "System Requirements Check",
-                "description": "Some recommended requirements are missing:\n\n{warnings}\n\n{action}",
+                "description": "Some recommended requirements are missing:\n\n\"{warnings}\"\n\n\"{action}\"",
                 "data": {
                     "proceed": "Yes, I want to proceed anyway"
                 }
@@ -97,7 +97,7 @@
             },
             "device_menu": {
                 "title": "Device Management",
-                "description": "Manage devices for dashboard casting. Current devices: {devices}",
+                "description": "Manage devices for dashboard casting. Current devices: '\"{devices}\"'",
                 "data": {
                     "action": "Action",
                     "device": "Device"
@@ -133,14 +133,14 @@
             },
             "remove_device": {
                 "title": "Remove Device",
-                "description": "Are you sure you want to remove device '{device}'?",
+                "description": "Are you sure you want to remove device '\"{device}\"'?",
                 "data": {
                     "confirm_remove": "Confirm Removal"
                 }
             },
             "dashboard_menu": {
                 "title": "Dashboard Management",
-                "description": "Manage dashboards for device '{device}'. Current dashboards: {dashboards_count}",
+                "description": "Manage dashboards for device \"{device}\". Current dashboards: \"{dashboards_count}\"",
                 "data": {
                     "action": "Action",
                     "dashboard": "Dashboard"
@@ -188,7 +188,7 @@
             },
             "edit_dashboard": {
                 "title": "Edit Dashboard",
-                "description": "Edit dashboard settings for {device}",
+                "description": "Edit dashboard settings for \"{device}\"",
                 "data": {
                     "dashboard_url": "Dashboard URL",
                     "volume": "Volume Level",
@@ -220,7 +220,7 @@
             },
             "remove_dashboard": {
                 "title": "Remove Dashboard",
-                "description": "Are you sure you want to remove dashboard '{dashboard}' from device '{device}'?",
+                "description": "Are you sure you want to remove dashboard '\"{dashboard}\"' from device '\"{device}\"'?",
                 "data": {
                     "confirm_remove": "Confirm Removal"
                 }
