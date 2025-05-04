@@ -10,8 +10,14 @@
                     "cast_delay": "Cast Delay (seconds)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Control Switch",
-                    "switch_entity_state": "Required Switch State"
+                    "include_entity": "Use an entity state to control the dashboard (select entity and state value below)",
+                    "switch_entity_id": "Control Entity",
+                    "switch_entity_state": "Required Entity State"
+                },
+                "data_description": {
+                    "switch_entity_id": "Type an entity ID (e.g., switch.my_switch) or leave blank if checkbox is unchecked",
+                    "switch_entity_state": "Type a valid state value (e.g., on, off, home, away) or leave blank for any state",
+                    "cast_delay": "Time (in seconds) for casting checks between each device"
                 },
                 "options": {
                     "logging_level": {
@@ -29,6 +35,13 @@
                         "unknown": "Unknown"
                     }
                 }
+            },
+            "validation": {
+                "title": "System Requirements Check",
+                "description": "Some recommended requirements are missing:\n\n{warnings}\n\n{action}",
+                "data": {
+                    "proceed": "Yes, I want to proceed anyway"
+                }
             }
         },
         "error": {
@@ -37,10 +50,13 @@
             "missing_dashboard_url": "Dashboard URL is required",
             "missing_dashboard_selection": "Please select a dashboard",
             "missing_device_selection": "Please select a device",
-            "unknown": "Unknown error occurred"
+            "unknown": "Unknown error occurred",
+            "entity_not_found": "Entity not found",
+            "update_failed": "Failed to update configuration"
         },
         "abort": {
-            "single_instance_allowed": "Only a single configuration of Continuously Casting Dashboards is allowed."
+            "single_instance_allowed": "Only a single configuration of Continuously Cast Dashboards is allowed.",
+            "options_updated": "Options updated successfully."
         }
     },
     "options": {
@@ -53,8 +69,14 @@
                     "cast_delay": "Cast Delay (seconds)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Control Switch",
-                    "switch_entity_state": "Required Switch State"
+                    "include_entity": "Include Switch Entity",
+                    "switch_entity_id": "Switch Entity ID",
+                    "switch_entity_state": "Switch Entity State"
+                },
+                "data_description": {
+                    "switch_entity_id": "Type an entity ID (e.g., switch.my_switch) or leave blank if checkbox is unchecked",
+                    "switch_entity_state": "Type a valid state value (e.g., on, off, home, away) or leave blank for any state",
+                    "cast_delay": "Time (in seconds) for casting checks between each device"
                 },
                 "options": {
                     "logging_level": {
@@ -75,7 +97,7 @@
             },
             "device_menu": {
                 "title": "Device Management",
-                "description": "Manage your devices and their dashboards",
+                "description": "Manage devices for dashboard casting. Current devices: {devices}",
                 "data": {
                     "action": "Action",
                     "device": "Device"
@@ -94,6 +116,9 @@
                 "description": "Add a new device to the configuration",
                 "data": {
                     "device_name": "Device Name"
+                },
+                "data_description": {
+                  "device_name": "Device name or IP address"
                 }
             },
             "edit_device": {
@@ -101,18 +126,21 @@
                 "description": "Edit device settings and dashboards",
                 "data": {
                     "device_name": "Device Name"
+                },
+                "data_description": {
+                  "device_name": "Device name or IP address"
                 }
             },
             "remove_device": {
                 "title": "Remove Device",
-                "description": "Remove a device from the configuration",
+                "description": "Are you sure you want to remove device '{device}'?",
                 "data": {
                     "confirm_remove": "Confirm Removal"
                 }
             },
             "dashboard_menu": {
                 "title": "Dashboard Management",
-                "description": "Manage dashboards for {device}",
+                "description": "Manage dashboards for device '{device}'. Current dashboards: {dashboards_count}",
                 "data": {
                     "action": "Action",
                     "dashboard": "Dashboard"
@@ -135,9 +163,18 @@
                     "enable_time_window": "Use Custom Time Window",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Control Switch",
-                    "switch_entity_state": "Required Switch State",
+                    "include_entity": "Use an entity state to control the dashboard (select entity and state value below)",
+                    "switch_entity_id": "Control Entity",
+                    "switch_entity_state": "Required Entity State",
+                    "include_speaker_groups": "Check speaker groups",
                     "speaker_groups": "Speaker Groups (comma-separated)"
+                },
+                "data_description": {
+                    "dashboard_url": "URL of the dashboard to cast",
+                    "volume": "Volume level (0-10)",
+                    "switch_entity_id": "Type an entity ID (e.g., switch.my_switch) or leave blank if checkbox is unchecked",
+                    "switch_entity_state": "Type a valid state value (e.g., on, off, home, away) or leave blank for any state",
+                    "speaker_groups": "Enter comma-separated speaker group names (e.g., Living Room, Kitchen) or leave blank if checkbox is unchecked"
                 },
                 "options": {
                     "switch_entity_state": {
@@ -158,9 +195,18 @@
                     "enable_time_window": "Dashboard Schedule (if different from Global setting)",
                     "start_time": "Start Time",
                     "end_time": "End Time",
-                    "switch_entity_id": "Control Switch",
-                    "switch_entity_state": "Required Switch State",
+                    "include_entity": "Use an entity state to control the dashboard (select entity and state value below)",
+                    "switch_entity_id": "Control Entity",
+                    "switch_entity_state": "Required Entity State",
+                    "include_speaker_groups": "Check speaker groups",
                     "speaker_groups": "Speaker Groups (comma-separated)"
+                },
+                "data_description": {
+                    "dashboard_url": "URL of the dashboard to cast",
+                    "volume": "Volume level (0-10)",
+                    "switch_entity_id": "Type an entity ID (e.g., switch.my_switch) or leave blank if checkbox is unchecked",
+                    "switch_entity_state": "Type a valid state value (e.g., on, off, home, away) or leave blank for any state",
+                    "speaker_groups": "Enter comma-separated speaker group names (e.g., Living Room, Kitchen) or leave blank if checkbox is unchecked"
                 },
                 "options": {
                     "switch_entity_state": {
@@ -174,7 +220,7 @@
             },
             "remove_dashboard": {
                 "title": "Remove Dashboard",
-                "description": "Remove a dashboard from {device}",
+                "description": "Are you sure you want to remove dashboard '{dashboard}' from device '{device}'?",
                 "data": {
                     "confirm_remove": "Confirm Removal"
                 }

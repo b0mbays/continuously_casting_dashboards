@@ -28,7 +28,7 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     """Migrate an old config entry to a new version."""
-    _LOGGER.info(f"Migrating config entry from version {config_entry.version}")
+    _LOGGER.debug(f"Migrating config entry from version {config_entry.version}")
 
     if config_entry.version < 2:
         # Migrate configuration to new structure
@@ -61,15 +61,14 @@ def log_config_entry_state(hass, entry_id, message="Current config entry state")
             _LOGGER.error(f"Cannot log config state: entry {entry_id} not found")
             return
 
-        _LOGGER.info(f"{message}:")
-        _LOGGER.info(f"Entry ID: {entry.entry_id}")
-        _LOGGER.info(f"Entry Title: {entry.title}")
-        _LOGGER.info(f"Entry Domain: {entry.domain}")
-        _LOGGER.info(f"Entry Data: {entry.data}")
-        _LOGGER.info(f"Entry Options: {entry.options}")
-        _LOGGER.info(f"Entry State: {entry.state}")
-        _LOGGER.info(f"Entry Version: {entry.version}")
-
+        _LOGGER.debug(f"{message}:")
+        _LOGGER.debug(f"Entry ID: {entry.entry_id}")
+        _LOGGER.debug(f"Entry Title: {entry.title}")
+        _LOGGER.debug(f"Entry Domain: {entry.domain}")
+        _LOGGER.debug(f"Entry Data: {entry.data}")
+        _LOGGER.debug(f"Entry Options: {entry.options}")
+        _LOGGER.debug(f"Entry State: {entry.state}")
+        _LOGGER.debug(f"Entry Version: {entry.version}")
     except Exception as ex:
         _LOGGER.exception(f"Error logging config state: {ex}")
 
@@ -101,43 +100,46 @@ class ContinuouslyCastingDashboardsConfigFlow(config_entries.ConfigFlow, domain=
 
         if user_input is not None:
             try:
-                # Start with a clean slate
-                cleaned_input = {}
+                # Clean up empty string values to avoid validation issues
+                cleaned_input = {
+                    k: v for k, v in user_input.items() if v != "" and v is not None
+                }
 
-                # Handle all basic config options
-                for key in ["logging_level", "cast_delay", "start_time", "end_time"]:
-                    if key in user_input and user_input[key] is not None:
-                        cleaned_input[key] = user_input[key]
+                # Special handling for switch_entity_id - if empty, remove it
+                if "switch_entity_id" in cleaned_input:
+                    if not cleaned_input["switch_entity_id"]:
+                        _LOGGER.debug("Removing switch_entity_id as it's empty")
+                        cleaned_input.pop("switch_entity_id")
+                        if "switch_entity_state" in cleaned_input:
+                            cleaned_input.pop("switch_entity_state")
+                        # Also remove from base config
+                        if "switch_entity_id" in self._base_config:
+                            self._base_config.pop("switch_entity_id")
+                        if "switch_entity_state" in self._base_config:
+                            self._base_config.pop("switch_entity_state")
 
-                # Handle entity selection
-                if user_input.get("include_entity", False):
-                    # Only include entity if the checkbox is checked
-                    entity_id = user_input.get("switch_entity_id", "").strip()
-                    if entity_id:
-                        # Validate that the entity exists
-                        if self.hass and self.hass.states.get(entity_id) is None:
-                            errors["switch_entity_id"] = "entity_not_found"
-                        else:
-                            cleaned_input["switch_entity_id"] = entity_id
-                            # Include state if provided
-                            entity_state = user_input.get(
-                                "switch_entity_state", ""
-                            ).strip()
-                            if entity_state:
-                                cleaned_input["switch_entity_state"] = entity_state
-                    else:
-                        # Empty entity but checkbox is checked - this is OK, we just won't add the config
-                        pass
+                _LOGGER.debug(f"Cleaned input: {cleaned_input}")
 
-                if not errors:
-                    # Proceed to create entry
-                    return self.async_create_entry(
-                        title="Continuously Cast Dashboards",
-                        data=cleaned_input,
-                    )
+                # Update base configuration
+                self._base_config.update(cleaned_input)
+
+                # Proceed to device menu
+                _LOGGER.debug("Proceeding to device menu")
+                return self.async_create_entry(
+                    title="Continuously Cast Dashboards",
+                    data=cleaned_input,
+                )
             except Exception as ex:
                 _LOGGER.exception("Unexpected exception in user step: %s", ex)
                 errors["base"] = "unknown"
+
+        # Get available switch entities
+        switch_entities = []
+        if self.hass:
+            switch_entities = [
+                f"{entity_id}"
+                for entity_id in self.hass.states.async_entity_ids("switch")
+            ]
 
         # Show the form
         schema = vol.Schema(
@@ -165,18 +167,26 @@ class ContinuouslyCastingDashboardsConfigFlow(config_entries.ConfigFlow, domain=
                 vol.Optional(
                     "end_time", default=DEFAULT_END_TIME
                 ): selector.TimeSelector(),
+                vol.Optional("switch_entity_id", default=""): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[""] + switch_entities,
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
                 vol.Optional(
-                    "include_entity",
-                    default=False,
-                ): cv.boolean,
-                vol.Optional(
-                    "switch_entity_id",
-                    default="",
-                ): cv.string,
-                vol.Optional(
-                    "switch_entity_state",
-                    default=self._base_config.get("switch_entity_state", ""),
-                ): cv.string,
+                    "switch_entity_state", default=""
+                ): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[
+                            {"label": "Not required", "value": ""},
+                            {"label": "On", "value": "on"},
+                            {"label": "Off", "value": "off"},
+                            {"label": "Unavailable", "value": "unavailable"},
+                            {"label": "Unknown", "value": "unknown"},
+                        ],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
             }
         )
 
@@ -241,6 +251,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
 
     async def async_step_init(self, user_input=None) -> config_entries.ConfigFlowResult:
         """Manage the options flow."""
+        _LOGGER.debug("Entering async_step_init")
         return await self.async_step_main_options()
 
     async def async_step_main_options(
@@ -249,58 +260,56 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
         """Manage the main options."""
         errors = {}
 
+        _LOGGER.debug("Entering async_step_main_options")
+        _LOGGER.debug(f"User input: {user_input}")
+
         if user_input is not None:
             try:
-                # Start with a clean slate
-                cleaned_input = {}
+                # Clean up empty string values
+                cleaned_input = {
+                    k: v for k, v in user_input.items() if v != "" and v is not None
+                }
 
-                # Handle all basic config options
-                for key in ["logging_level", "cast_delay", "start_time", "end_time"]:
-                    if key in user_input and user_input[key] is not None:
-                        cleaned_input[key] = user_input[key]
+                # Handle switch entity for this dashboard only
+                if (
+                    "switch_entity_id" in user_input
+                ):  # Check original input, not cleaned
+                    if not user_input["switch_entity_id"]:  # If empty in original input
+                        _LOGGER.debug("Removing empty switch_entity_id from input")
+                        cleaned_input.pop("switch_entity_id", None)
+                        cleaned_input.pop("switch_entity_state", None)
+                        # Also remove from base config
+                        if "switch_entity_id" in self._base_config:
+                            _LOGGER.debug("Removing switch_entity_id from base config")
+                            self._base_config.pop("switch_entity_id", None)
+                        if "switch_entity_state" in self._base_config:
+                            _LOGGER.debug(
+                                "Removing switch_entity_state from base config"
+                            )
+                            self._base_config.pop("switch_entity_state", None)
 
-                # Handle entity selection
-                if user_input.get("include_entity", False):
-                    # Only include entity if the checkbox is checked
-                    entity_id = user_input.get("switch_entity_id", "").strip()
-                    if entity_id:
-                        # Validate that the entity exists
-                        if self.hass and self.hass.states.get(entity_id) is None:
-                            errors["switch_entity_id"] = "entity_not_found"
-                        else:
-                            cleaned_input["switch_entity_id"] = entity_id
-                            # Include state if provided
-                            entity_state = user_input.get(
-                                "switch_entity_state", ""
-                            ).strip()
-                            if entity_state:
-                                cleaned_input["switch_entity_state"] = entity_state
-                    else:
-                        # Empty entity but checkbox is checked - this is OK, we just won't add the config
-                        pass
-                else:
-                    # Remove entity config from base config if checkbox is unchecked
-                    self._base_config.pop("switch_entity_id", None)
-                    self._base_config.pop("switch_entity_state", None)
+                _LOGGER.debug(f"Cleaned input: {cleaned_input}")
+                _LOGGER.debug(f"Base config before update: {self._base_config}")
 
-                if not errors:
-                    # Update base configuration
-                    self._base_config.update(cleaned_input)
+                # Update base configuration
+                self._base_config.update(cleaned_input)
 
-                    # Remove entity config if not included in cleaned_input
-                    if "switch_entity_id" not in cleaned_input:
-                        self._base_config.pop("switch_entity_id", None)
-                        self._base_config.pop("switch_entity_state", None)
+                _LOGGER.debug(f"Base config after update: {self._base_config}")
 
-                    # Proceed to device menu
-                    return await self.async_step_device_menu()
-
+                # Proceed to device menu
+                _LOGGER.debug("Proceeding to device menu")
+                return await self.async_step_device_menu()
             except Exception as ex:
                 _LOGGER.exception("Unexpected exception in main_options: %s", ex)
                 errors["base"] = "unknown"
 
-        # Determine if entity is currently configured
-        has_entity = bool(self._base_config.get("switch_entity_id"))
+        # Get available switch entities
+        switch_entities = []
+        if self.hass:
+            switch_entities = [
+                f"{entity_id}"
+                for entity_id in self.hass.states.async_entity_ids("switch")
+            ]
 
         # Create schema with default values from existing configuration
         schema = vol.Schema(
@@ -335,29 +344,22 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     default=self._base_config.get("end_time", DEFAULT_END_TIME),
                 ): selector.TimeSelector(),
                 vol.Optional(
-                    "include_entity",
-                    default=bool(self._base_config.get("switch_entity_id")),
-                ): cv.boolean,
-                vol.Optional(
                     "switch_entity_id",
                     default=self._base_config.get("switch_entity_id", ""),
-                ): cv.string,
+                ): cv.string,  # Allow any entity type
                 vol.Optional(
                     "switch_entity_state",
                     default=self._base_config.get("switch_entity_state", ""),
-                ): cv.string,
+                ): cv.string,  # Allow any valid state
             }
         )
 
+        _LOGGER.debug("Showing main options form")
         return self.async_show_form(
             step_id="main_options",
             data_schema=schema,
             errors=errors,
-            description_placeholders={
-                "title": "Global Options",
-                "entity_hint": "Type an entity ID (e.g., switch.my_switch) or leave blank if checkbox is unchecked",
-                "state_hint": "Type a valid state value (can leave blank if 'on', 'true', 'home', or 'open')",
-            },
+            description_placeholders={"title": "Global Options"},
             last_step=True,  # This adds a back button
         )
 
@@ -367,28 +369,45 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
         """Handle the device menu for options flow."""
         errors = {}
 
+        _LOGGER.debug("Entering async_step_device_menu")
+        _LOGGER.debug(f"Current base config: {self._base_config}")
+        _LOGGER.debug(f"Current devices: {self._devices}")
+
         if user_input is not None:
             try:
                 action = user_input.get("action")
 
+                _LOGGER.debug(f"Selected action: {action}")
+
                 if action == "add_device":
+                    _LOGGER.debug("Navigating to add_device step")
                     return await self.async_step_add_device()
                 elif action == "edit_device":
                     if user_input.get("device"):
                         self._current_device = user_input.get("device")
+                        _LOGGER.debug(
+                            f"Navigating to edit_device step for {self._current_device}"
+                        )
                         return await self.async_step_edit_device()
                     else:
+                        _LOGGER.debug("No device selected for editing")
                         errors["device"] = "missing_device_selection"
                 elif action == "remove_device":
                     if user_input.get("device"):
                         self._current_device = user_input.get("device")
+                        _LOGGER.debug(
+                            f"Navigating to remove_device step for {self._current_device}"
+                        )
                         return await self.async_step_remove_device()
                     else:
+                        _LOGGER.debug("No device selected for removal")
                         errors["device"] = "missing_device_selection"
                 elif action == "finish":
                     # Prepare final options with deep copy to avoid modifying originals
                     new_options = copy.deepcopy(self._base_config)
                     new_options["devices"] = copy.deepcopy(self._devices)
+
+                    _LOGGER.debug(f"Initial new_options before cleanup: {new_options}")
 
                     # Remove non-serializable objects from options
                     for device_name, dashboards in new_options.get(
@@ -407,44 +426,41 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                             for key in keys_to_remove:
                                 dashboard.pop(key, None)
 
-                    # Thoroughly clean up the switch entity fields
-                    # First, check global config switch entity and remove if empty
+                    # Explicitly remove switch_entity_id and switch_entity_state from global config
                     if "switch_entity_id" in new_options:
+                        _LOGGER.debug(
+                            f"Found global switch_entity_id: {new_options['switch_entity_id']}"
+                        )
                         # Remove if empty, whitespace, or matches the default
                         if (
                             not new_options["switch_entity_id"]
                             or not new_options["switch_entity_id"].strip()
+                            or new_options["switch_entity_id"] == ""
                         ):
+                            _LOGGER.debug("Removing global switch_entity_id")
                             new_options.pop("switch_entity_id", None)
                             new_options.pop("switch_entity_state", None)
 
-                    # Special handling for switch_entity_state without switch_entity_id
-                    if (
-                        "switch_entity_state" in new_options
-                        and "switch_entity_id" not in new_options
-                    ):
-                        new_options.pop("switch_entity_state", None)
-
-                    # Then check each dashboard's switch entity settings
+                    # Also check and clean up any dashboard-specific switch entity settings
                     for device_name, dashboards in new_options.get(
                         "devices", {}
                     ).items():
                         for dashboard in dashboards:
-                            # Remove empty switch entity fields
                             if "switch_entity_id" in dashboard:
+                                _LOGGER.debug(
+                                    f"Found dashboard switch_entity_id for {device_name}: {dashboard['switch_entity_id']}"
+                                )
+                                # Remove if empty, whitespace, or matches the default
                                 if (
                                     not dashboard["switch_entity_id"]
                                     or not dashboard["switch_entity_id"].strip()
+                                    or dashboard["switch_entity_id"] == ""
                                 ):
+                                    _LOGGER.debug(
+                                        f"Removing dashboard switch_entity_id for {device_name}"
+                                    )
                                     dashboard.pop("switch_entity_id", None)
                                     dashboard.pop("switch_entity_state", None)
-
-                            # Also catch orphaned switch_entity_state without switch_entity_id
-                            if (
-                                "switch_entity_state" in dashboard
-                                and "switch_entity_id" not in dashboard
-                            ):
-                                dashboard.pop("switch_entity_state", None)
 
                     # Final cleanup to ensure no empty switch entity settings remain
                     if (
@@ -465,34 +481,31 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                                 dashboard.pop("switch_entity_id", None)
                                 dashboard.pop("switch_entity_state", None)
 
-                    # Remove empty speaker_groups from each dashboard
-                    for device_name, dashboards in new_options.get(
-                        "devices", {}
-                    ).items():
-                        for dashboard in dashboards:
-                            if "speaker_groups" in dashboard:
-                                speaker_groups = dashboard["speaker_groups"]
-                                if not speaker_groups or (
-                                    isinstance(speaker_groups, list)
-                                    and not any(speaker_groups)
-                                ):
-                                    dashboard.pop("speaker_groups", None)
+                    _LOGGER.debug(f"Final new_options after cleanup: {new_options}")
 
                     try:
+                        # Log current state before update
+                        log_config_entry_state(
+                            self.hass, self._entry.entry_id, "Before updating config"
+                        )
+
                         # Check if there are actual changes
                         current_options = self._entry.options
-                        current_dict = dict(current_options)
-                        new_dict = dict(new_options)
-
-                        if new_dict == current_dict:
+                        if new_options == current_options:
+                            _LOGGER.debug("No changes detected, skipping reload")
                             return self.async_abort(reason="options_updated")
 
-                        # Update the config entry
+                        # Update the config entry (this returns a bool, don't await it)
                         self.hass.config_entries.async_update_entry(
                             self._entry, options=new_options
                         )
 
-                        # Reload the entry
+                        # Log state after updating
+                        log_config_entry_state(
+                            self.hass, self._entry.entry_id, "After updating config"
+                        )
+
+                        # Reload the entry (this is a coroutine, needs to be awaited)
                         await self.hass.config_entries.async_reload(
                             self._entry.entry_id
                         )
@@ -501,9 +514,10 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                             f"Successfully updated and reloaded entry {self._entry.entry_id}"
                         )
 
+                        # Abort the flow instead of creating an empty entry
                         return self.async_abort(reason="options_updated")
                     except Exception as ex:
-                        _LOGGER.exception(f"Error updating config entry: {ex}")
+                        _LOGGER.exception(f"Detailed error updating config entry: {ex}")
                         errors["base"] = f"update_failed: {str(ex)}"
             except Exception as ex:
                 _LOGGER.exception("Error in device menu: %s", ex)
@@ -555,6 +569,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
 
         schema = vol.Schema(schema_dict)
 
+        _LOGGER.debug("Showing device menu form")
         return self.async_show_form(
             step_id="device_menu",
             data_schema=schema,
@@ -634,10 +649,14 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
         if user_input is not None:
             try:
                 if user_input.get("confirm_remove"):
+                    _LOGGER.debug(f"Removing device {self._current_device}")
+                    _LOGGER.debug(f"Devices before removal: {self._devices}")
+
                     # Check if device exists before attempting to remove
                     if self._current_device in self._devices:
                         # Remove the device
                         del self._devices[self._current_device]
+                        _LOGGER.debug(f"Devices after removal: {self._devices}")
                     else:
                         _LOGGER.warning(
                             f"Device {self._current_device} not found in devices dict"
@@ -647,6 +666,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     return await self.async_step_device_menu()
 
                 # Return to device menu if not confirmed
+                _LOGGER.debug("Device removal not confirmed, returning to menu")
                 return await self.async_step_device_menu()
             except Exception as ex:
                 _LOGGER.exception(f"Error removing device {self._current_device}: {ex}")
@@ -780,90 +800,55 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
 
         if user_input is not None:
             try:
-                # Start with a clean slate
-                cleaned_input = {}
+                # Clean up empty string values to avoid validation issues
+                cleaned_input = {
+                    k: v for k, v in user_input.items() if v != "" and v is not None
+                }
 
-                # Handle basic dashboard options
-                for key in [
-                    "dashboard_url",
-                    "volume",
-                    "enable_time_window",
-                    "start_time",
-                    "end_time",
-                ]:
-                    if key in user_input and user_input[key] is not None:
-                        if key == "dashboard_url" and not user_input[key].strip():
-                            # Must have a dashboard URL
-                            errors["dashboard_url"] = "missing_dashboard_url"
-                            continue
-                        cleaned_input[key] = user_input[key]
-
-                # Ensure required field is present
-                if not errors and (
-                    "dashboard_url" not in cleaned_input
-                    or not cleaned_input["dashboard_url"]
-                ):
-                    errors["dashboard_url"] = "missing_dashboard_url"
-
-                # Handle entity selection
-                if user_input.get("include_entity", False):
-                    # Only include entity if the checkbox is checked
-                    entity_id = user_input.get("switch_entity_id", "").strip()
-                    if entity_id:
-                        # Validate that the entity exists
-                        if self.hass and self.hass.states.get(entity_id) is None:
+                # Handle switch entity for this dashboard only
+                if "switch_entity_id" in cleaned_input:
+                    if not cleaned_input["switch_entity_id"]:
+                        # Remove switch entity configuration if empty
+                        cleaned_input.pop("switch_entity_id")
+                        if "switch_entity_state" in cleaned_input:
+                            cleaned_input.pop("switch_entity_state")
+                    else:
+                        # Validate switch entity if provided
+                        if not self.hass.states.async_available(
+                            cleaned_input["switch_entity_id"]
+                        ):
                             errors["switch_entity_id"] = "entity_not_found"
-                        else:
-                            cleaned_input["switch_entity_id"] = entity_id
-                            # Include state if provided
-                            entity_state = user_input.get(
-                                "switch_entity_state", ""
-                            ).strip()
-                            if entity_state:
-                                cleaned_input["switch_entity_state"] = entity_state
-                    else:
-                        # Empty entity but checkbox is checked - this is OK, we just won't add the config
-                        pass
 
-                # Handle speaker groups
-                if user_input.get("include_speaker_groups", False):
-                    # Only include speaker groups if the checkbox is checked
-                    speaker_groups_input = user_input.get("speaker_groups", "").strip()
-
-                    if speaker_groups_input:  # Not empty
-                        speaker_groups = [
-                            group.strip()
-                            for group in speaker_groups_input.split(",")
-                            if group.strip()
-                        ]
-
-                        for group in speaker_groups:
-                            # Check if it's a valid speaker group by friendly name
-                            found = False
-                            for entity_id in self.hass.states.async_entity_ids(
-                                "media_player"
+                # Validate speaker groups if provided
+                if (
+                    "speaker_groups" in cleaned_input
+                    and cleaned_input["speaker_groups"]
+                ):
+                    speaker_groups = [
+                        group.strip()
+                        for group in cleaned_input["speaker_groups"].split(",")
+                        if group.strip()
+                    ]
+                    for group in speaker_groups:
+                        # Check if it's a valid speaker group by friendly name
+                        found = False
+                        for entity_id in self.hass.states.async_entity_ids(
+                            "media_player"
+                        ):
+                            state = self.hass.states.get(entity_id)
+                            if (
+                                state
+                                and not state.attributes.get("device_class")
+                                and "group" in entity_id.lower()
+                                and state.attributes.get("friendly_name") == group
                             ):
-                                state = self.hass.states.get(entity_id)
-                                if (
-                                    state
-                                    and not state.attributes.get("device_class")
-                                    and "group" in entity_id.lower()
-                                    and state.attributes.get("friendly_name") == group
-                                ):
-                                    found = True
-                                    break
-                            if not found:
-                                errors["speaker_groups"] = "entity_not_found"
+                                found = True
                                 break
-
-                        if not errors.get("speaker_groups"):
-                            cleaned_input["speaker_groups"] = speaker_groups
-                    else:
-                        # Empty but checkbox is checked - this is OK, we just won't add the config
-                        pass
-                else:
-                    # Explicitly remove speaker_groups when checkbox is unchecked
-                    cleaned_input["speaker_groups"] = None
+                        if not found:
+                            errors["speaker_groups"] = "entity_not_found"
+                            break
+                    if not errors.get("speaker_groups"):
+                        cleaned_input["speaker_groups"] = speaker_groups
 
                 # If time window is disabled, remove time settings
                 if not cleaned_input.get("enable_time_window", False):
@@ -872,7 +857,13 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 # Remove enable_time_window as it's only for UI
                 cleaned_input.pop("enable_time_window", None)
 
-                if not errors:
+                # Ensure required field is present
+                if (
+                    "dashboard_url" not in cleaned_input
+                    or not cleaned_input["dashboard_url"]
+                ):
+                    errors["dashboard_url"] = "missing_dashboard_url"
+                else:
                     # Add new dashboard to device
                     if self._current_device not in self._devices:
                         self._devices[self._current_device] = []
@@ -902,21 +893,12 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     default=self._base_config.get("end_time", DEFAULT_END_TIME),
                 ): selector.TimeSelector(),
                 vol.Optional(
-                    "include_entity",
-                    default=False,
-                ): cv.boolean,
-                vol.Optional(
                     "switch_entity_id",
                     default="",
-                ): cv.string,
+                ): cv.string,  # Allow any entity type
                 vol.Optional(
-                    "switch_entity_state",
-                    default="",
-                ): cv.string,
-                vol.Optional(
-                    "include_speaker_groups",
-                    default=False,
-                ): cv.boolean,
+                    "switch_entity_state", default=""
+                ): cv.string,  # Allow any valid state
                 vol.Optional(
                     "speaker_groups",
                     default="",
@@ -930,6 +912,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
             errors=errors,
             description_placeholders={
                 "device": self._current_device,
+                "title": "Add Dashboard",
             },
             last_step=True,  # This adds a back button
         )
@@ -939,6 +922,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
     ) -> config_entries.ConfigFlowResult:
         """Handle editing a dashboard for a device."""
         errors = {}
+
         if not self._current_device or self._current_dashboard_index is None:
             _LOGGER.warning(
                 "Attempting to edit dashboard with no device or dashboard selected"
@@ -956,92 +940,71 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
 
         if user_input is not None:
             try:
-                # Start with a clean slate
-                cleaned_input = {}
+                # Clean up empty string values
+                cleaned_input = {
+                    k: v for k, v in user_input.items() if v != "" and v is not None
+                }
 
-                # Handle basic dashboard options
-                for key in [
-                    "dashboard_url",
-                    "volume",
-                    "enable_time_window",
-                    "start_time",
-                    "end_time",
-                ]:
-                    if key in user_input and user_input[key] is not None:
-                        if key == "dashboard_url" and not user_input[key].strip():
-                            # Must have a dashboard URL
-                            errors["dashboard_url"] = "missing_dashboard_url"
-                            continue
-                        cleaned_input[key] = user_input[key]
+                # Handle switch entity for this dashboard only
+                if (
+                    "switch_entity_id" in user_input
+                ):  # Check original input, not cleaned
+                    if not user_input["switch_entity_id"]:  # If empty in original input
+                        _LOGGER.debug("Removing empty switch_entity_id from input")
+                        cleaned_input.pop("switch_entity_id", None)
+                        cleaned_input.pop("switch_entity_state", None)
+                        # Also remove from current dashboard
+                        if (
+                            self._current_device
+                            and self._current_dashboard_index is not None
+                        ):
+                            device_dashboards = self._devices.get(
+                                self._current_device, []
+                            )
+                            if len(device_dashboards) > self._current_dashboard_index:
+                                dashboard = device_dashboards[
+                                    self._current_dashboard_index
+                                ]
+                                dashboard.pop("switch_entity_id", None)
+                                dashboard.pop("switch_entity_state", None)
 
-                # Ensure required field is present
-                if not errors and (
-                    "dashboard_url" not in cleaned_input
-                    or not cleaned_input["dashboard_url"]
+                # Validate switch entity if provided
+                if "switch_entity_id" in cleaned_input:
+                    if not self.hass.states.async_available(
+                        cleaned_input["switch_entity_id"]
+                    ):
+                        errors["switch_entity_id"] = "entity_not_found"
+
+                # Validate speaker groups if provided
+                if (
+                    "speaker_groups" in cleaned_input
+                    and cleaned_input["speaker_groups"]
                 ):
-                    errors["dashboard_url"] = "missing_dashboard_url"
-
-                # Handle entity selection
-                if user_input.get("include_entity", False):
-                    # Only include entity if the checkbox is checked
-                    entity_id = user_input.get("switch_entity_id", "").strip()
-                    if entity_id:
-                        # Validate that the entity exists
-                        if self.hass and self.hass.states.get(entity_id) is None:
-                            errors["switch_entity_id"] = "entity_not_found"
-                        else:
-                            cleaned_input["switch_entity_id"] = entity_id
-                            # Include state if provided
-                            entity_state = user_input.get(
-                                "switch_entity_state", ""
-                            ).strip()
-                            if entity_state:
-                                cleaned_input["switch_entity_state"] = entity_state
-                    else:
-                        # Empty entity but checkbox is checked - this is OK, we just won't add the config
-                        pass
-
-                # Handle speaker groups
-                if user_input.get("include_speaker_groups", False):
-                    # Only include speaker groups if the checkbox is checked
-                    speaker_groups_input = user_input.get("speaker_groups", "").strip()
-
-                    if speaker_groups_input:  # Not empty
-                        speaker_groups = [
-                            group.strip()
-                            for group in speaker_groups_input.split(",")
-                            if group.strip()
-                        ]
-
-                        if speaker_groups:  # Has valid entries after cleaning
-                            for group in speaker_groups:
-                                # Check if it's a valid speaker group by friendly name
-                                found = False
-                                for entity_id in self.hass.states.async_entity_ids(
-                                    "media_player"
-                                ):
-                                    state = self.hass.states.get(entity_id)
-                                    if (
-                                        state
-                                        and not state.attributes.get("device_class")
-                                        and "group" in entity_id.lower()
-                                        and state.attributes.get("friendly_name")
-                                        == group
-                                    ):
-                                        found = True
-                                        break
-                                if not found:
-                                    errors["speaker_groups"] = "entity_not_found"
-                                    break
-
-                            if not errors.get("speaker_groups"):
-                                cleaned_input["speaker_groups"] = speaker_groups
-                    else:
-                        # Empty but checkbox is checked - this is OK, we just won't add the config
-                        pass
-                else:
-                    # Explicitly remove speaker_groups when checkbox is unchecked
-                    cleaned_input["speaker_groups"] = None
+                    speaker_groups = [
+                        group.strip()
+                        for group in cleaned_input["speaker_groups"].split(",")
+                        if group.strip()
+                    ]
+                    for group in speaker_groups:
+                        # Check if it's a valid speaker group by friendly name
+                        found = False
+                        for entity_id in self.hass.states.async_entity_ids(
+                            "media_player"
+                        ):
+                            state = self.hass.states.get(entity_id)
+                            if (
+                                state
+                                and not state.attributes.get("device_class")
+                                and "group" in entity_id.lower()
+                                and state.attributes.get("friendly_name") == group
+                            ):
+                                found = True
+                                break
+                        if not found:
+                            errors["speaker_groups"] = "entity_not_found"
+                            break
+                    if not errors.get("speaker_groups"):
+                        cleaned_input["speaker_groups"] = speaker_groups
 
                 # If time window is disabled, remove time settings
                 if not cleaned_input.get("enable_time_window", False):
@@ -1050,32 +1013,19 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                 # Remove enable_time_window as it's only for UI
                 cleaned_input.pop("enable_time_window", None)
 
-                if not errors:
+                # Ensure required field is present
+                if (
+                    "dashboard_url" not in cleaned_input
+                    or not cleaned_input["dashboard_url"]
+                ):
+                    errors["dashboard_url"] = "missing_dashboard_url"
+                else:
                     # Update the dashboard with new values
-                    updated_dashboard = {**current_dashboard}
-                    updated_dashboard.update(cleaned_input)
+                    device_dashboards[self._current_dashboard_index] = {
+                        **current_dashboard,
+                        **cleaned_input,
+                    }
 
-                    # Remove entity config if not included
-                    if "switch_entity_id" not in cleaned_input:
-                        updated_dashboard.pop("switch_entity_id", None)
-                        updated_dashboard.pop("switch_entity_state", None)
-
-                    # Remove time settings if time window is disabled
-                    if not user_input.get("enable_time_window", False):
-                        updated_dashboard.pop("start_time", None)
-                        updated_dashboard.pop("end_time", None)
-
-                    # Remove speaker_groups if checkbox not checked
-                    if not user_input.get("include_speaker_groups", False):
-                        updated_dashboard.pop("speaker_groups", None)
-                    elif "speaker_groups" not in cleaned_input:
-                        # Checkbox checked but no valid input - remove it
-                        updated_dashboard.pop("speaker_groups", None)
-                    elif cleaned_input.get("speaker_groups") is None:
-                        # Explicitly handle None case
-                        updated_dashboard.pop("speaker_groups", None)
-
-                    device_dashboards[self._current_dashboard_index] = updated_dashboard
                     # Return to dashboard menu
                     return await self.async_step_dashboard_menu()
             except Exception as ex:
@@ -1087,12 +1037,6 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
         speaker_groups_str = (
             ", ".join(speaker_groups) if isinstance(speaker_groups, list) else ""
         )
-
-        # Determine if speaker groups are currently configured
-        has_speaker_groups = bool(current_dashboard.get("speaker_groups"))
-
-        # Determine if entity is currently configured
-        has_entity = bool(current_dashboard.get("switch_entity_id"))
 
         # Basic UI for dashboard editing
         schema = vol.Schema(
@@ -1125,21 +1069,13 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
                     ),
                 ): selector.TimeSelector(),
                 vol.Optional(
-                    "include_entity",
-                    default=has_entity,
-                ): cv.boolean,
-                vol.Optional(
                     "switch_entity_id",
                     default=current_dashboard.get("switch_entity_id", ""),
-                ): cv.string,
+                ): cv.string,  # Allow any entity type
                 vol.Optional(
                     "switch_entity_state",
                     default=current_dashboard.get("switch_entity_state", ""),
-                ): cv.string,
-                vol.Optional(
-                    "include_speaker_groups",
-                    default=has_speaker_groups,
-                ): cv.boolean,
+                ): cv.string,  # Allow any valid state
                 vol.Optional(
                     "speaker_groups",
                     default=speaker_groups_str,
@@ -1153,6 +1089,7 @@ class ContinuouslyCastingDashboardsOptionsFlow(config_entries.OptionsFlow):
             errors=errors,
             description_placeholders={
                 "device": self._current_device,
+                "title": "Edit Dashboard",
             },
             last_step=True,  # This adds a back button
         )
