@@ -112,9 +112,9 @@ The integration can be configured through the Home Assistant UI:
 
 ### YAML Configuration
 
-The integration also supports YAML configuration. If you have an existing YAML configuration, it will be automatically imported into the UI configuration when you add the integration. After import, you should remove the YAML configuration to avoid conflicts.
+The integration also supports YAML configuration. If you have an existing YAML configuration, it will be automatically imported into the UI configuration when you add the integration.
 
-**Note**: After importing YAML configuration, it is recommended to manage your configuration through the UI. While YAML configuration is still supported, using the UI provides a more user-friendly experience and better validation of settings.
+**Note**: After importing YAML configuration, it is recommended to manage your configuration through the UI.
 
 To configure the integration via YAML, add the following to your `configuration.yaml` file:
 
