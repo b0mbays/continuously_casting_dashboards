@@ -5,11 +5,13 @@ import asyncio
 import os
 from datetime import timedelta
 import voluptuous as vol
+import json
 
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_DEVICES, CONF_SCAN_INTERVAL
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
+from homeassistant.helpers.storage import Store
 import homeassistant.helpers.config_validation as cv
 
 from .casting import CastingManager
@@ -31,18 +33,32 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
-
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Continuously Cast Dashboards component."""
-    _LOGGER.debug("Setting up Continuously Cast Dashboards integration")
     hass.data.setdefault(DOMAIN, {})
 
-    if DOMAIN in config:
-        _LOGGER.info("Found YAML configuration for Continuously Cast Dashboards")
+    # Simple file-based approach to track notification state
+    storage_file = hass.config.path(f".{DOMAIN}_notification_state.json")
+    _LOGGER.critical(f"Using storage file at: {storage_file}")
+    
+    notification_shown = False
+    
+    try:
+        if os.path.exists(storage_file):
+            with open(storage_file, 'r') as f:
+                data = json.load(f)
+                notification_shown = data.get('acknowledged', False)
+    except Exception as ex:
+        _LOGGER.debug(f"Error loading notification state: {ex}")
 
-        # Create persistent notification to inform user about the import
-        hass.async_create_task(
-            hass.services.async_call(
+    if DOMAIN in config:
+        _LOGGER.debug("Found YAML configuration for Continuously Cast Dashboards")
+
+        # If notification hasn't been shown yet
+        if not notification_shown:
+            # Create persistent notification
+            notification_id = f"{DOMAIN}_config_imported"
+            await hass.services.async_call(
                 "persistent_notification",
                 "create",
                 {
@@ -50,12 +66,60 @@ async def async_setup(hass: HomeAssistant, config: dict):
                     "message": (
                         "Your YAML configuration for Continuously Cast Dashboards has been imported into the UI configuration.\n\n"
                         "Please remove the configuration from your configuration.yaml file to avoid conflicts.\n\n"
-                        "You can now manage your configuration through the UI."
+                        "You can now manage your configuration through the UI. "
+                        "Click DISMISS to prevent this message from appearing again."
                     ),
-                    "notification_id": f"{DOMAIN}_config_imported",
+                    "notification_id": notification_id,
                 },
             )
-        )
+            
+            # Log all events to see what's happening
+            async def log_all_events(event):
+                """Log all events to see what's happening."""
+                # Any event that looks related to notifications
+                if "notification" in event.event_type.lower():
+                    # See if our notification_id appears anywhere in the event data
+                    event_data_str = str(event.data)
+                    if notification_id in event_data_str:
+                        try:
+                            # Save the acknowledged state regardless of the exact event type
+                            with open(storage_file, 'w') as f:
+                                json.dump({"acknowledged": True}, f)
+                        except Exception as ex:
+                            _LOGGER.debug(f"Failed to save acknowledged state: {ex}")
+            
+            # Listen for ALL events for diagnostic purposes
+            remove_listener = hass.bus.async_listen("*", log_all_events)
+            
+            # Store the listener so it doesn't get garbage collected
+            hass.data[DOMAIN]["remove_listener"] = remove_listener
+            
+            # Also create a one-time task to auto-acknowledge after 5 minutes
+            # as a fallback in case the event system isn't working
+            async def auto_acknowledge():
+                """Automatically acknowledge after a timeout."""
+                import asyncio
+                await asyncio.sleep(300)  # 5 minutes
+                
+                # Check if we've already acknowledged
+                try:
+                    if os.path.exists(storage_file):
+                        with open(storage_file, 'r') as f:
+                            data = json.load(f)
+                            if data.get('acknowledged', False):
+                                return  # Already acknowledged, nothing to do
+                    
+                    # Not acknowledged yet, do it now
+                    _LOGGER.debug("Auto-acknowledging notification after timeout")
+                    with open(storage_file, 'w') as f:
+                        json.dump({"acknowledged": True}, f)
+                except Exception as ex:
+                    _LOGGER.debug(f"Error in auto-acknowledge: {ex}")
+            
+            # Start the auto-acknowledge task
+            hass.async_create_task(auto_acknowledge())
+        else:
+            _LOGGER.debug("Notification was previously acknowledged, skipping")
 
         # Forward the YAML config to the config flow
         hass.async_create_task(
@@ -67,7 +131,6 @@ async def async_setup(hass: HomeAssistant, config: dict):
         )
 
     return True
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Continuously Cast Dashboards from a config entry."""
