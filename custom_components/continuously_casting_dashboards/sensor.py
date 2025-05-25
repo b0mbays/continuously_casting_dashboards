@@ -246,8 +246,8 @@ class SwitchEntitySensor(BaseConfigSensor):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(hass, entry)
-        self._attr_name = "Control Entity"
-        self._attr_unique_id = f"{entry.entry_id}_switch_entity"
+        self._attr_name = "Switch Entity ID"
+        self._attr_unique_id = f"{entry.entry_id}_switch_entity_id"
         self._attr_icon = "mdi:toggle-switch"
         self._update_from_config(entry)
 
@@ -268,8 +268,8 @@ class SwitchStateSensor(BaseConfigSensor):
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Initialize the sensor."""
         super().__init__(hass, entry)
-        self._attr_name = "Required Entity State"
-        self._attr_unique_id = f"{entry.entry_id}_switch_state"
+        self._attr_name = "Switch Entity State"
+        self._attr_unique_id = f"{entry.entry_id}_switch_entity_state"
         self._attr_icon = "mdi:state-machine"
         self._update_from_config(entry)
 

@@ -27,19 +27,60 @@ I'm using this myself for 5 chromecast devices: Lenovo Smart Display 8 & four 1s
 * **Exposes sensors for configuring and viewing global settings:**
 
   * `sensor.cast_delay`
+  * `sensor.logging_level`
   * `sensor.start_time`
   * `sensor.end_time`
-  * `sensor.control_entity`
-  * `sensor.required_entity_state`
+  * `sensor.switch_entity_id`
+  * `sensor.switch_entity_state`
 
-  These sensors can be set via services. For example:
+  These sensors can be set via actions. For example:
 
   ```yaml
   action: continuously_casting_dashboards.set_cast_delay
   target:
     entity_id: sensor.cast_delay
   data:
-    value: 60
+    value: 60  # Must be between 5-300 seconds
+  ```
+
+  ```yaml
+  action: continuously_casting_dashboards.set_logging_level
+  target:
+    entity_id: sensor.logging_level
+  data:
+    value: debug  # Must be one of: debug, info, warning, error, critical
+  ```
+
+  ```yaml
+  action: continuously_casting_dashboards.set_start_time
+  target:
+    entity_id: sensor.start_time
+  data:
+    value: "07:00"  # Must be in HH:MM format
+  ```
+
+  ```yaml
+  action: continuously_casting_dashboards.set_end_time
+  target:
+    entity_id: sensor.end_time
+  data:
+    value: "23:00"  # Must be in HH:MM format
+  ```
+
+  ```yaml
+  action: continuously_casting_dashboards.set_switch_entity
+  target:
+    entity_id: sensor.switch_entity_id
+  data:
+    value: input_boolean.global_ccd_cast  # Must be a valid entity ID
+  ```
+
+  ```yaml
+  action: continuously_casting_dashboards.set_switch_state
+  target:
+    entity_id: sensor.switch_entity_state
+  data:
+    value: "on"  # Any string value
   ```
 
 <br/><br/>
