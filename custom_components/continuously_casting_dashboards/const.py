@@ -3,11 +3,11 @@
 DOMAIN = "continuously_casting_dashboards"
 CONF_SWITCH_ENTITY = "switch_entity_id"
 CONF_SWITCH_ENTITY_STATE = "switch_entity_state"
-PLATFORMS = []
+PLATFORMS = ["sensor"]  # Add sensor platform here!
 
 # Default configuration values
 DEFAULT_SCAN_INTERVAL = 30
-DEFAULT_CAST_DELAY = 0
+DEFAULT_CAST_DELAY = 60
 DEFAULT_START_TIME = "07:00"
 DEFAULT_END_TIME = "01:00"
 DEFAULT_VOLUME = 5
@@ -27,7 +27,7 @@ HEALTH_STATS_FILE = f"{CONFIG_DIR}/health_stats.json"
 
 # Device status types
 STATUS_CONNECTED = "connected"
-STATUS_DISCONNECTED = "disconnected"
+STATUS_DISCONNECTED = "disconnected"  
 STATUS_MEDIA_PLAYING = "media_playing"
 STATUS_OTHER_CONTENT = "other_content"
 STATUS_UNKNOWN = "unknown"
