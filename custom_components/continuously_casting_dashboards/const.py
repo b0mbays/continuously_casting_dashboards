@@ -3,7 +3,7 @@
 DOMAIN = "continuously_casting_dashboards"
 CONF_SWITCH_ENTITY = "switch_entity_id"
 CONF_SWITCH_ENTITY_STATE = "switch_entity_state"
-PLATFORMS = ["sensor"]
+PLATFORMS = []
 
 # Default configuration values
 DEFAULT_SCAN_INTERVAL = 30

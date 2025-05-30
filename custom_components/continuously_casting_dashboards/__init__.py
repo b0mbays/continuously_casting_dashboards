@@ -133,19 +133,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Continuously Casting Dashboards from a config entry."""
+    """Set up Continuously Cast Dashboards from a config entry."""
     _LOGGER.debug("Setting up entry %s", entry.entry_id)
-    
-    # Check if this entry is already set up
-    if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
-        _LOGGER.debug("Entry %s already set up, reloading", entry.entry_id)
-        await async_reload_entry(hass, entry)
-        return True
-
     # Register migration handler in async_setup_entry, not async_setup
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     entry.async_on_unload(entry.add_update_listener(async_migrate_entry))
-    
     # Merge data from config entry with options
     config = dict(entry.data)
     config.update(entry.options)
@@ -177,19 +169,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Start the caster
     start_task = asyncio.create_task(caster.start())
 
+    # Register update listener to handle option updates
+    entry.async_on_unload(entry.add_update_listener(async_reload_entry))
+
     try:
         # Wait for initialization with a timeout
         result = await asyncio.wait_for(start_task, timeout=60)  # 60 seconds timeout
-        
-        # Set up platforms only if not already set up
-        if not hass.data.get(DOMAIN, {}).get(entry.entry_id, {}).get("platforms_setup"):
-            for platform in PLATFORMS:
-                hass.async_create_task(
-                    hass.config_entries.async_forward_entry_setup(entry, platform)
-                )
-            # Mark platforms as set up
-            hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
-        
         _LOGGER.info("Entry %s setup completed with result: %s", entry.entry_id, result)
         return result
     except asyncio.TimeoutError:
@@ -199,16 +184,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         )
         return True  # Continue even if initialization times out
 
+
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Comprehensive entry reload mechanism."""
     _LOGGER.debug(f"Reloading entry {entry.entry_id}")
-    
+    _LOGGER.debug(f"Reloading with config: {config}")
+    _LOGGER.debug(f"Options before reload: {entry.options}")
     try:
         # 1. Merge current data and options
         config = dict(entry.data)
         config.update(entry.options)
-        _LOGGER.debug(f"Reloading with config: {config}")
-        _LOGGER.debug(f"Options before reload: {entry.options}")
 
         # 2. Stop existing integration instance
         if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
@@ -222,28 +207,18 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
         # 3. Create and start new instance
         new_instance = ContinuouslyCastingDashboards(hass, config)
         hass.data.setdefault(DOMAIN, {})
-        hass.data[DOMAIN][entry.entry_id] = {
-            "caster": new_instance, 
-            "config": config,
-            "platforms_setup": False  # Reset platform setup flag
-        }
+        hass.data[DOMAIN][entry.entry_id] = {"caster": new_instance, "config": config}
 
         # Start the new instance
         await new_instance.start()
-
-        # 4. Reload platforms
-        for platform in PLATFORMS:
-            await hass.config_entries.async_forward_entry_unload(entry, platform)
-            await hass.config_entries.async_forward_entry_setup(entry, platform)
-        
-        # Mark platforms as set up
-        hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
 
         _LOGGER.info(f"Successfully reloaded integration for entry {entry.entry_id}")
         _LOGGER.debug(f"Options after reload: {entry.options}")
     except Exception as ex:
         _LOGGER.error(f"Reload failed: {ex}")
+        # Consider adding this line to help with debugging:
         _LOGGER.exception("Detailed reload failure traceback:")
+
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
