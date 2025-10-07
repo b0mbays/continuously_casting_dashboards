@@ -159,6 +159,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 if existing_data.get("platforms_setup", False):
                     _LOGGER.debug("Platforms already set up for entry %s, aborting setup", entry.entry_id)
                     return True
+                # Also check individual platform flags
+                elif any(hasattr(entry, f"_platform_{platform}_setup") for platform in PLATFORMS):
+                    _LOGGER.debug("Some platforms already have setup flags for entry %s, aborting setup", entry.entry_id)
+                    return True
                 else:
                     _LOGGER.debug("Entry exists but platforms not set up, cleaning up first")
                     # Clean up the incomplete setup
@@ -200,19 +204,34 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass.data.setdefault(DOMAIN, {})
             hass.data[DOMAIN][entry.entry_id] = {"caster": caster, "config": config, "platforms_setup": False}
 
-            # 🚀 FAST CORE STARTUP - only essential services, no device discovery
-            _LOGGER.debug("Starting core services...")
+            # Start the caster
+            _LOGGER.debug("Starting caster...")
             try:
-                # Start core services only (no device initialization)
-                await asyncio.wait_for(caster.start_core(), timeout=10)  # Quick 10-second timeout
-                _LOGGER.debug("Core services started successfully")
+                # Wait for initialization with a timeout
+                await asyncio.wait_for(caster.start(), timeout=60)  # 60 seconds timeout
+                _LOGGER.debug("Caster initialization completed successfully")
                 
                 # Set up platforms (including sensor platform)
                 _LOGGER.debug("Setting up platforms: %s", PLATFORMS)
                 for platform in PLATFORMS:
                     try:
+                        # Check if platform is already set up for this entry
+                        if hasattr(entry, f"_platform_{platform}_setup"):
+                            _LOGGER.warning(f"Platform {platform} already marked as set up for entry {entry.entry_id}, skipping")
+                            continue
+                            
                         await hass.config_entries.async_forward_entry_setup(entry, platform)
+                        # Mark this platform as set up
+                        setattr(entry, f"_platform_{platform}_setup", True)
                         _LOGGER.debug(f"Successfully set up platform {platform}")
+                    except ValueError as e:
+                        if "already been setup" in str(e):
+                            _LOGGER.warning(f"Platform {platform} already set up for entry {entry.entry_id}, continuing")
+                            setattr(entry, f"_platform_{platform}_setup", True)
+                            continue
+                        else:
+                            _LOGGER.error(f"Error setting up platform {platform}: {e}")
+                            raise
                     except Exception as e:
                         _LOGGER.error(f"Error setting up platform {platform}: {e}")
                         raise
@@ -220,15 +239,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
                 _LOGGER.debug("Platforms setup completed")
                 
-                # 🚀 START BACKGROUND DEVICE INITIALIZATION - doesn't block integration loading
-                _LOGGER.info("Integration loaded successfully, starting device initialization in background...")
-                hass.async_create_task(caster.start_background_initialization())
-                
                 _LOGGER.info("Entry %s setup completed successfully", entry.entry_id)
                 return True
                 
             except asyncio.TimeoutError:
-                _LOGGER.error("Core initialization timed out for entry %s", entry.entry_id)
+                _LOGGER.error("Initialization timed out for entry %s", entry.entry_id)
                 # Clean up on timeout
                 if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
                     del hass.data[DOMAIN][entry.entry_id]
@@ -261,13 +276,19 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             if current_instance:
                 await current_instance.stop()
             
-            # Unload all platforms first
+            # Unload all platforms first and clear platform flags
             for platform in PLATFORMS:
                 try:
                     await hass.config_entries.async_forward_entry_unload(entry, platform)
+                    # Clear the platform setup flag
+                    if hasattr(entry, f"_platform_{platform}_setup"):
+                        delattr(entry, f"_platform_{platform}_setup")
                     _LOGGER.debug(f"Unloaded platform {platform}")
                 except Exception as e:
                     _LOGGER.warning(f"Error unloading platform {platform}: {e}")
+                    # Clear the flag anyway to allow retry
+                    if hasattr(entry, f"_platform_{platform}_setup"):
+                        delattr(entry, f"_platform_{platform}_setup")
 
             # Remove the current entry data
             del hass.data[DOMAIN][entry.entry_id]
@@ -281,16 +302,31 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             "platforms_setup": False  # Reset platform setup flag
         }
 
-        # Start the new instance (core services only)
+        # Start the new instance
         try:
-            await asyncio.wait_for(new_instance.start_core(), timeout=10)  # Fast core startup
+            await asyncio.wait_for(new_instance.start(), timeout=60)
             
             # 4. Set up platforms fresh
             _LOGGER.debug("Setting up platforms after reload")
             for platform in PLATFORMS:
                 try:
+                    # Check if platform is already set up for this entry
+                    if hasattr(entry, f"_platform_{platform}_setup"):
+                        _LOGGER.warning(f"Platform {platform} already marked as set up after reload for entry {entry.entry_id}, skipping")
+                        continue
+                        
                     await hass.config_entries.async_forward_entry_setup(entry, platform)
+                    # Mark this platform as set up
+                    setattr(entry, f"_platform_{platform}_setup", True)
                     _LOGGER.debug(f"Successfully set up platform {platform}")
+                except ValueError as e:
+                    if "already been setup" in str(e):
+                        _LOGGER.warning(f"Platform {platform} already set up for entry {entry.entry_id} after reload, continuing")
+                        setattr(entry, f"_platform_{platform}_setup", True)
+                        continue
+                    else:
+                        _LOGGER.error(f"Error setting up platform {platform}: {e}")
+                        raise
                 except Exception as e:
                     _LOGGER.error(f"Error setting up platform {platform}: {e}")
                     raise
@@ -298,10 +334,6 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
             _LOGGER.info(f"Successfully reloaded integration for entry {entry.entry_id}")
             _LOGGER.debug(f"Options after reload: {entry.options}")
-            
-            # Start background initialization after reload
-            hass.async_create_task(new_instance.start_background_initialization())
-            
         except asyncio.TimeoutError:
             _LOGGER.error(f"Reload timed out for entry {entry.entry_id}")
             if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
@@ -326,9 +358,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         for platform in PLATFORMS:
             try:
                 await hass.config_entries.async_forward_entry_unload(entry, platform)
+                # Clear the platform setup flag
+                if hasattr(entry, f"_platform_{platform}_setup"):
+                    delattr(entry, f"_platform_{platform}_setup")
                 _LOGGER.debug(f"Unloaded platform {platform}")
             except Exception as e:
                 _LOGGER.warning(f"Error unloading platform {platform}: {e}")
+                # Clear the flag anyway
+                if hasattr(entry, f"_platform_{platform}_setup"):
+                    delattr(entry, f"_platform_{platform}_setup")
 
         # Stop the existing caster if it exists
         if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:
@@ -359,8 +397,6 @@ class ContinuouslyCastingDashboards:
         self.config = config
         self.running = True
         self.started = False  # Add flag to prevent multiple starts
-        self.core_started = False  # Add flag for core services
-        self.background_started = False  # Add flag for background initialization
         self.unsubscribe_listeners = []
 
         # Initialize managers
@@ -381,17 +417,31 @@ class ContinuouslyCastingDashboards:
         # Share components between managers
         self.monitoring_manager.set_stats_manager(self.stats_manager)
 
-    async def start_core(self):
-        """Start core services only - fast startup for integration loading."""
-        if self.core_started:
-            _LOGGER.warning("Core services already started, skipping duplicate start")
+    async def start(self):
+        """Start the casting process."""
+        if self.started:
+            _LOGGER.warning("ContinuouslyCastingDashboards already started, skipping duplicate start")
             return True
             
-        _LOGGER.info("Starting core services - Instance ID: %s", id(self))
-        self.core_started = True
+        _LOGGER.info("Starting Continuously Casting Dashboards integration - Instance ID: %s", id(self))
+        self.started = True
 
         try:
-            # Set up recurring monitoring (but don't initialize devices yet)
+            # Initial setup of devices - each device may take a while to discover
+            _LOGGER.debug("Starting device initialization")
+            try:
+                await asyncio.wait_for(
+                    self.monitoring_manager.initialize_devices(),
+                    timeout=45,  # 45 second timeout for initial device setup
+                )
+                _LOGGER.debug("Device initialization completed successfully")
+            except asyncio.TimeoutError:
+                _LOGGER.warning("Device initialization timed out, continuing with setup")
+            except Exception as e:
+                _LOGGER.error("Error during device initialization: %s", str(e), exc_info=True)
+                raise
+
+            # Set up recurring monitoring
             _LOGGER.debug("Setting up recurring monitoring - Scan interval: %s seconds", self.config.get(CONF_SCAN_INTERVAL, 30))
             scan_interval = self.config.get(CONF_SCAN_INTERVAL, 30)
             recurring_listener = async_track_time_interval(
@@ -401,6 +451,15 @@ class ContinuouslyCastingDashboards:
             )
             self.unsubscribe_listeners.append(recurring_listener)
             _LOGGER.debug("Recurring monitoring listener created: %s", id(recurring_listener))
+
+            # Generate initial status
+            _LOGGER.debug("Generating initial status")
+            try:
+                await self.stats_manager.async_generate_status_data()
+                _LOGGER.debug("Initial status generation completed")
+            except Exception as e:
+                _LOGGER.error("Error generating initial status: %s", str(e), exc_info=True)
+                raise
 
             # Schedule regular status updates
             _LOGGER.debug("Setting up regular status updates")
@@ -412,69 +471,23 @@ class ContinuouslyCastingDashboards:
             self.unsubscribe_listeners.append(status_listener)
             _LOGGER.debug("Status update listener created: %s", id(status_listener))
 
-            # Mark core services as complete
-            _LOGGER.info("Core services started successfully - Total listeners: %s", len(self.unsubscribe_listeners))
-            return True
-        except Exception as e:
-            _LOGGER.error("Error in start_core(): %s", str(e), exc_info=True)
-            raise
-
-    async def start_background_initialization(self):
-        """Start background device initialization - doesn't block integration loading."""
-        if self.background_started:
-            _LOGGER.warning("Background initialization already started, skipping duplicate start")
-            return True
-            
-        _LOGGER.info("Starting background device initialization")
-        self.background_started = True
-
-        try:
-            # Initial setup of devices - this can take time but doesn't block integration
-            _LOGGER.debug("Starting device initialization in background")
-            try:
-                await asyncio.wait_for(
-                    self.monitoring_manager.initialize_devices(),
-                    timeout=45,  # 45 second timeout for initial device setup
-                )
-                _LOGGER.info("Background device initialization completed successfully")
-            except asyncio.TimeoutError:
-                _LOGGER.warning("Background device initialization timed out, continuing anyway")
-            except Exception as e:
-                _LOGGER.error("Error during background device initialization: %s", str(e), exc_info=True)
-                # Don't raise - let the integration continue working
-
-            # Generate initial status
-            _LOGGER.debug("Generating initial status in background")
-            try:
-                await self.stats_manager.async_generate_status_data()
-                _LOGGER.debug("Initial status generation completed")
-            except Exception as e:
-                _LOGGER.error("Error generating initial status: %s", str(e), exc_info=True)
-                # Don't raise - let the integration continue working
-
-            # Trigger an immediate monitoring run
-            _LOGGER.debug("Triggering immediate monitoring run in background")
+            # Trigger an immediate monitoring run in a separate task
+            _LOGGER.debug("Triggering immediate monitoring run - Task will be created")
             monitoring_task = self.hass.async_create_task(self.monitoring_manager.async_monitor_devices(None))
             _LOGGER.debug("Immediate monitoring task created: %s", id(monitoring_task))
 
-            # Mark background initialization as complete
-            _LOGGER.info("Background initialization complete - integration fully operational")
+            # Mark initialization as complete
+            _LOGGER.info("Continuously Casting Dashboards initialization complete - Total listeners: %s", len(self.unsubscribe_listeners))
             return True
         except Exception as e:
-            _LOGGER.error("Error in background initialization: %s", str(e), exc_info=True)
-            # Don't raise - let the integration continue working even if background init fails
-
-    async def start(self):
-        """Legacy start method for backward compatibility - now calls start_core."""
-        return await self.start_core()
+            _LOGGER.error("Error in start(): %s", str(e), exc_info=True)
+            raise
 
     async def stop(self):
         """Stop the casting process."""
         _LOGGER.info("Stopping Continuously Casting Dashboards integration")
         self.running = False
-        self.started = False
-        self.core_started = False
-        self.background_started = False
+        self.started = False  # Reset the started flag
 
         # Unsubscribe from all listeners
         for unsubscribe in self.unsubscribe_listeners:
