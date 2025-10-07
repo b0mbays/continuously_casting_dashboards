@@ -209,13 +209,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 
                 # Set up platforms (including sensor platform)
                 _LOGGER.debug("Setting up platforms: %s", PLATFORMS)
-                for platform in PLATFORMS:
-                    try:
-                        await hass.config_entries.async_forward_entry_setup(entry, platform)
-                        _LOGGER.debug(f"Successfully set up platform {platform}")
-                    except Exception as e:
-                        _LOGGER.error(f"Error setting up platform {platform}: {e}")
-                        raise
+                await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+                _LOGGER.debug("Successfully set up all platforms")
                 
                 hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
                 _LOGGER.debug("Platforms setup completed")
@@ -262,12 +257,8 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
                 await current_instance.stop()
             
             # Unload all platforms first
-            for platform in PLATFORMS:
-                try:
-                    await hass.config_entries.async_forward_entry_unload(entry, platform)
-                    _LOGGER.debug(f"Unloaded platform {platform}")
-                except Exception as e:
-                    _LOGGER.warning(f"Error unloading platform {platform}: {e}")
+            await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+            _LOGGER.debug("Unloaded all platforms")
 
             # Remove the current entry data
             del hass.data[DOMAIN][entry.entry_id]
@@ -287,13 +278,8 @@ async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
             
             # 4. Set up platforms fresh
             _LOGGER.debug("Setting up platforms after reload")
-            for platform in PLATFORMS:
-                try:
-                    await hass.config_entries.async_forward_entry_setup(entry, platform)
-                    _LOGGER.debug(f"Successfully set up platform {platform}")
-                except Exception as e:
-                    _LOGGER.error(f"Error setting up platform {platform}: {e}")
-                    raise
+            await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+            _LOGGER.debug("Successfully set up all platforms")
             
             hass.data[DOMAIN][entry.entry_id]["platforms_setup"] = True
             _LOGGER.info(f"Successfully reloaded integration for entry {entry.entry_id}")
@@ -323,12 +309,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     try:
         # Unload all platforms first
-        for platform in PLATFORMS:
-            try:
-                await hass.config_entries.async_forward_entry_unload(entry, platform)
-                _LOGGER.debug(f"Unloaded platform {platform}")
-            except Exception as e:
-                _LOGGER.warning(f"Error unloading platform {platform}: {e}")
+        await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+        _LOGGER.debug("Unloaded all platforms")
 
         # Stop the existing caster if it exists
         if DOMAIN in hass.data and entry.entry_id in hass.data[DOMAIN]:

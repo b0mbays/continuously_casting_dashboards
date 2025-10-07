@@ -1,0 +1,105 @@
+# Services for Continuously Casting Dashboards integration
+set_cast_delay:
+  name: Set Cast Delay
+  description: Update the cast delay (scan interval) for the integration
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: Delay Value
+      description: Cast delay in seconds (5-300)
+      required: true
+      example: 30
+      selector:
+        number:
+          min: 5
+          max: 300
+          unit_of_measurement: seconds
+
+set_logging_level:
+  name: Set Logging Level
+  description: Update the logging level for the integration
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: Logging Level
+      description: Logging level (debug, info, warning, error, critical)
+      required: true
+      example: "info"
+      selector:
+        select:
+          options:
+            - "debug"
+            - "info"
+            - "warning"
+            - "error"
+            - "critical"
+
+set_start_time:
+  name: Set Start Time
+  description: Update the start time for the casting window
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: Start Time
+      description: Start time in HH:MM format
+      required: true
+      example: "08:00"
+      selector:
+        time:
+
+set_end_time:
+  name: Set End Time
+  description: Update the end time for the casting window
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: End Time
+      description: End time in HH:MM format
+      required: true
+      example: "22:00"
+      selector:
+        time:
+
+set_switch_entity:
+  name: Set Control Entity
+  description: Update the entity used to control casting
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: Entity ID
+      description: Entity ID of the control switch
+      required: true
+      example: "switch.my_switch"
+      selector:
+        entity:
+
+set_switch_state:
+  name: Set Required Entity State
+  description: Update the required state for the control entity
+  target:
+    entity:
+      integration: continuously_casting_dashboards
+      domain: sensor
+  fields:
+    value:
+      name: Required State
+      description: State value required for casting to be active
+      required: true
+      example: "on"
+      selector:
+        text:
