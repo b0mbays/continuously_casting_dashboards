@@ -15,7 +15,17 @@ DEFAULT_MAX_RETRIES = 5
 DEFAULT_RETRY_DELAY = 10
 DEFAULT_VERIFICATION_WAIT_TIME = 15
 DEFAULT_CASTING_TIMEOUT = 60
+
+# Subprocess timeout constants (seconds)
+TIMEOUT_STATUS_CHECK = 15.0       # catt status / catt scan command timeout
+TIMEOUT_PROCESS_TERMINATE = 5.0   # Grace period after terminate() before kill()
+TIMEOUT_PROCESS_KILL = 2.0        # Grace period after kill()
+TIMEOUT_VOLUME_COMMAND = 10.0     # catt volume command timeout
+TIMEOUT_SPEAKER_GROUP = 15.0      # Speaker group status check timeout
+TIMEOUT_SCAN = 15.0               # catt scan timeout
+TIMEOUT_SCAN_TERMINATE = 2.0      # Grace period after scan terminate()
 DEFAULT_LOGGING_LEVEL = "warning"
+DEFAULT_ENABLE_NOTIFICATIONS = True
 
 # Logging levels
 LOGGING_LEVELS = ["debug", "info", "warning", "error", "critical"]
@@ -54,6 +64,9 @@ CONF_SWITCH_ENTITY_STATE = "switch_entity_state"
 CONF_DASHBOARD_URL = "dashboard_url"
 CONF_VOLUME = "volume"
 CONF_SPEAKER_GROUPS = "speaker_groups"
+CONF_DEVICE_NAME = "device_name"
+CONF_DEVICE_IP = "device_ip"
+CONF_DEVICE_ALIAS = "device_alias"
 
 # Translation strings
 ERR_DEVICE_ALREADY_EXISTS = "device_already_exists"

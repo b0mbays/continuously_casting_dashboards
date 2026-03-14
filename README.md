@@ -15,6 +15,7 @@
   <a href="#installation">Installation</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
+  <a href="#-migrating-from-yaml-to-ui">Migration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
 
@@ -77,7 +78,7 @@ Before installing, ensure you have:
 The wizard will guide you through:
 
 1. **Global settings** - Logging level, cast delay, default time window
-2. **Add device** - Enter your Chromecast display name (find it in Google Home app or device settings)
+2. **Add device** - Enter your Chromecast display name (from Google Home app), its IP address, or both. At least one is required. You can also set an optional alias as a display name.
 3. **Dashboard URL** - The full URL to your dashboard (e.g., `http://192.168.1.100:8123/lovelace/dashboard?kiosk`)
 
 > **Tip:** Use your Home Assistant's local IP address in the dashboard URL, not `homeassistant.local`
@@ -134,6 +135,7 @@ continuously_casting_dashboards:
 | `end_time` | No | `01:00` | When to stop casting (HH:MM format) |
 | `switch_entity_id` | No | - | Entity that controls casting on/off globally |
 | `switch_entity_state` | No | `on` | State value that enables casting |
+| `enable_notifications` | No | `true` | Show a HA notification when a device becomes unreachable |
 
 ### Per-Device Options
 
@@ -213,24 +215,28 @@ Adjust settings without restarting using Home Assistant services:
 ```yaml
 # Change cast delay
 service: continuously_casting_dashboards.set_cast_delay
-target:
-  entity_id: sensor.cast_delay
 data:
-  value: 60
+  delay: 60
 
 # Change time window
 service: continuously_casting_dashboards.set_start_time
-target:
-  entity_id: sensor.start_time
 data:
-  value: "08:00"
+  time: "08:00"
 
 # Change logging level
 service: continuously_casting_dashboards.set_logging_level
-target:
-  entity_id: sensor.logging_level
 data:
-  value: debug
+  level: debug
+
+# Stop a specific device (omit device_name to stop all)
+service: continuously_casting_dashboards.stop_casting
+data:
+  device_name: "Living Room Display"
+
+# Resume a specific device (omit device_name to check all)
+service: continuously_casting_dashboards.resume_casting
+data:
+  device_name: "Living Room Display"
 ```
 
 **Available services:**
@@ -238,14 +244,16 @@ data:
 - `set_logging_level` - debug, info, warning, error, critical
 - `set_start_time` - Start time (HH:MM)
 - `set_end_time` - End time (HH:MM)
-- `set_switch_entity` - Global control entity
-- `set_switch_state` - State that enables casting
+- `stop_casting` - Stop casting on a device or all devices
+- `resume_casting` - Resume casting on a device or trigger check on all devices
 
 ---
 
 ## 🔄 Migrating from YAML to UI
 
 If you're currently using YAML configuration (`configuration.yaml`), follow these steps to migrate to the new UI-based configuration:
+
+Migration guide: [Migrating from YAML to UI](#-migrating-from-yaml-to-ui)
 
 ### Automatic Migration
 
@@ -336,7 +344,7 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 
 **Solution:**
 - Check the exact name in Google Home app or on the device itself
-- Try using the device's IP address instead of its name
+- In the device settings, add the IP address directly in the **IP Address** field — this bypasses name lookup entirely and is more reliable
 
 ### Dashboard won't cast
 
@@ -346,6 +354,12 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 - [ ] Dashboard URL uses local IP (not `homeassistant.local`)
 - [ ] Current time is within the configured time window
 - [ ] No media is playing on the device
+
+### Device shows as unreachable
+
+If a device temporarily loses network connectivity (e.g. MDNS flakiness), the integration will mark it as unreachable and show a persistent notification in Home Assistant. The dashboard resumes automatically once the device comes back online and the notification is dismissed.
+
+If you have a device with an unreliable network and find the notifications noisy, you can disable them in **Settings** → **Devices & Services** → **Continuously Casting Dashboards** → **Configure** → uncheck **Enable notifications**.
 
 ### Annoying phone notifications for "DashCast"
 
@@ -362,5 +376,5 @@ Settings → Google → Devices & sharing → Cast options → Turn off "Media c
 ---
 
 <p align="center">
-  <sub>Tested with Lenovo Smart Display 8 and Google Nest Hub (1st Gen)</sub>
+  <sub>Tested with Lenovo Smart Display 8, Google Nest Hub (1st Gen)</sub>
 </p>

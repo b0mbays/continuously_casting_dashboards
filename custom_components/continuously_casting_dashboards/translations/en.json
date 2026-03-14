@@ -8,23 +8,33 @@
                 "data": {
                     "logging_level": "Logging Level",
                     "cast_delay": "Cast Delay (seconds)",
-                    "start_time": "Default Start Time",
-                    "end_time": "Default End Time",
+                    "start_time": "Default start casting at",
+                    "end_time": "Default stop casting at",
                     "include_entity": "Control casting with an entity",
                     "switch_entity_id": "Control Entity ID",
-                    "switch_entity_state": "Required State"
+                    "switch_entity_state": "Required State",
+                    "enable_notifications": "Enable notifications"
                 },
                 "data_description": {
-                    "cast_delay": "How often to check each device (5-300 seconds)",
-                    "switch_entity_id": "Entity that enables/disables all casting",
-                    "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)"
+                    "logging_level": "Use 'Warning' normally. Switch to 'Debug' when troubleshooting — it logs a lot.",
+                    "cast_delay": "How often each device is checked (5-300 seconds). Lower = more responsive, higher = less load.",
+                    "start_time": "24-hour format — casting starts at this time by default. Can be overridden per device.",
+                    "end_time": "24-hour format — casting stops at this time by default. Can be overridden per device.",
+                    "switch_entity_id": "Entity that enables or disables casting for all devices",
+                    "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                    "enable_notifications": "Show a notification when a device becomes unreachable"
                 }
             }
         },
         "error": {
-            "invalid_device_name": "Please enter a valid device name",
+            "invalid_device_name": "Please enter a valid device name (letters, numbers, spaces, hyphens, underscores only)",
+            "device_name_too_long": "Device name is too long (maximum 100 characters)",
             "device_already_exists": "A device with this name already exists",
+            "device_name_or_ip_required": "Please provide at least a Device Name or an IP Address",
+            "invalid_device_ip": "Invalid IP address format (e.g., 192.168.1.50)",
             "missing_dashboard_url": "Dashboard URL is required",
+            "invalid_url_format": "Invalid URL format. Please enter a valid URL",
+            "invalid_url_scheme": "URL must start with http:// or https://",
             "unknown": "An unexpected error occurred",
             "entity_not_found": "Entity not found in Home Assistant",
             "update_failed": "Failed to save configuration"
@@ -42,16 +52,21 @@
                 "data": {
                     "logging_level": "Logging Level",
                     "cast_delay": "Cast Delay (seconds)",
-                    "start_time": "Default Start Time",
-                    "end_time": "Default End Time",
+                    "start_time": "Default start casting at",
+                    "end_time": "Default stop casting at",
                     "include_entity": "Control casting with an entity",
                     "switch_entity_id": "Control Entity ID",
-                    "switch_entity_state": "Required State"
+                    "switch_entity_state": "Required State",
+                    "enable_notifications": "Enable notifications"
                 },
                 "data_description": {
-                    "cast_delay": "How often to check each device (5-300 seconds)",
-                    "switch_entity_id": "Entity that enables/disables all casting",
-                    "switch_entity_state": "State that enables casting. Leave blank for defaults"
+                    "logging_level": "Use 'Warning' normally. Switch to 'Debug' when troubleshooting — it logs a lot.",
+                    "cast_delay": "How often each device is checked (5-300 seconds). Lower = more responsive, higher = less load.",
+                    "start_time": "24-hour format — casting starts at this time by default. Can be overridden per device.",
+                    "end_time": "24-hour format — casting stops at this time by default. Can be overridden per device.",
+                    "switch_entity_id": "Entity that enables or disables casting for all devices",
+                    "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                    "enable_notifications": "Show a notification when a device becomes unreachable"
                 }
             }
         },
@@ -72,12 +87,16 @@
             "step": {
                 "user": {
                     "title": "Add New Device",
-                    "description": "Enter the name or IP address of your Chromecast device.\n\nFind the device name in the Google Home app or on the device under Settings > Device Information.",
+                    "description": "Configure your Chromecast device. Provide a **Device Name** (from Google Home), an **IP Address**, or both. At least one is required.\n\nOptionally set an **Alias** to give the device a custom display name.",
                     "data": {
-                        "device_name": "Device Name or IP Address"
+                        "device_name": "Device Name",
+                        "device_ip": "IP Address",
+                        "device_alias": "Alias (Display Name)"
                     },
                     "data_description": {
-                        "device_name": "e.g., 'Living Room Display' or '192.168.1.50'"
+                        "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
+                        "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
+                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')"
                     }
                 },
                 "add_dashboard": {
@@ -86,20 +105,24 @@
                     "data": {
                         "dashboard_url": "Dashboard URL",
                         "volume": "Volume (0-100)",
-                        "enable_time_window": "Use custom time window",
-                        "start_time": "Start Time",
-                        "end_time": "End Time",
-                        "include_entity": "Control with entity state",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
                         "switch_entity_id": "Control Entity ID",
                         "switch_entity_state": "Required State",
-                        "include_speaker_groups": "Check speaker groups",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
                         "speaker_groups": "Speaker Group Names",
                         "add_another": "Add another dashboard after this one"
                     },
                     "data_description": {
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
-                        "volume": "Device volume when casting",
-                        "speaker_groups": "Comma-separated list of speaker group names"
+                        "volume": "Device volume when casting (0 = silent, 100 = max)",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check"
                     }
                 },
                 "reconfigure_device": {
@@ -107,25 +130,33 @@
                     "description": "Edit device and dashboard settings.",
                     "data": {
                         "device_name": "Device Name",
+                        "device_ip": "IP Address",
+                        "device_alias": "Alias (Display Name)",
                         "dashboard_url": "Dashboard URL",
                         "volume": "Volume (0-100)",
-                        "enable_time_window": "Use custom time window",
-                        "start_time": "Start Time",
-                        "end_time": "End Time",
-                        "include_entity": "Control with entity state",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
                         "switch_entity_id": "Control Entity ID",
                         "switch_entity_state": "Required State",
-                        "include_speaker_groups": "Check speaker groups",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
                         "speaker_groups": "Speaker Group Names",
                         "add_another_dashboard": "Add another dashboard after saving",
                         "change_dashboard": "Edit a different dashboard",
                         "delete_this_dashboard": "Delete this dashboard"
                     },
                     "data_description": {
-                        "device_name": "Name or IP address of the Chromecast device",
+                        "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
+                        "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
+                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')",
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
-                        "volume": "Device volume when casting",
-                        "speaker_groups": "Comma-separated list of speaker group names",
+                        "volume": "Device volume when casting (0 = silent, 100 = max)",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
                         "add_another_dashboard": "Saves this dashboard and opens a blank form for another one",
                         "change_dashboard": "Save your changes and pick a different dashboard to edit",
                         "delete_this_dashboard": "Remove this dashboard (cannot delete the last one)"
@@ -151,32 +182,42 @@
                     "data": {
                         "dashboard_url": "Dashboard URL",
                         "volume": "Volume (0-100)",
-                        "enable_time_window": "Use custom time window",
-                        "start_time": "Start Time",
-                        "end_time": "End Time",
-                        "include_entity": "Control with entity state",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
                         "switch_entity_id": "Control Entity ID",
                         "switch_entity_state": "Required State",
-                        "include_speaker_groups": "Check speaker groups",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
                         "speaker_groups": "Speaker Group Names"
                     },
                     "data_description": {
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
-                        "volume": "Device volume when casting",
-                        "speaker_groups": "Comma-separated list of speaker group names"
+                        "volume": "Device volume when casting (0 = silent, 100 = max)",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check"
                     }
                 }
             },
             "error": {
-                "invalid_device_name": "Please enter a valid device name",
+                "invalid_device_name": "Please enter a valid device name (letters, numbers, spaces, hyphens, underscores only)",
+                "device_name_too_long": "Device name is too long (maximum 100 characters)",
                 "device_already_exists": "A device with this name already exists",
+                "device_name_or_ip_required": "Please provide at least a Device Name or an IP Address",
+                "invalid_device_ip": "Invalid IP address format (e.g., 192.168.1.50)",
                 "missing_dashboard_url": "Dashboard URL is required",
+                "invalid_url_format": "Invalid URL format. Please enter a valid URL",
+                "invalid_url_scheme": "URL must start with http:// or https://",
                 "entity_not_found": "Entity not found",
                 "cannot_delete_last": "Cannot delete the only dashboard. Add another first or delete the device.",
                 "unknown": "An unexpected error occurred"
             },
             "abort": {
-                "subentry_updated": "Device saved!"
+                "subentry_updated": "Device saved!",
+                "reconfigure_successful": "Device configuration saved!"
             }
         }
     }

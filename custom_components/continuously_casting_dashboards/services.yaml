@@ -1,0 +1,82 @@
+# Services for Continuously Casting Dashboards
+
+set_cast_delay:
+  name: Set Cast Delay
+  description: Change the cast delay (how often devices are checked) at runtime.
+  fields:
+    delay:
+      name: Delay
+      description: The delay in seconds between device checks (5-300).
+      required: true
+      example: 60
+      selector:
+        number:
+          min: 5
+          max: 300
+          unit_of_measurement: seconds
+
+set_logging_level:
+  name: Set Logging Level
+  description: Change the logging level at runtime.
+  fields:
+    level:
+      name: Level
+      description: The logging level to set.
+      required: true
+      example: "debug"
+      selector:
+        select:
+          options:
+            - "debug"
+            - "info"
+            - "warning"
+            - "error"
+            - "critical"
+
+set_start_time:
+  name: Set Start Time
+  description: Change the global start time for casting windows.
+  fields:
+    time:
+      name: Time
+      description: The start time in HH:MM format.
+      required: true
+      example: "07:00"
+      selector:
+        time:
+
+set_end_time:
+  name: Set End Time
+  description: Change the global end time for casting windows.
+  fields:
+    time:
+      name: Time
+      description: The end time in HH:MM format.
+      required: true
+      example: "01:00"
+      selector:
+        time:
+
+stop_casting:
+  name: Stop Casting
+  description: Stop casting on a specific device or all devices.
+  fields:
+    device_name:
+      name: Device Name
+      description: The name of the device to stop. Leave empty to stop all devices.
+      required: false
+      example: "Living Room Display"
+      selector:
+        text:
+
+resume_casting:
+  name: Resume Casting
+  description: Resume casting on a specific device or trigger a check on all devices.
+  fields:
+    device_name:
+      name: Device Name
+      description: The name of the device to resume. Leave empty to check all devices.
+      required: false
+      example: "Living Room Display"
+      selector:
+        text:
