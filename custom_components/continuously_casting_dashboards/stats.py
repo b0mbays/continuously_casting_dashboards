@@ -1,8 +1,8 @@
 """Statistics handling for Continuously Casting Dashboards."""
 import json
 import logging
-import os
 from datetime import datetime
+from pathlib import Path
 from homeassistant.core import HomeAssistant
 from .const import (
     DOMAIN,
@@ -26,21 +26,35 @@ class StatsManager:
     """Class to handle statistics for the integration."""
 
     def __init__(self, hass: HomeAssistant, config: dict):
-        """Initialize the statistics manager."""
+        """Initialize the statistics manager.
+
+        Args:
+            hass: The Home Assistant instance.
+            config: The integration configuration dictionary.
+        """
         self.hass = hass
         self.config = config
         self.health_stats = {}
         self.device_manager = None  # Will be set later
 
         # Ensure directory exists
-        os.makedirs('/config/continuously_casting_dashboards', exist_ok=True)
+        Path('/config/continuously_casting_dashboards').mkdir(parents=True, exist_ok=True)
 
     def set_device_manager(self, device_manager):
-        """Set the device manager reference."""
+        """Set the device manager reference.
+
+        Args:
+            device_manager: The DeviceManager instance to use for status queries.
+        """
         self.device_manager = device_manager
     
     async def async_update_health_stats(self, device_key, event_type):
-        """Update health statistics for a device."""
+        """Increment health counters for a device event and persist to disk.
+
+        Args:
+            device_key: The device identifier string used as the stats key.
+            event_type: One of the EVENT_* constants (e.g. EVENT_CONNECTION_ATTEMPT).
+        """
         if device_key not in self.health_stats:
             self.health_stats[device_key] = {
                 'first_seen': datetime.now().isoformat(),
@@ -76,16 +90,22 @@ class StatsManager:
         # Save health stats to file
         try:
             def write_health_stats():
-                os.makedirs('/config/continuously_casting_dashboards', exist_ok=True)
+                """Write the current health_stats dict to the JSON file."""
+                Path('/config/continuously_casting_dashboards').mkdir(parents=True, exist_ok=True)
                 with open(HEALTH_STATS_FILE, 'w') as f:
                     json.dump(self.health_stats, f, indent=2)
                     
             await self.hass.async_add_executor_job(write_health_stats)
         except Exception as e:
-            _LOGGER.error(f"Failed to save health stats: {str(e)}")
+            _LOGGER.error("Failed to save health stats: %s", e)
 
     async def async_generate_status_data(self, *args):
-        """Generate status data for Home Assistant sensors."""
+        """Build a status snapshot, write it to disk, and fire a sensor-refresh event.
+
+        Returns:
+            A dict with aggregate counts and per-device status details,
+            or an empty dict if the device manager is not yet set.
+        """
         if not self.device_manager:
             _LOGGER.warning("Device manager not set in StatsManager")
             return {}
@@ -113,18 +133,26 @@ class StatsManager:
         for device_key, device in active_devices.items():
             device_name = device.get('name', 'Unknown')
             ip = device.get('ip', 'Unknown')
-            
-            status_data['devices'][device_name] = {
+
+            device_data = {
                 'ip': ip,
                 'status': device.get('status', 'unknown'),
                 'last_checked': device.get('last_checked', ''),
                 'reconnect_attempts': device.get('reconnect_attempts', 0)
             }
+
+            # Include current dashboard URL if available
+            current_dashboard = device.get('current_dashboard')
+            if current_dashboard:
+                device_data['current_dashboard'] = current_dashboard
+
+            status_data['devices'][device_name] = device_data
         
         # Save status data to file for Home Assistant
         try:
             def write_status_file():
-                os.makedirs('/config/continuously_casting_dashboards', exist_ok=True)
+                """Write the current status_data dict to the JSON file."""
+                Path('/config/continuously_casting_dashboards').mkdir(parents=True, exist_ok=True)
                 with open(STATUS_FILE, 'w') as f:
                     json.dump(status_data, f, indent=2)
 
@@ -134,6 +162,6 @@ class StatsManager:
             self.hass.bus.async_fire(EVENT_STATUS_UPDATED, {"status_data": status_data})
             _LOGGER.debug("Fired status update event for sensor refresh")
         except Exception as e:
-            _LOGGER.error(f"Failed to save status data: {str(e)}")
+            _LOGGER.error("Failed to save status data: %s", e)
 
         return status_data

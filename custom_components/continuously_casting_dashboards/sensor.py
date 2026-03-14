@@ -22,7 +22,13 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up the sensor platform."""
+    """Set up global summary sensors and per-device status sensors for the entry.
+
+    Args:
+        hass: The Home Assistant instance.
+        entry: The config entry being set up.
+        async_add_entities: Callback used to register new sensor entities.
+    """
     _LOGGER.debug("Setting up sensor platform for entry %s", entry.entry_id)
 
     # Get the integration instance from hass.data
@@ -109,14 +115,20 @@ class ContinuouslyCastingSensorBase(SensorEntity):
     """Base class for Continuously Casting Dashboards sensors."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry):
-        """Initialize the sensor base."""
+        """Initialize the sensor base.
+
+        Args:
+            hass: The Home Assistant instance.
+            entry: The config entry this sensor belongs to.
+        """
         self.hass = hass
         self.entry = entry
         self._status_data = {}
 
     def _refresh_data(self):
-        """Schedule a refresh of the status data without blocking."""
+        """Schedule a non-blocking refresh of status data in the background."""
         async def _do_refresh():
+            """Read status data in an executor and update internal state."""
             try:
                 self._status_data = await self.hass.async_add_executor_job(_read_status_data)
             except Exception as e:
@@ -160,7 +172,14 @@ class ContinuouslyCastingSummarySensor(ContinuouslyCastingSensorBase):
     """Sensor for global summary statistics."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, sensor_type: str, friendly_name: str):
-        """Initialize the summary sensor."""
+        """Initialize the summary sensor.
+
+        Args:
+            hass: The Home Assistant instance.
+            entry: The config entry this sensor belongs to.
+            sensor_type: Key in the status data dict (e.g. 'connected_devices').
+            friendly_name: Human-readable sensor name shown in the UI.
+        """
         super().__init__(hass, entry)
         self._sensor_type = sensor_type
         self._attr_unique_id = f"{DOMAIN}_{entry.entry_id}_{sensor_type}"
@@ -185,13 +204,29 @@ class ContinuouslyCastingSummarySensor(ContinuouslyCastingSensorBase):
 
 
 class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
-    """Sensor for individual device status."""
+    """Sensor for individual device status.
+
+    Provides detailed status information for each Chromecast device including:
+    - Current casting status (connected, disconnected, media_playing, etc.)
+    - Device IP address
+    - Current dashboard URL (if casting)
+    - Reconnection attempt count
+    - Last check timestamp
+    """
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, device_name: str):
-        """Initialize the device sensor."""
+        """Initialize the device status sensor.
+
+        Args:
+            hass: The Home Assistant instance.
+            entry: The config entry this sensor belongs to.
+            device_name: The Chromecast device name as it appears in status data.
+        """
         super().__init__(hass, entry)
         self._device_name = device_name
-        self._attr_unique_id = f"{DOMAIN}_{entry.entry_id}_{device_name.replace(' ', '_').lower()}_status"
+        # Create a sanitized version of device name for unique_id
+        sanitized_name = device_name.replace(' ', '_').replace('-', '_').lower()
+        self._attr_unique_id = f"{DOMAIN}_{entry.entry_id}_{sanitized_name}_status"
         self._attr_has_entity_name = True
         self._attr_name = f"{device_name} Status"
         self._refresh_data()
@@ -206,17 +241,41 @@ class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
         return "unknown"
 
     @property
+    def icon(self) -> str:
+        """Return the icon based on device status."""
+        status = self.native_value
+        if status == "connected":
+            return "mdi:cast-connected"
+        elif status == "disconnected":
+            return "mdi:cast-off"
+        elif status == "media_playing":
+            return "mdi:cast-audio"
+        elif status == "assistant_active":
+            return "mdi:google-assistant"
+        elif status == "speaker_group_active":
+            return "mdi:speaker-multiple"
+        elif status == "casting_in_progress":
+            return "mdi:cast"
+        else:
+            return "mdi:cast"
+
+    @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return additional state attributes."""
         devices = self._status_data.get("devices", {})
         device_info = devices.get(self._device_name)
         if device_info:
-            return {
+            attrs = {
                 "ip": device_info.get("ip", "Unknown"),
                 "last_checked": device_info.get("last_checked", ""),
                 "reconnect_attempts": device_info.get("reconnect_attempts", 0),
                 "device_name": self._device_name,
             }
+            # Add current dashboard if available
+            current_dashboard = device_info.get("current_dashboard")
+            if current_dashboard:
+                attrs["current_dashboard"] = current_dashboard
+            return attrs
         return None
 
     @property
