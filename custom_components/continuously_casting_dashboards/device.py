@@ -157,7 +157,11 @@ class DeviceManager:
             "stopwatch",
             "countdown",
         ]
-        return any(keyword in sanitized for keyword in assistant_keywords)
+        for keyword in assistant_keywords:
+            if re.search(rf"\b{keyword}\b", sanitized):
+                _LOGGER.debug("Assistant activity keyword matched: '%s' in status output", keyword)
+                return True
+        return False
 
     async def _async_run_status_command(self, ip, timeout=TIMEOUT_STATUS_CHECK, allow_cache=True):
         """Run catt status and return stdout, stderr, return code, and a cache-hit flag.
@@ -314,13 +318,13 @@ class DeviceManager:
                 if "Scanning Chromecasts..." in line or not line.strip():
                     continue
 
-                # Parse format: IP - Name
-                parts = line.split(' - ')
+                # Parse format: IP - Name (name may itself contain " - ", so split on first only)
+                parts = line.split(' - ', 1)
                 if len(parts) < 2:
                     continue
 
                 ip = parts[0].strip()
-                found_name = parts[1].strip() if len(parts) > 1 else ""
+                found_name = parts[1].strip()
 
                 # Collect all found devices for logging
                 found_devices.append((found_name, ip))
@@ -526,7 +530,7 @@ class DeviceManager:
                     _LOGGER.debug("Device at %s is idle or not casting", ip)
                     return False
 
-                # Look for "Dummy" or our dashboard URL, which indicates our dashboard is casting
+                # Look for "Dummy" in the title, which indicates our dashboard is casting
                 if "Dummy" in output:
                     dummy_line = next((line for line in output.splitlines() if "Dummy" in line), "")
                     _LOGGER.debug("Dashboard found: %s", dummy_line)
