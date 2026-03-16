@@ -57,6 +57,7 @@ class MonitoringManager:
         self._device_locks: dict[str, asyncio.Lock] = {}  # Per-device locks for concurrent operations
         self._dummy_positions: dict = {}  # Reserved for future use
         self._unsubscribe_listeners: list = []  # Track listeners for cleanup
+        self._unreachable_counts: dict[str, int] = {}  # Consecutive unreachable cycle count per device
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
@@ -483,9 +484,17 @@ class MonitoringManager:
                     return
                 
                 else:
-                    _LOGGER.info("Switch triggered but device %s has other content - marking status", device_name)
-                    # Device has other content, just update status
                     active_device = self.device_manager.get_active_device(device_key)
+                    previous_status = active_device.get('status') if active_device else None
+
+                    # If CCD itself stopped this device (e.g. switch was turned off), cast immediately
+                    # rather than waiting for the next regular monitoring cycle.
+                    if previous_status == 'stopped' and not is_unreachable:
+                        _LOGGER.info("Switch triggered and device %s was previously stopped by CCD - starting immediate cast", device_name)
+                        await self.async_start_device(device_name, current_config, ip)
+                        return
+
+                    _LOGGER.info("Switch triggered but device %s has other content - marking status", device_name)
                     if active_device:
                         self.device_manager.update_active_device(
                             device_key=device_key,
@@ -527,7 +536,8 @@ class MonitoringManager:
                         self.device_manager.update_active_device(device_key, 'connected', reconnect_attempts=0)
                         if self.stats_manager:
                             await self.stats_manager.async_update_health_stats(device_key, EVENT_RECONNECT_SUCCESS)
-                        # Dismiss any unreachable notification for this device
+                        # Dismiss any unreachable notification and reset the counter
+                        self._unreachable_counts.pop(device_key, None)
                         if self.config.get("enable_notifications", True):
                             notification_id = f"ccd_unreachable_{device_key.replace(' ', '_')}"
                             self.hass.async_create_task(
@@ -539,6 +549,7 @@ class MonitoringManager:
                     else:
                         self.device_manager.update_active_device(device_key, 'connected', last_checked=datetime.now().isoformat())
                 elif is_idle:
+                    self._unreachable_counts.pop(device_key, None)
                     # Device is idle, should show our dashboard
                     # Add a delay after any status change to prevent rapid reconnects
                     # This gives voice commands time to be processed
@@ -564,6 +575,9 @@ class MonitoringManager:
                             self.device_manager.update_active_device(device_key, 'disconnected', last_checked=datetime.now().isoformat())
                 elif is_unreachable:
                     # Device didn't respond at all — treat as disconnected, not other_content
+                    unreachable_count = self._unreachable_counts.get(device_key, 0) + 1
+                    self._unreachable_counts[device_key] = unreachable_count
+
                     if previous_status != 'disconnected':
                         _LOGGER.warning("Device %s (%s) is unreachable (all status checks timed out)", device_name, ip)
                         self.device_manager.update_active_device(
@@ -572,27 +586,29 @@ class MonitoringManager:
                             last_status_change=current_time,
                             last_checked=datetime.now().isoformat()
                         )
-                        if self.config.get("enable_notifications", True):
-                            notification_id = f"ccd_unreachable_{device_key.replace(' ', '_')}"
-                            self.hass.async_create_task(
-                                self.hass.services.async_call(
-                                    "persistent_notification", "create",
-                                    {
-                                        "title": f"CCD: {device_name} unreachable",
-                                        "message": (
-                                            f"**{device_name}** ({ip}) is not responding to status checks.\n\n"
-                                            f"The dashboard will resume automatically once the device comes back online. "
-                                            f"If this keeps happening, check the device's network connection."
-                                        ),
-                                        "notification_id": notification_id,
-                                    }
-                                )
-                            )
                     else:
-                        _LOGGER.debug("Device %s (%s) still unreachable", device_name, ip)
+                        _LOGGER.debug("Device %s (%s) still unreachable (consecutive count: %d)", device_name, ip, unreachable_count)
                         self.device_manager.update_active_device(device_key, 'disconnected', last_checked=datetime.now().isoformat())
+
+                    if unreachable_count == 5 and self.config.get("enable_notifications", True):
+                        notification_id = f"ccd_unreachable_{device_key.replace(' ', '_')}"
+                        self.hass.async_create_task(
+                            self.hass.services.async_call(
+                                "persistent_notification", "create",
+                                {
+                                    "title": f"CCD: {device_name} unreachable",
+                                    "message": (
+                                        f"**{device_name}** ({ip}) has not responded to the last 5 status checks.\n\n"
+                                        f"Try rebooting the device if it doesn't recover on its own. "
+                                        f"The dashboard will resume automatically once it comes back online."
+                                    ),
+                                    "notification_id": notification_id,
+                                }
+                            )
+                        )
                 else:
                     # Device has other content
+                    self._unreachable_counts.pop(device_key, None)
                     if previous_status != 'other_content':
                         self.device_manager.update_active_device(
                             device_key=device_key,
