@@ -141,9 +141,14 @@ class CastingManager:
                         stderr=asyncio.subprocess.PIPE
                     )
                     self.active_subprocesses[f"{ip}_stop"] = stop_process
-                    await stop_process.communicate()
-                    self.active_subprocesses.pop(f"{ip}_stop", None)
-                    
+                    try:
+                        await asyncio.wait_for(stop_process.communicate(), timeout=TIMEOUT_VOLUME_COMMAND)
+                    except asyncio.TimeoutError:
+                        _LOGGER.warning("Stop command timed out for %s", ip)
+                        stop_process.terminate()
+                    finally:
+                        self.active_subprocesses.pop(f"{ip}_stop", None)
+
                     # Set volume to 0 initially
                     vol_cmd = ['catt', '-d', ip, 'volume', '0']
                     _LOGGER.debug("Setting initial volume to 0: %s", ' '.join(vol_cmd))
@@ -153,8 +158,13 @@ class CastingManager:
                         stderr=asyncio.subprocess.PIPE
                     )
                     self.active_subprocesses[f"{ip}_vol_initial"] = vol_process
-                    await vol_process.communicate()
-                    self.active_subprocesses.pop(f"{ip}_vol_initial", None)
+                    try:
+                        await asyncio.wait_for(vol_process.communicate(), timeout=TIMEOUT_VOLUME_COMMAND)
+                    except asyncio.TimeoutError:
+                        _LOGGER.warning("Initial volume command timed out for %s", ip)
+                        vol_process.terminate()
+                    finally:
+                        self.active_subprocesses.pop(f"{ip}_vol_initial", None)
                     
                     # Cast the dashboard
                     cmd = ['catt', '-d', ip, 'cast_site', dashboard_url]

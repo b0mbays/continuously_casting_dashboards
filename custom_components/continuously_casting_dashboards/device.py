@@ -293,15 +293,29 @@ class DeviceManager:
                 stderr=asyncio.subprocess.PIPE
             )
 
+            stdout = stderr = None
             try:
-                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=TIMEOUT_SCAN)
-            except asyncio.TimeoutError:
-                _LOGGER.warning("Scan for device %s timed out after %ss", device_name, TIMEOUT_SCAN)
-                process.terminate()
                 try:
-                    await asyncio.wait_for(process.wait(), timeout=TIMEOUT_SCAN_TERMINATE)
+                    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=TIMEOUT_SCAN)
                 except asyncio.TimeoutError:
-                    process.kill()
+                    _LOGGER.warning("Scan for device %s timed out after %ss", device_name, TIMEOUT_SCAN)
+                    return None
+            finally:
+                # Always terminate the subprocess — including when this coroutine is cancelled
+                # by an outer asyncio.wait_for. Without this guard, orphaned `catt scan`
+                # processes accumulate and cause a memory leak.
+                if process.returncode is None:
+                    process.terminate()
+                    try:
+                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_SCAN_TERMINATE)
+                    except (asyncio.TimeoutError, asyncio.CancelledError):
+                        process.kill()
+                        try:
+                            await asyncio.shield(process.wait())
+                        except Exception:
+                            pass
+
+            if stdout is None:
                 return None
 
             scan_output = stdout.decode()
