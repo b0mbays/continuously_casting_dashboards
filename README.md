@@ -55,7 +55,7 @@ Before installing, ensure you have:
 1. Open HACS in Home Assistant
 2. Click the three dots (⋮) → **Custom repositories**
 3. Add `b0mbays/continuously_casting_dashboards` as an **Integration**
-4. Search for "Continuously Casting Dashboards" and click **Download**
+4. Search for "Continuously Casting Dashboard" and click **Download**
 5. Restart Home Assistant
 
 ### Manual Installation
