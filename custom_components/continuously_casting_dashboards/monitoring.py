@@ -231,6 +231,20 @@ class MonitoringManager:
             # Process this single device using the same logic as the main monitoring
             await self._process_single_device(target_device_name, ip, current_config, force_check=True)
 
+    """Send the keeyalive keypress to a Google TV using the provided remote entity."""
+    async def _send_keepalive_button(self, remote_entity_id: str):
+        if remote_entity_id is None:
+            return
+
+        _LOGGER.debug("Sending keepalive using: " + remote_entity_id)
+        await self.hass.services.async_call(
+            domain="remote",
+            service="send_command",
+            service_data={"command": "MENU"},
+            target={"entity_id": remote_entity_id},
+            blocking=True,
+        )
+
     async def _process_single_device(self, device_name, ip, current_config, force_check=False):
             """Evaluate device state and cast, stop, or skip as appropriate.
 
@@ -523,7 +537,6 @@ class MonitoringManager:
                 
                 # Determine current state and take appropriate action
                 if is_casting:  # Use the single status check result
-
                     # Device is showing our dashboard
                     if previous_status != 'connected':
                         self.device_manager.update_active_device(
@@ -547,6 +560,7 @@ class MonitoringManager:
                                 )
                             )
                     else:
+                        await self._send_keepalive_button(current_config.get("remote_device_for_keepalive"));   
                         self.device_manager.update_active_device(device_key, 'connected', last_checked=datetime.now().isoformat())
                 elif is_idle:
                     self._unreachable_counts.pop(device_key, None)
