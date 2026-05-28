@@ -5,6 +5,8 @@ import time
 from datetime import datetime
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.const import CONF_DEVICES
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_track_state_change_event
 from .const import (
     EVENT_CONNECTION_ATTEMPT,
@@ -18,6 +20,9 @@ from .const import (
 )
 
 _LOGGER = logging.getLogger(__name__)
+
+MEDIA_GRACE_PERIOD = 300
+USER_MEDIA_STATES = {"playing", "paused", "buffering"}
 
 class MonitoringManager:
     """Class to handle device monitoring and reconnection.
@@ -58,6 +63,7 @@ class MonitoringManager:
         self._dummy_positions: dict = {}  # Reserved for future use
         self._unsubscribe_listeners: list = []  # Track listeners for cleanup
         self._unreachable_counts: dict[str, int] = {}  # Consecutive unreachable cycle count per device
+        self._media_hold_until: dict[str, float] = {}  # Grace period after media is detected
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
@@ -94,6 +100,97 @@ class MonitoringManager:
         if device_name not in self._device_locks:
             self._device_locks[device_name] = asyncio.Lock()
         return self._device_locks[device_name]
+
+    def _get_matching_media_player_state(self, device_name):
+        """Return the HA media_player state that matches this cast device, if any."""
+        identifier = self.device_identifiers.get(device_name, {})
+        possible_names = {
+            device_name,
+            identifier.get("device_name", ""),
+            identifier.get("device_alias", ""),
+        }
+        possible_names = {name.strip().casefold() for name in possible_names if name and name.strip()}
+
+        entity_registry = er.async_get(self.hass)
+        device_registry = dr.async_get(self.hass)
+
+        for entity in entity_registry.entities.values():
+            if not entity.entity_id.startswith("media_player.") or not entity.device_id:
+                continue
+
+            device = device_registry.async_get(entity.device_id)
+            if not device:
+                continue
+
+            device_names = {
+                (device.name or "").strip().casefold(),
+                (device.name_by_user or "").strip().casefold(),
+            }
+            if possible_names.intersection(device_names):
+                state = self.hass.states.get(entity.entity_id)
+                if state is not None:
+                    return state
+
+        for state in self.hass.states.async_all("media_player"):
+            friendly_name = (state.attributes.get("friendly_name") or "").strip().casefold()
+            if friendly_name in possible_names:
+                return state
+
+        return None
+
+    def _ha_state_indicates_user_media(self, device_name):
+        """Check Home Assistant's media_player state for non-dashboard media."""
+        state = self._get_matching_media_player_state(device_name)
+        if state is None or state.state not in USER_MEDIA_STATES:
+            return False
+
+        app_name = state.attributes.get("app_name") or ""
+        media_title = state.attributes.get("media_title") or ""
+        if app_name == "DashCast" or "Dummy" in media_title:
+            return False
+
+        _LOGGER.info(
+            "Home Assistant reports user media on %s: state=%s app=%s title=%s",
+            device_name,
+            state.state,
+            app_name,
+            media_title,
+        )
+        return True
+
+    def _extend_media_hold(self, device_key):
+        """Keep the device reserved briefly after active media disappears."""
+        self._media_hold_until[device_key] = time.time() + MEDIA_GRACE_PERIOD
+
+    def _is_media_hold_active(self, device_key):
+        """Return True while the recent-media grace period is active."""
+        hold_until = self._media_hold_until.get(device_key, 0)
+        return hold_until > time.time()
+
+    def _media_hold_remaining(self, device_key):
+        """Return remaining recent-media hold time in seconds."""
+        hold_until = self._media_hold_until.get(device_key, 0)
+        return max(0, int(hold_until - time.time()))
+
+    def _mark_media_playing(self, device_key, device_name, ip):
+        """Update the tracked device as reserved by media playback."""
+        active_device = self.device_manager.get_active_device(device_key)
+        if active_device:
+            self.device_manager.update_active_device(
+                device_key,
+                'media_playing',
+                last_checked=datetime.now().isoformat(),
+            )
+        else:
+            self.device_manager.update_active_device(
+                device_key=device_key,
+                status='media_playing',
+                name=device_name,
+                ip=ip,
+                first_seen=datetime.now().isoformat(),
+                last_checked=datetime.now().isoformat(),
+                reconnect_attempts=0,
+            )
 
     async def cleanup(self) -> None:
         """Clean up all resources held by the monitoring manager."""
@@ -350,12 +447,15 @@ class MonitoringManager:
             # If the initial status check already timed out (returned None), skip further catt
             # calls on this device — it's unreachable, not "other content"
             _initial_status_timed_out = not is_casting and self.device_manager._get_cached_status_output(ip) is None
+            ha_media_active = self._ha_state_indicates_user_media(device_name)
+            if ha_media_active:
+                self._extend_media_hold(device_key)
 
             # Check if media is playing before attempting to reconnect
             if _initial_status_timed_out:
-                is_media_playing = False
+                is_media_playing = ha_media_active
             else:
-                is_media_playing = await self.device_manager.async_is_media_playing(ip)
+                is_media_playing = ha_media_active or await self.device_manager.async_is_media_playing(ip)
 
             # Check if Google Assistant (timer/alarm/reminder) is active
             if _initial_status_timed_out:
@@ -389,6 +489,7 @@ class MonitoringManager:
                 return
 
             if is_media_playing:
+                self._extend_media_hold(device_key)
                 _LOGGER.info("Media is currently playing on %s, skipping status check", device_name)
                 # Update device status to media_playing
                 active_device = self.device_manager.get_active_device(device_key)
@@ -482,6 +583,19 @@ class MonitoringManager:
                     # Bypass stabilization period, cast immediately
                     await self.async_start_device(device_name, current_config, ip)
                     return
+
+                elif is_unreachable:
+                    _LOGGER.info(
+                        "Switch triggered and device %s status timed out - attempting reconnect",
+                        device_name,
+                    )
+                    await self.async_reconnect_device(
+                        device_name,
+                        ip,
+                        current_config,
+                        skip_idle_status_check=True,
+                    )
+                    return
                 
                 else:
                     active_device = self.device_manager.get_active_device(device_key)
@@ -520,11 +634,13 @@ class MonitoringManager:
                 previous_status = active_device.get('status', 'unknown')
                 last_status_change = active_device.get('last_status_change', 0)
                 current_time = time.time()
+                min_time_between_reconnects = 30  # seconds
                 
                 # Determine current state and take appropriate action
                 if is_casting:  # Use the single status check result
 
                     # Device is showing our dashboard
+                    self._media_hold_until.pop(device_key, None)
                     if previous_status != 'connected':
                         self.device_manager.update_active_device(
                             device_key=device_key,
@@ -553,8 +669,18 @@ class MonitoringManager:
                     # Device is idle, should show our dashboard
                     # Add a delay after any status change to prevent rapid reconnects
                     # This gives voice commands time to be processed
-                    min_time_between_reconnects = 30  # seconds
                     time_since_last_change = current_time - last_status_change
+
+                    if self._is_media_hold_active(device_key):
+                        wait_remaining = self._media_hold_remaining(device_key)
+                        _LOGGER.info(
+                            "Device %s (%s) is idle after recent media, waiting %ss before reconnecting",
+                            device_name,
+                            ip,
+                            wait_remaining,
+                        )
+                        self._mark_media_playing(device_key, device_name, ip)
+                        return
                     
                     if previous_status != 'disconnected':
                         _LOGGER.info("Device %s (%s) is idle and not casting our dashboard", device_name, ip)
@@ -574,9 +700,21 @@ class MonitoringManager:
                             _LOGGER.debug("Device %s (%s) is idle but waiting %ss before reconnecting", device_name, ip, int(min_time_between_reconnects - time_since_last_change))
                             self.device_manager.update_active_device(device_key, 'disconnected', last_checked=datetime.now().isoformat())
                 elif is_unreachable:
-                    # Device didn't respond at all — treat as disconnected, not other_content
+                    # Treat repeated status timeouts as disconnected, and allow the
+                    # reconnect path to recover instead of waiting forever.
                     unreachable_count = self._unreachable_counts.get(device_key, 0) + 1
                     self._unreachable_counts[device_key] = unreachable_count
+
+                    if self._is_media_hold_active(device_key):
+                        wait_remaining = self._media_hold_remaining(device_key)
+                        _LOGGER.info(
+                            "Device %s (%s) is unreachable after recent media, waiting %ss before reconnecting",
+                            device_name,
+                            ip,
+                            wait_remaining,
+                        )
+                        self._mark_media_playing(device_key, device_name, ip)
+                        return
 
                     if previous_status != 'disconnected':
                         _LOGGER.warning("Device %s (%s) is unreachable (all status checks timed out)", device_name, ip)
@@ -589,6 +727,28 @@ class MonitoringManager:
                     else:
                         _LOGGER.debug("Device %s (%s) still unreachable (consecutive count: %d)", device_name, ip, unreachable_count)
                         self.device_manager.update_active_device(device_key, 'disconnected', last_checked=datetime.now().isoformat())
+                        time_since_last_change = current_time - last_status_change
+
+                        if unreachable_count >= 2 and time_since_last_change > min_time_between_reconnects:
+                            _LOGGER.info(
+                                "Device %s (%s) is still unreachable after waiting period, attempting reconnect",
+                                device_name,
+                                ip,
+                            )
+                            await self.async_reconnect_device(
+                                device_name,
+                                ip,
+                                current_config,
+                                skip_idle_status_check=True,
+                            )
+                        else:
+                            wait_remaining = max(0, int(min_time_between_reconnects - time_since_last_change))
+                            _LOGGER.debug(
+                                "Device %s (%s) is unreachable but waiting %ss before reconnecting",
+                                device_name,
+                                ip,
+                                wait_remaining,
+                            )
 
                     if unreachable_count == 5 and self.config.get("enable_notifications", True):
                         notification_id = f"ccd_unreachable_{device_key.replace(' ', '_')}"
@@ -608,6 +768,7 @@ class MonitoringManager:
                         )
                 else:
                     # Device has other content
+                    self._extend_media_hold(device_key)
                     self._unreachable_counts.pop(device_key, None)
                     if previous_status != 'other_content':
                         self.device_manager.update_active_device(
@@ -751,18 +912,11 @@ class MonitoringManager:
                 continue
             
             # Check if media is playing
-            if await self.device_manager.async_is_media_playing(ip):
+            device_key = f"{device_name}_{ip}"
+            if self._ha_state_indicates_user_media(device_name) or await self.device_manager.async_is_media_playing(ip):
+                self._extend_media_hold(device_key)
                 _LOGGER.info("Media is currently playing on %s, skipping initial cast", device_name)
-                device_key = f"{device_name}_{ip}"
-                self.device_manager.update_active_device(
-                    device_key=device_key,
-                    status='media_playing',
-                    name=device_name,
-                    ip=ip,
-                    first_seen=datetime.now().isoformat(),
-                    last_checked=datetime.now().isoformat(),
-                    reconnect_attempts=0
-                )
+                self._mark_media_playing(device_key, device_name, ip)
                 continue
                 
             # Check if the device is part of an active speaker group
@@ -808,25 +962,27 @@ class MonitoringManager:
                 _LOGGER.error("Could not get IP for %s, skipping", device_name)
                 return
         
+        device_key = f"{device_name}_{ip}"
+
         # Check if media is playing before casting
-        if await self.device_manager.async_is_media_playing(ip):
+        if self._ha_state_indicates_user_media(device_name) or await self.device_manager.async_is_media_playing(ip):
+            self._extend_media_hold(device_key)
             _LOGGER.info("Media is currently playing on %s, skipping cast", device_name)
-            device_key = f"{device_name}_{ip}"
-            self.device_manager.update_active_device(
-                device_key=device_key,
-                status='media_playing',
-                name=device_name,
-                ip=ip,
-                first_seen=datetime.now().isoformat(),
-                last_checked=datetime.now().isoformat(),
-                reconnect_attempts=0
+            self._mark_media_playing(device_key, device_name, ip)
+            return
+
+        if self._is_media_hold_active(device_key):
+            _LOGGER.info(
+                "Recent media detected on %s, waiting %ss before casting",
+                device_name,
+                self._media_hold_remaining(device_key),
             )
+            self._mark_media_playing(device_key, device_name, ip)
             return
         
         # Check if a cast is already in progress
         if ip in self.casting_manager.active_casting_operations:
             _LOGGER.info("Casting already in progress for %s (%s), skipping", device_name, ip)
-            device_key = f"{device_name}_{ip}"
             self.device_manager.update_active_device(
                 device_key=device_key,
                 status=STATUS_CASTING_IN_PROGRESS,
@@ -836,7 +992,6 @@ class MonitoringManager:
             )
             return
         
-        device_key = f"{device_name}_{ip}"
         # Update device status to indicate casting is in progress
         self.device_manager.update_active_device(
             device_key=device_key,
@@ -1035,7 +1190,7 @@ class MonitoringManager:
             _LOGGER.error("Error stopping casting on device at %s: %s", ip, e)
             return False
 
-    async def async_reconnect_device(self, device_name, ip, device_config):
+    async def async_reconnect_device(self, device_name, ip, device_config, skip_idle_status_check=False):
         """Attempt to reconnect a device that is no longer casting the dashboard.
 
         Skips reconnection if media is playing, a speaker group is active, the
@@ -1046,6 +1201,8 @@ class MonitoringManager:
             device_name: The display name of the device.
             ip: The IP address of the device.
             device_config: The dashboard configuration dict for this device.
+            skip_idle_status_check: Skip the final idle verification when the
+                caller already observed repeated status timeouts.
 
         Returns:
             True if reconnection succeeded, False otherwise.
@@ -1078,11 +1235,19 @@ class MonitoringManager:
                 return False
         
         # Check if media is playing before attempting to reconnect
-        if await self.device_manager.async_is_media_playing(ip):
+        if self._ha_state_indicates_user_media(device_name) or await self.device_manager.async_is_media_playing(ip):
+            self._extend_media_hold(device_key)
             _LOGGER.info("Media is currently playing on %s, skipping reconnect", device_name)
-            active_device = self.device_manager.get_active_device(device_key)
-            if active_device:
-                self.device_manager.update_active_device(device_key, 'media_playing')
+            self._mark_media_playing(device_key, device_name, ip)
+            return False
+
+        if self._is_media_hold_active(device_key):
+            _LOGGER.info(
+                "Recent media detected on %s, waiting %ss before reconnecting",
+                device_name,
+                self._media_hold_remaining(device_key),
+            )
+            self._mark_media_playing(device_key, device_name, ip)
             return False
         
         # Increment reconnect attempts
@@ -1098,37 +1263,44 @@ class MonitoringManager:
                     await self.stats_manager.async_update_health_stats(device_key, EVENT_RECONNECT_FAILED)
                 return False
         
-        # Check status one more time to see if it's truly idle
-        cmd = ['catt', '-d', ip, 'status']
-        try:
-            status_process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
+        if skip_idle_status_check:
+            _LOGGER.info(
+                "Skipping idle status confirmation for %s (%s) after repeated status timeouts",
+                device_name,
+                ip,
             )
-            
-            status_stdout, status_stderr = await asyncio.wait_for(status_process.communicate(), timeout=10.0)
-            status_output = status_stdout.decode().strip()
-            
-            # If device isn't idle (has more than just volume info), don't attempt to cast
-            if len(status_output.splitlines()) > 2 or not all(line.startswith("Volume") for line in status_output.splitlines()):
-                if "Dummy" not in status_output and "8123" not in status_output:
-                    _LOGGER.info("Device %s (%s) shows non-idle status, skipping reconnect", device_name, ip)
-                    if active_device:
-                        self.device_manager.update_active_device(device_key, 'other_content')
-                    return False
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Status check timed out for %s (%s)", device_name, ip)
-            status_process.terminate()
+        else:
+            # Check status one more time to see if it's truly idle
+            cmd = ['catt', '-d', ip, 'status']
             try:
-                await asyncio.wait_for(status_process.wait(), timeout=5.0)
+                status_process = await asyncio.create_subprocess_exec(
+                    *cmd,
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE
+                )
+
+                status_stdout, status_stderr = await asyncio.wait_for(status_process.communicate(), timeout=10.0)
+                status_output = status_stdout.decode().strip()
+
+                # If device isn't idle (has more than just volume info), don't attempt to cast
+                if len(status_output.splitlines()) > 2 or not all(line.startswith("Volume") for line in status_output.splitlines()):
+                    if "Dummy" not in status_output and "8123" not in status_output:
+                        _LOGGER.info("Device %s (%s) shows non-idle status, skipping reconnect", device_name, ip)
+                        if active_device:
+                            self.device_manager.update_active_device(device_key, 'other_content')
+                        return False
             except asyncio.TimeoutError:
-                status_process.kill()
-            # Skip reconnect if we can't determine status
-            return False
-        except Exception as e:
-            _LOGGER.error("Error checking status before reconnect: %s", e)
-            return False
+                _LOGGER.warning("Status check timed out for %s (%s)", device_name, ip)
+                status_process.terminate()
+                try:
+                    await asyncio.wait_for(status_process.wait(), timeout=5.0)
+                except asyncio.TimeoutError:
+                    status_process.kill()
+                # Skip reconnect if we can't determine status
+                return False
+            except Exception as e:
+                _LOGGER.error("Error checking status before reconnect: %s", e)
+                return False
         
         # Update status to indicate casting is in progress
         self.device_manager.update_active_device(
