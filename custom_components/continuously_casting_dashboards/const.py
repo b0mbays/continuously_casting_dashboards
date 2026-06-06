@@ -70,3 +70,8 @@ CONF_DEVICE_ALIAS = "device_alias"
 
 # Translation strings
 ERR_DEVICE_ALREADY_EXISTS = "device_already_exists"
+
+# DashCast app ID — the Chromecast web-browser app CCD uses to cast dashboards.
+# DashCast renders URLs as webpages but registers no Chromecast media session,
+# so it never appears in catt status output even when the dashboard is active.
+DASHCAST_APP_ID = "84912283"
