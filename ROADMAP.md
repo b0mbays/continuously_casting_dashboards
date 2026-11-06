@@ -8,9 +8,9 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 - [x] Fix `EntityCategory` compatibility with Home Assistant 2026.11 ([upstream #161](https://github.com/b0mbays/continuously_casting_dashboards/issues/161)).
 - [x] Add basic Python regression smoke tests and GitHub Actions.
 
-## Milestone 1 — dashboard rules, scheduling, and volume (in progress)
+## Milestone 1 — dashboard rules, scheduling, and volume (merged)
 
-**Implementation underway:** [draft PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2) includes independent rule selection, opt-in continuous casting, volume preservation, UI persistence changes, and regression tests. The code-level checks have passed; the milestone remains open until the changes are confirmed on a live Home Assistant / Chromecast deployment.
+**Merged:** [PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2) includes independent rule selection, opt-in continuous casting, volume preservation, UI persistence changes, and regression tests. Code-level checks passed; continue validating real Cast devices across HA versions.
 
 
 - [ ] Evaluate time and required entity state **per dashboard**. First eligible dashboard in configuration order wins; no disabled dashboard should block another eligible dashboard ([upstream #145](https://github.com/b0mbays/continuously_casting_dashboards/issues/145)).
@@ -21,6 +21,9 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 - [ ] Retain compatibility: existing configs should use current time-window and volume behaviour unless a new option is explicitly enabled.
 
 ## Milestone 2 — discovery, recovery, and resource safeguards
+
+**Implementation:** PR #3 adds safe Cast discovery, shared/serialized scans, retry backoff, process cleanup and diagnostic sensor attributes. Live device confirmation is required before merging. Follow-on work is still planned for CATT version evaluation and HA Repairs integration.
+
 
 - [ ] Improve reliable device name/alias matching, including Google-appended suffixes, without false-positive cross-device matches ([upstream #146](https://github.com/b0mbays/continuously_casting_dashboards/issues/146)).
 - [ ] Add bounded process cleanup, per-device connection backoff, and memory/resource safeguards ([upstream #139](https://github.com/b0mbays/continuously_casting_dashboards/issues/139)).
