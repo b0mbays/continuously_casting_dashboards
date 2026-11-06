@@ -5,7 +5,6 @@ import importlib.util
 import logging
 from pathlib import Path
 import time
-import types
 import unittest
 from unittest.mock import patch
 
