@@ -18,6 +18,7 @@ import datetime
 from homeassistant.helpers import selector
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.selector import EntitySelector, EntitySelectorConfig
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlowResult,
@@ -310,6 +311,7 @@ class ContinuouslyCastingDashboardsConfigFlow(config_entries.ConfigFlow, domain=
                 vol.Optional("switch_entity_id", default=""): cv.string,
                 vol.Optional("switch_entity_state", default=""): cv.string,
                 vol.Optional("enable_notifications", default=True): cv.boolean,
+                vol.Optional("remote_device_for_keepalive", description={"suggested_value": current.get("remote_device_for_keepalive")}): EntitySelector( EntitySelectorConfig(domain="remote")),
             }
         )
 
@@ -598,6 +600,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
 
+                # Update the keepalive remote entity if provided
+                if user_input.get("remote_device_for_keepalive") is not None:
+                    cleaned_input["remote_device_for_keepalive"] = user_input["remote_device_for_keepalive"]
+
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
                         cleaned_input["start_time"] = user_input["start_time"]
@@ -666,6 +672,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("include_speaker_groups", default=False): cv.boolean,
                 vol.Optional("speaker_groups", default=""): cv.string,
                 vol.Optional("add_another", default=False): cv.boolean,
+                vol.Optional("remote_device_for_keepalive"): EntitySelector( EntitySelectorConfig(domain="remote")),  # filters to only remote.* entities
             }
         )
 
@@ -929,6 +936,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 else:
                     cleaned_input["dashboard_url"] = dashboard_url
 
+                # Update the keepalive remote entity if provided
+                if user_input.get("remote_device_for_keepalive") is not None:
+                    cleaned_input["remote_device_for_keepalive"] = user_input["remote_device_for_keepalive"]
+
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
 
@@ -971,7 +982,6 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                     if add_another:
                         return await self.async_step_reconfigure_add_dashboard()
-
                     return self._save_reconfigure()
 
             except Exception as ex:
@@ -1035,6 +1045,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             ): cv.string,
             vol.Optional("include_speaker_groups", default=has_groups): cv.boolean,
             vol.Optional("speaker_groups", default=speaker_groups_str): cv.string,
+            vol.Optional("remote_device_for_keepalive", description={"suggested_value": current.get("remote_device_for_keepalive")}): EntitySelector( EntitySelectorConfig(domain="remote")),
         }
 
         if len(self._dashboards) > 1:
@@ -1098,6 +1109,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 speaker_groups = [g.strip() for g in speaker_groups_input.split(",") if g.strip()]
                 if speaker_groups:
                     cleaned_input["speaker_groups"] = speaker_groups
+
+        # Update the keepalive remote entity if provided
+        if user_input.get("remote_device_for_keepalive") is not None:
+            cleaned_input["remote_device_for_keepalive"] = user_input.get("remote_device_for_keepalive")
 
         # Update device identifier fields if provided
         new_device_name = user_input.get("device_name", "").strip()
@@ -1192,6 +1207,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
 
+                # Update the keepalive remote entity if provided
+                if user_input.get("remote_device_for_keepalive") is not None:
+                    cleaned_input["remote_device_for_keepalive"] = user_input["remote_device_for_keepalive"]
+
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
                         cleaned_input["start_time"] = user_input["start_time"]
@@ -1257,6 +1276,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("switch_entity_state", default=""): cv.string,
                 vol.Optional("include_speaker_groups", default=False): cv.boolean,
                 vol.Optional("speaker_groups", default=""): cv.string,
+                vol.Optional("remote_device_for_keepalive"): EntitySelector( EntitySelectorConfig(domain="remote")),  # filters to only remote.* entities
             }
         )
 

@@ -113,7 +113,8 @@
                         "switch_entity_state": "Required State",
                         "include_speaker_groups": "Pause casting when a speaker group is active",
                         "speaker_groups": "Speaker Group Names",
-                        "add_another": "Add another dashboard after this one"
+                        "add_another": "Add another dashboard after this one",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
                     },
                     "data_description": {
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
@@ -122,7 +123,8 @@
                         "end_time": "24-hour format — the dashboard stops casting at this time each day",
                         "switch_entity_id": "Entity that enables or disables casting for this device",
                         "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
-                        "speaker_groups": "Comma-separated list of speaker group names to check"
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
                     }
                 },
                 "reconfigure_device": {
@@ -144,7 +146,8 @@
                         "speaker_groups": "Speaker Group Names",
                         "add_another_dashboard": "Add another dashboard after saving",
                         "change_dashboard": "Edit a different dashboard",
-                        "delete_this_dashboard": "Delete this dashboard"
+                        "delete_this_dashboard": "Delete this dashboard",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
                     },
                     "data_description": {
                         "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
@@ -159,7 +162,8 @@
                         "speaker_groups": "Comma-separated list of speaker group names to check",
                         "add_another_dashboard": "Saves this dashboard and opens a blank form for another one",
                         "change_dashboard": "Save your changes and pick a different dashboard to edit",
-                        "delete_this_dashboard": "Remove this dashboard (cannot delete the last one)"
+                        "delete_this_dashboard": "Remove this dashboard (cannot delete the last one)",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
                     }
                 },
                 "reconfigure_select_dashboard": {
@@ -189,7 +193,8 @@
                         "switch_entity_id": "Control Entity ID",
                         "switch_entity_state": "Required State",
                         "include_speaker_groups": "Pause casting when a speaker group is active",
-                        "speaker_groups": "Speaker Group Names"
+                        "speaker_groups": "Speaker Group Names",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
                     },
                     "data_description": {
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
@@ -198,7 +203,8 @@
                         "end_time": "24-hour format — the dashboard stops casting at this time each day",
                         "switch_entity_id": "Entity that enables or disables casting for this device",
                         "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
-                        "speaker_groups": "Comma-separated list of speaker group names to check"
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
                     }
                 }
             },
