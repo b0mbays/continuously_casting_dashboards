@@ -1,8 +1,8 @@
 {
     "domain": "continuously_casting_dashboards",
     "name": "Continuously Cast Dashboards",
-    "documentation": "https://github.com/b0mbays/continuously_casting_dashboards",
-    "issue_tracker": "https://github.com/b0mbays/continuously_casting_dashboards/issues",
+    "documentation": "https://github.com/anaschillin/continuously_casting_dashboards",
+    "issue_tracker": "https://github.com/anaschillin/continuously_casting_dashboards/issues",
     "requirements": [
         "catt==0.12.13"
     ],

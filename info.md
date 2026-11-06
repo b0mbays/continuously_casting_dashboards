@@ -1,19 +1,22 @@
-# Home Assistant - Continuously Casting Dashboards
+# Continuously Casting Dashboards for Home Assistant
 
-This custom integration for Home Assistant continuously casts dashboards to Chromecast devices during a specified time window. It ensures that the dashboard is always displayed during the active time window, even if the Chromecast device is accidentally interrupted or disconnected. It will ignore any devices that are currently playing any media/timers/recipes etc.
+Keep selected Home Assistant dashboards visible on compatible Chromecast / Cast displays, with monitoring that can restore the dashboard when the display is idle and eligible to cast.
 
-I'm using this myself for 5 different chromecast devices: Lenovo Smart Display 8 & four 1st Gen Google Nest Hubs.
+This fork includes the features merged into [`main`](https://github.com/anaschillin/continuously_casting_dashboards) through **6 November 2026**. The repository manifest currently declares integration version `2.1.0`; a merged pull request does not automatically publish a HACS release.
 
-## Features
+## Current capabilities
 
-- Automatically casts specified Home Assistant dashboards to Chromecast devices.
-- Monitors the casting state of each device and resumes casting if interrupted.
-- Entity changed dashboard casting (cast specific dashboards when an entity state changes).
-- Configurable global time window for active casting.
-- Configurable casting interval.
-- Configurable volume per device.
-- Configurable start and end times per device.
-- Google Home Speaker Group support.
-- Control casting based on entity state.
-- Debug logging support.
-Please visit the [Github README](https://github.com/b0mbays/ha-continuously-casting-dashboard) for more information.
+- Global and per-dashboard schedules, entity-state rules, and opt-in continuous casting.
+- Independent dashboard eligibility with per-dashboard priority, optional rotation, and a time-limited manual selection service.
+- Volume preservation, speaker-group and user-media protection, and opt-in Google TV remote keepalive.
+- Improved Cast discovery, bounded reconnection backoff, timeout/subprocess safeguards, and Home Assistant diagnostics.
+- An **optional, diagnostic-only** Lovelace readiness reporter for custom-element registration. It does not confirm actual rendering or automatically recast on missing heartbeats.
+- Home Assistant status sensors and documented runtime services.
+
+## Installation and details
+
+For this fork, add `https://github.com/anaschillin/continuously_casting_dashboards` as a HACS **Integration** custom repository, or install manually from this repository. Do not install both this fork and the original upstream integration simultaneously; they use the same Home Assistant integration domain.
+
+See [README.md](README.md) for setup, configuration, dashboard selection and examples. Use [the upgrade/troubleshooting guide](docs/update_help.md) when updating an existing installation, and [ROADMAP.md](ROADMAP.md) for outstanding work.
+
+This fork builds on the [original b0mbays project](https://github.com/b0mbays/continuously_casting_dashboards). Development and testing contributions are welcome through [this fork's issue tracker](https://github.com/anaschillin/continuously_casting_dashboards/issues).
