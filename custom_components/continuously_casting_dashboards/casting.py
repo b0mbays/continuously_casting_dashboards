@@ -14,6 +14,7 @@ from homeassistant.core import HomeAssistant
 from .const import DEFAULT_MAX_RETRIES, DEFAULT_RETRY_DELAY, DEFAULT_VERIFICATION_WAIT_TIME, DEFAULT_CASTING_TIMEOUT, TIMEOUT_PROCESS_TERMINATE, TIMEOUT_PROCESS_KILL, TIMEOUT_VOLUME_COMMAND
 
 from .reliability import terminate_process
+from .cast_guard import prepare_cast_url
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -87,6 +88,13 @@ class CastingManager:
         Returns:
             True if the dashboard was successfully cast, False otherwise.
         """
+        # Compute the Cast-only URL once; never mutate stored dashboard config.
+        # The guard reloads the receiver browser at most once only after
+        # persistent custom-card errors, without starting another CATT cast.
+        cast_url = prepare_cast_url(
+            dashboard_url, enabled=bool(device_config.get("recover_custom_cards", False))
+        )
+
         # Check if an active casting operation is already in progress for this IP
         if ip in self.active_casting_operations:
             last_start = self.active_casting_operations[ip]['start_time']
@@ -175,7 +183,7 @@ class CastingManager:
                     
 
                     # Cast the dashboard
-                    cmd = ['catt', '-d', ip, 'cast_site', dashboard_url]
+                    cmd = ['catt', '-d', ip, 'cast_site', cast_url]
                     _LOGGER.debug("Executing cast command: %s", ' '.join(cmd))
                     process = await asyncio.create_subprocess_exec(
                         *cmd,

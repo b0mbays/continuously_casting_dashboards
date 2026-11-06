@@ -8,6 +8,7 @@ import voluptuous as vol
 import json
 from pathlib import Path
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.components import frontend as ha_frontend
 
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_DEVICES, CONF_SCAN_INTERVAL
@@ -404,8 +405,21 @@ async def async_setup(hass: HomeAssistant, config: dict):
             "/ccd_cast/ccd-control-panel.js",
             str(Path(__file__).parent / "www" / "ccd-control-panel.js"),
             False,
+        ),
+        StaticPathConfig(
+            "/ccd_cast/ccd-cast-guard.js",
+            str(Path(__file__).parent / "www" / "ccd-cast-guard.js"),
+            False,
         )
     ])
+
+    # The module is loaded on HA dashboards, but remains completely inert
+    # unless the Cast URL carries the opt-in recovery query parameter.
+    # HA's extra-module loader is fire-and-forget, which is acceptable here:
+    # this guard observes an *already rendered* error and repairs it later.
+    if not hass.data[DOMAIN].get("cast_guard_script_registered"):
+        ha_frontend.add_extra_js_url(hass, "/ccd_cast/ccd-cast-guard.js")
+        hass.data[DOMAIN]["cast_guard_script_registered"] = True
 
     # Simple file-based approach to track notification state
     storage_file = hass.config.path(f".{DOMAIN}_notification_state.json")

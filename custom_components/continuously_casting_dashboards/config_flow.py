@@ -630,6 +630,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["verify_readiness"] = bool(
                     user_input.get("verify_readiness", False)
                 )
+                cleaned_input["recover_custom_cards"] = bool(
+                    user_input.get("recover_custom_cards", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -697,6 +700,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                     vol.Coerce(int), vol.Range(min=0, max=3600)
                 ),
                 vol.Optional("verify_readiness", default=False): cv.boolean,
+                vol.Optional("recover_custom_cards", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
@@ -999,6 +1003,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["verify_readiness"] = bool(
                     user_input.get("verify_readiness", False)
                 )
+                cleaned_input["recover_custom_cards"] = bool(
+                    user_input.get("recover_custom_cards", False)
+                )
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
@@ -1091,6 +1098,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "verify_readiness", default=current.get("verify_readiness", False)
             ): cv.boolean,
+            vol.Optional(
+                "recover_custom_cards",
+                default=current.get("recover_custom_cards", False),
+            ): cv.boolean,
             vol.Optional("enable_time_window", default=has_time): cv.boolean,
             vol.Optional(
                 "start_time",
@@ -1172,6 +1183,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         )
         cleaned_input["verify_readiness"] = bool(
             user_input.get("verify_readiness", False)
+        )
+        cleaned_input["recover_custom_cards"] = bool(
+            user_input.get("recover_custom_cards", False)
         )
 
         if user_input.get("enable_time_window", False):
@@ -1304,6 +1318,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["verify_readiness"] = bool(
                     user_input.get("verify_readiness", False)
                 )
+                cleaned_input["recover_custom_cards"] = bool(
+                    user_input.get("recover_custom_cards", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -1369,6 +1386,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                     vol.Coerce(int), vol.Range(min=0, max=3600)
                 ),
                 vol.Optional("verify_readiness", default=False): cv.boolean,
+                vol.Optional("recover_custom_cards", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",

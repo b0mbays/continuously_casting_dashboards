@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Version 3.0.1 candidate (6 November 2026):** The integration and Marketplace/HACS metadata declare **3.0.1**, updating CATT to `0.13.3`. Review the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). Live Chromecast/HAOS verification is still required; a source-code version bump does **not** create a published GitHub release. The optional frontend-readiness reporter remains diagnostic-only.
+**Version 3.0.2 candidate (6 November 2026):** The integration and Marketplace/HACS metadata on this feature branch declare **3.0.2**, introducing optional Cast-wide recovery for third-party custom cards. The prior 3.0.1 dependency update pins CATT `0.13.3`. Check the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). The generic recovery option still needs physical Cast-device testing; changing version metadata does **not** publish a GitHub release. The independent frontend-readiness reporter remains diagnostic-only.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
@@ -51,6 +51,7 @@ See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgra
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 - **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
+- **Generic Cast custom-card recovery (opt-in)** - Detect persistent Lovelace configuration errors on the Cast page and perform at most one guarded browser reload, without another CATT cast
 - **Optional control panel and timed pause** - Lovelace device status, dashboard selection, timed/indefinite pause, resume and one-off stop
 - **Actionable configuration Repairs** - Identify missing CATT CLI and ambiguous name-only Cast configurations
 - **Dashboard priorities and rotation** - Higher-priority eligible views take precedence; optionally rotate equally ranked views
@@ -184,6 +185,7 @@ continuously_casting_dashboards:
 | `speaker_groups` | No | - | Speaker groups to check before casting |
 | `remote_device_for_keepalive` | No | Disabled | Home Assistant `remote.*` entity used to keep Google TV awake (sends MENU when the configured dashboard is active) |
 | `verify_readiness` | No | `false` | Opt-in readiness telemetry; requires the companion Lovelace card and reports custom-element registration, not actual rendering |
+| `recover_custom_cards` | No | `false` | Opt-in Cast-only recovery for persistent Lovelace error cards; one guarded page reload, without recasting or changing volume |
 
 ### Dashboard rules, scheduling, and volume
 
@@ -312,6 +314,48 @@ Concurrent device lookups share one CATT scan, with short-lived scan results and
 Home Assistant's integration diagnostics now provide device statuses, retry delays, scan state, and non-sensitive error summaries. Per-device diagnostic sensors expose `retry_in_seconds` and `last_error`. Dashboard URLs and authentication details are excluded from the diagnostics report. Sensor retry delays are a snapshot from the last status update and may be stale until refreshed.
 
 **Compatibility note:** These changes are already merged into `main`, but do not replace CATT or guarantee behaviour on every Cast receiver. Verify recovery and media protection on your devices before relying on them for unattended operation.
+
+### Generic custom-card recovery for Cast receivers (opt-in)
+
+Home Assistant can show a permanent **Configuration error** when a third-party
+Lovelace module registers too late (especially in panel views) or a frontend
+registry change causes custom elements to appear missing. This affects more
+than Salah Timetable, including HACS custom cards. See Home Assistant frontend
+issues [#52570](https://github.com/home-assistant/frontend/issues/52570)
+and [#52960](https://github.com/home-assistant/frontend/issues/52960).
+
+**Continuously Casting Dashboards offers an integration-wide recovery option
+that does not need changes to the third-party card code:**
+
+1. In **Settings → Devices & Services → Continuously Casting Dashboards**,
+   edit the relevant **device/dashboard**.
+2. Enable **Recover custom-card configuration errors on Cast**.
+3. Save and cast your dashboard normally. No Lovelace YAML change and no
+   additional Resources entry are required.
+
+When enabled, CCD adds a private, benign `ccd_cast_guard=1` query parameter
+to that Cast URL only. A lightweight Home Assistant frontend module observes
+the receiver page. If a `hui-error-card` remains present on **two separate
+checks** (approximately 6 and 14 seconds after the module starts), it
+navigates the page **once** to the same dashboard URL with the guard marked
+consumed. Reloads are additionally limited to once per dashboard within
+15 minutes using browser session storage. Without working browser storage,
+CCD skips the reload rather than risking a loop.
+
+**Safety/limits:** Disabled by default. The script is inert on ordinary
+dashboard URLs, never issues a second CATT cast, never resets Chromecast
+volume and never bypasses playback/Assistant protections. It cannot distinguish
+every genuine invalid YAML/card configuration from a temporary resource race,
+so an intentionally broken custom card might cause one unnecessary reload.
+It cannot repair failed HTTP/authentication requests, browser-incompatible
+JavaScript or missing resources. Some Cast browsers may not load the guard
+script; real receiver validation is therefore required. An error appearing
+after the final observation (roughly 36 seconds) will not automatically retry.
+
+**This is independent of the optional readiness reporter below.** The
+readiness reporter remains diagnostic-only, while this recovery mode uses
+the presence of Lovelace error cards; no third-party-specific element names
+need to be configured.
 
 ### Optional dashboard frontend readiness (experimental)
 

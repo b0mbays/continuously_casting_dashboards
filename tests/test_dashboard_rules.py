@@ -14,6 +14,7 @@ from unittest.mock import patch
 from typing import Any
 
 from test_cast_reliability import isolated_method
+from test_cast_guard import cast_guard
 
 
 LOGGER = logging.getLogger("tests.dashboard_rules")
@@ -291,6 +292,7 @@ class VolumeTests(unittest.TestCase):
                 "DEFAULT_CASTING_TIMEOUT": 3,
                 "TIMEOUT_VOLUME_COMMAND": 3,
                 "TIMEOUT_PROCESS_TERMINATE": 3,
+                "prepare_cast_url": cast_guard.prepare_cast_url,
             },
         )
         obj = harness()
@@ -357,6 +359,18 @@ class VolumeTests(unittest.TestCase):
         self.assertEqual(len(volume_calls), 2)
         self.assertEqual(volume_calls[0][-1], "0")
         self.assertEqual(volume_calls[1][-1], "17")
+
+    def test_cast_only_recovery_flag_does_not_change_normal_dashboard(self):
+        default = self.commands({"preserve_volume": True})
+        enabled = self.commands({
+            "preserve_volume": True, "recover_custom_cards": True
+        })
+        default_url = next(cmd[-1] for cmd in default if "cast_site" in cmd)
+        enabled_url = next(cmd[-1] for cmd in enabled if "cast_site" in cmd)
+        self.assertEqual(default_url, "https://example.org/kiosk")
+        self.assertIn("ccd_cast_guard=1", enabled_url)
+        self.assertFalse(any("volume" in cmd for cmd in enabled))
+
 
 
 if __name__ == "__main__":

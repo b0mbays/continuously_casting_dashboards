@@ -63,6 +63,23 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [ ] Design any automatic recovery from a missing frontend heartbeat to avoid unnecessary recasts or interrupting user media.
 - [ ] Publish and validate a tagged 3.0.x release after hardware checks; changing version metadata alone does not publish one.
 
+## Generic Cast custom-card recovery — under review
+
+- [x] Implement a **default-off**, per-dashboard Cast-only recovery mode
+  that detects persistent `hui-error-card` elements and requests one
+  bounded browser reload after two observations, without another CATT cast.
+- [x] Add protection against repeated reloads through a consumed URL flag
+  and session storage, plus regression tests for nested shadow roots,
+  transient errors, disabled mode and blocked browser storage.
+- [ ] Test the guard on real Nest Hub / Chromecast browsers, including
+  panel views, multiple third-party HACS custom cards, normal media
+  interruptions, authentication and a deliberately broken card.
+- [ ] Continue tracking upstream Home Assistant frontend resource/registry
+  loading races; the guard is a mitigation, **not** a frontend core fix.
+
+**Status:** code above is on a feature branch, not part of the merged
+v3.0.1 release until its PR passes review and is merged.
+
 ## Continuous quality and release work
 
 - [x] CI includes Python compilation, translation JSON checks, JavaScript syntax checks, Ruff checks on added modules and regression tests (the merged PR #5 branch passed 51 tests).

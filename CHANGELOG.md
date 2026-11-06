@@ -2,7 +2,24 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
-## 3.0.1 — CATT compatibility update (proposed, 6 November 2026)
+## 3.0.2 — Generic custom-card recovery on Cast (candidate, 6 November 2026)
+
+- Add opt-in `recover_custom_cards` for any dashboard, independent of
+  custom-card vendor or Home Assistant integration.
+- Register a passive HA frontend module that is active only on CCD-cast URLs
+  with `ccd_cast_guard=1`.
+- Watch for persistent `hui-error-card` nodes, including nested shadow roots,
+  and attempt **one** receiver-page reload, never another CATT cast.
+- Prevent reload loops with a consumed URL marker, per-dashboard
+  15-minute session cooldown, and fail-closed behaviour without storage.
+- Add Python URL-parameter tests and JavaScript simulated-DOM recovery tests.
+
+**Default:** disabled. This mitigates some Home Assistant custom-resource
+startup races but cannot fix invalid Lovelace YAML, unavailable modules, or
+all Cast receiver limitations. Physical Chromecast/Nest Hub testing remains
+required before merge.
+
+## 3.0.1 — CATT compatibility update (merged code, 6 November 2026)
 
 - Upgrade the Home Assistant integration requirement from `catt==0.12.13` to **`catt==0.13.3`**, the latest stable version published on PyPI as of 6 November 2026 (published 24 September 2026).
 - CATT 0.13.3 requires Python 3.11+ and PyChromecast `>=14.0.1,<15`. Home Assistant's current Cast integration pins PyChromecast 14.1.1, within this range.
@@ -12,7 +29,7 @@ All changes here refer to the [anaschillin fork](https://github.com/anaschillin/
 
 **Upgrade precaution:** restart Home Assistant after installing updated integration code, and verify casting on a noncritical receiver before switching production screens. If CATT 0.13.3 introduces a regression, return to a known-good integration version with `catt==0.12.13` using your backup and restart HA. Do not try to manage HA's Python packages manually inside HAOS.
 
-**Publishing:** The metadata version `3.0.1` is a candidate until this PR is merged and a corresponding GitHub release/tag is published. Hardware validation remains open.
+**Publishing:** The version `3.0.1` and CATT update are merged into `main`; verify GitHub/HACS release availability separately. Hardware validation remains open.
 
 ---
 
