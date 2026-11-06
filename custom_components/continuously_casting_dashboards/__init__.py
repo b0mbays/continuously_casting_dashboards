@@ -23,6 +23,7 @@ from .device import DeviceManager
 from .monitoring import MonitoringManager
 from .stats import StatsManager
 from .readiness import ReadinessTracker
+from .frontend_diagnostics import FrontendDiagnosticsTracker
 from .repairs import async_check_configuration_repairs
 from .utils import TimeWindowChecker, SwitchEntityChecker
 from .config_flow import async_migrate_entry
@@ -360,6 +361,47 @@ async def _async_register_services(hass: HomeAssistant) -> None:
         if not accepted:
             _LOGGER.debug("Readiness ignored: unexpected dashboard path for %s", device_name)
 
+    async def handle_cast_frontend_report(call):
+        """Receive only redacted opt-in Cast browser counters.
+
+        No JavaScript errors, resource URLs, dashboard queries, authentication
+        tokens or remote page content are accepted or persisted.
+        """
+        target = call.data.get("cast_target")
+        path = call.data.get("dashboard_path")
+        phase = call.data.get("phase")
+        metrics = call.data.get("metrics")
+        if (
+            not isinstance(target, str)
+            or len(target) != 16
+            or not isinstance(path, str)
+            or not path.startswith("/")
+            or len(path) > 512
+            or not isinstance(phase, str)
+            or not isinstance(metrics, dict)
+        ):
+            return
+        candidates = [
+            data["caster"]
+            for data in hass.data.get(DOMAIN, {}).values()
+            if isinstance(data, dict) and "caster" in data
+        ]
+        # Refuse ambiguous reports rather than attributing a status to the
+        # wrong receiver on systems with multiple integration entries.
+        matching = [
+            caster for caster in candidates
+            if caster.frontend_diagnostics.can_accept(target, path)
+        ]
+        if len(matching) != 1:
+            return
+        matching[0].frontend_diagnostics.report(
+            target,
+            path,
+            phase,
+            metrics,
+            document_state=call.data.get("document_state", "unknown"),
+        )
+
     # Register all services
     hass.services.async_register(DOMAIN, "set_cast_delay", handle_set_cast_delay)
     hass.services.async_register(DOMAIN, "set_logging_level", handle_set_logging_level)
@@ -374,6 +416,9 @@ async def _async_register_services(hass: HomeAssistant) -> None:
     )
     hass.services.async_register(
         DOMAIN, "report_dashboard_ready", handle_report_dashboard_ready
+    )
+    hass.services.async_register(
+        DOMAIN, "report_cast_frontend", handle_cast_frontend_report
     )
 
     _LOGGER.debug("Registered integration services")
@@ -1201,8 +1246,11 @@ class ContinuouslyCastingDashboards:
         )
         self.stats_manager = StatsManager(hass, config)
         self.readiness_tracker = ReadinessTracker()
+        self.frontend_diagnostics = FrontendDiagnosticsTracker()
         self.monitoring_manager.readiness_tracker = self.readiness_tracker
+        self.monitoring_manager.frontend_diagnostics = self.frontend_diagnostics
         self.stats_manager.readiness_tracker = self.readiness_tracker
+        self.stats_manager.frontend_diagnostics = self.frontend_diagnostics
 
         # Share components between managers
         self.monitoring_manager.set_stats_manager(self.stats_manager)
@@ -1270,9 +1318,8 @@ class ContinuouslyCastingDashboards:
             # Initial setup of devices - this can take time but doesn't block integration
             _LOGGER.debug("Starting device initialization in background")
             try:
-                # This is already a background task. Discovery and CATT
-                # operations have their own timeouts; a blanket 45s limit
-                # cancels healthy startups whenever cast_delay is 60s+.
+                # This already runs in the background. Individual CATT
+                # operations have timeouts; 45s would cancel healthy startups.
                 await self.monitoring_manager.initialize_devices()
                 _LOGGER.info("Background device initialization completed successfully")
             except Exception as e:
@@ -1338,6 +1385,7 @@ class ContinuouslyCastingDashboards:
             await self.monitoring_manager.cleanup()
 
         self.readiness_tracker.clear()
+        self.frontend_diagnostics.clear()
 
         # Clean up device manager caches
         if self.device_manager:

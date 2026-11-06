@@ -48,5 +48,24 @@ class CastGuardUrlTests(unittest.TestCase):
                 self.assertEqual(cast_guard.prepare_cast_url(url, True), url)
 
 
+    def test_diagnostic_target_is_only_in_explicit_cast_urls(self):
+        target = "0123456789abcdef"
+        original = "https://ha.example/lovelace/kiosk?session=sensitive"
+        regular = cast_guard.prepare_cast_url(original, enabled=False, diagnostic_target=target)
+        self.assertEqual(regular, original)
+        cast_url = cast_guard.prepare_cast_url(
+            original, enabled=True, diagnostic_target=target
+        )
+        parsed = urlsplit(cast_url)
+        self.assertEqual(parse_qs(parsed.query)["ccd_cast_target"], [target])
+        self.assertEqual(parse_qs(parsed.query)["session"], ["sensitive"])
+        self.assertEqual(
+            cast_guard.prepare_cast_url(cast_url, enabled=True, diagnostic_target=target),
+            cast_url,
+        )
+        with self.assertRaises(ValueError):
+            cast_guard.prepare_cast_url(original, enabled=True, diagnostic_target="bad")
+
+
 if __name__ == "__main__":
     unittest.main()

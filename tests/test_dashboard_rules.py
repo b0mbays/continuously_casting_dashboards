@@ -15,6 +15,7 @@ from typing import Any
 
 from test_cast_reliability import isolated_method
 from test_cast_guard import cast_guard
+from test_cast_frontend_diagnostics import diagnostics
 
 
 LOGGER = logging.getLogger("tests.dashboard_rules")
@@ -171,6 +172,9 @@ class SelectionTests(unittest.TestCase):
         obj.readiness_tracker = types.SimpleNamespace(
             cast_started=lambda *args, **kwargs: None
         )
+        obj.frontend_diagnostics = types.SimpleNamespace(
+            cast_started=lambda *args, **kwargs: None
+        )
         run(obj._process_single_device("Kitchen", "192.0.2.10", None))
         self.assertEqual(stopped, ["192.0.2.10"])
         self.assertEqual(statuses[0]["status"], "stopped")
@@ -293,6 +297,7 @@ class VolumeTests(unittest.TestCase):
                 "TIMEOUT_VOLUME_COMMAND": 3,
                 "TIMEOUT_PROCESS_TERMINATE": 3,
                 "prepare_cast_url": cast_guard.prepare_cast_url,
+                "cast_target_token": diagnostics.cast_target_token,
             },
         )
         obj = harness()

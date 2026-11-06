@@ -71,24 +71,26 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [x] Add protection against repeated reloads through a consumed URL flag
   and session storage, plus regression tests for nested shadow roots,
   transient errors, disabled mode and blocked browser storage.
+- [x] Implement privacy-safe Cast browser reporting to HA diagnostics for
+  module startup, Lovelace error cards, resource-load counters and
+  registered custom-card counts; `no_report` remains inconclusive.
 - [ ] Test the guard on real Nest Hub / Chromecast browsers, including
   panel views, multiple third-party HACS custom cards, normal media
   interruptions, authentication and a deliberately broken card.
 - [ ] Continue tracking upstream Home Assistant frontend resource/registry
   loading races; the guard is a mitigation, **not** a frontend core fix.
 
-**Status:** code above is on a feature branch, not part of the merged
-v3.0.1 release until its PR passes review and is merged.
+**Status:** generic Cast recovery is merged (v3.0.2). The new receiver-side
+diagnostics remain in PR #12 pending review and real-device testing.
 
-## Startup reliability — 3.0.3 candidate
+## Startup reliability — 3.0.3 merged
 
-- [x] Remove the false 45-second limit from background initialization: the
-  default 60-second delay used to guarantee a timeout after even one cast.
-- [x] Apply the initial inter-device cast delay only between attempts and track
-  background tasks for clean integration reload/unload.
-- [ ] Confirm the revised startup sequence on HAOS and Cast devices.
-- [ ] Diagnose persistent Lovelace **Configuration error** separately; it
-  cannot be established from a CATT initialization timeout log.
+- [x] Remove the false 45-second blanket timeout from background initialisation.
+- [x] Apply startup Cast delay only between attempts and track initialization
+  tasks for clean unload/reload.
+- [ ] Confirm the revised startup sequence on HAOS and real Cast devices.
+- [ ] Diagnose custom-card `Configuration error` separately from startup
+  warnings using receiver-side diagnostics.
 
 ## Continuous quality and release work
 

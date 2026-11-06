@@ -175,3 +175,41 @@ report_dashboard_ready:
       required: false
       selector:
         object:
+
+report_cast_frontend:
+  name: Report Cast Frontend Diagnostics
+  description: >-
+    Internal authenticated telemetry from an opted-in CCD Cast receiver.
+    Only aggregate error counters and document states are accepted;
+    no URLs, JavaScript messages or authentication information are stored.
+  fields:
+    cast_target:
+      name: Receiver Correlation Token
+      required: true
+      selector:
+        text:
+    dashboard_path:
+      name: Dashboard Path
+      required: true
+      selector:
+        text:
+    phase:
+      name: Frontend Observation Phase
+      required: true
+      selector:
+        select:
+          options:
+            - boot
+            - observing
+            - reload_requested
+            - after_reload
+    document_state:
+      name: Document State
+      required: false
+      selector:
+        text:
+    metrics:
+      name: Redacted Counters
+      required: true
+      selector:
+        object:

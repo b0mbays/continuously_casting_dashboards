@@ -58,12 +58,14 @@ jobs:
             custom_components/continuously_casting_dashboards/readiness.py \
             custom_components/continuously_casting_dashboards/diagnostics.py \
             custom_components/continuously_casting_dashboards/cast_guard.py \
+            custom_components/continuously_casting_dashboards/frontend_diagnostics.py \
             custom_components/continuously_casting_dashboards/repairs.py \
             tests/test_cast_operations.py \
             tests/test_cast_resilience.py \
             tests/test_dashboard_management.py \
             tests/test_dashboard_readiness.py \
             tests/test_catt_cli_compatibility.py \
-            tests/test_cast_guard.py
+            tests/test_cast_guard.py \
+            tests/test_cast_frontend_diagnostics.py
       - name: Run regression tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v

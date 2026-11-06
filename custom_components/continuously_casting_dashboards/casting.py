@@ -15,6 +15,7 @@ from .const import DEFAULT_MAX_RETRIES, DEFAULT_RETRY_DELAY, DEFAULT_VERIFICATIO
 
 from .reliability import terminate_process
 from .cast_guard import prepare_cast_url
+from .frontend_diagnostics import cast_target_token
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -91,8 +92,11 @@ class CastingManager:
         # Compute the Cast-only URL once; never mutate stored dashboard config.
         # The guard reloads the receiver browser at most once only after
         # persistent custom-card errors, without starting another CATT cast.
+        recovery_enabled = bool(device_config.get("recover_custom_cards", False))
         cast_url = prepare_cast_url(
-            dashboard_url, enabled=bool(device_config.get("recover_custom_cards", False))
+            dashboard_url,
+            enabled=recovery_enabled,
+            diagnostic_target=cast_target_token(ip) if recovery_enabled else None,
         )
 
         # Check if an active casting operation is already in progress for this IP

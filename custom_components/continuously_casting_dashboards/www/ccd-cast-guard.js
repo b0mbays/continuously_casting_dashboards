@@ -20,21 +20,105 @@
   // This is a passive module on other browsers or dashboards; no event
   // handlers, timers, or storage mutations should occur without opt-in.
   const query = new URLSearchParams(window.location.search);
-  if (query.get(PARAMETER) !== "1") return;
+  const guardMode = query.get(PARAMETER);
+  if (guardMode !== "1" && guardMode !== "done") return;
 
-  function errorCardPresent(root) {
-    // Custom cards can sit inside arbitrary shadow roots. Keep traversal
-    // bounded to prevent expensive work on large Lovelace dashboards.
+  // A short hash of the configured Cast IP associates browser reports with
+  // one active receiver. Never include resource URLs or console text.
+  const target = query.get("ccd_cast_target");
+  const canReport = /^[a-f0-9]{16}$/.test(target || "");
+  const counters = {resource_errors: 0, javascript_errors: 0};
+  if (canReport) {
+    document.addEventListener("error", (event) => {
+      const tag = event.target?.tagName?.toLowerCase();
+      if (tag === "script" || tag === "link") {
+        counters.resource_errors = Math.min(999, counters.resource_errors + 1);
+      } else if (event.target === window) {
+        counters.javascript_errors = Math.min(999, counters.javascript_errors + 1);
+      }
+    }, true);
+    window.addEventListener?.("unhandledrejection", () => {
+      counters.javascript_errors = Math.min(999, counters.javascript_errors + 1);
+    });
+  }
+
+  function snapshot() {
+    const registered = Array.isArray(window.customCards) ? window.customCards : [];
+    const tagNames = registered
+      .map(item => item && item.type)
+      .filter(tag => typeof tag === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)+$/.test(tag));
+    let registeredCount = 0;
+    for (const tag of tagNames.slice(0, 100)) {
+      if (customElements.get(tag)) registeredCount += 1;
+    }
+    let scriptCount = 0;
+    try {
+      const resources = window.performance?.getEntriesByType?.("resource") || [];
+      scriptCount = resources.filter(item =>
+        item.initiatorType === "script" || item.initiatorType === "link"
+      ).length;
+    } catch (_error) {
+      // Performance entries are optional on older Cast receiver browsers.
+    }
+    return {
+      error_cards: countErrorCards(document.documentElement),
+      resource_errors: counters.resource_errors,
+      javascript_errors: counters.javascript_errors,
+      script_resources: Math.min(999, scriptCount),
+      listed_custom_cards: Math.min(999, tagNames.length),
+      registered_custom_cards: Math.min(999, registeredCount),
+    };
+  }
+
+  function report(phase) {
+    if (!canReport || !document.querySelector) return;
+    // HA's root exposes its authenticated hass object on supported frontend
+    // versions. If it isn't available, do not attempt a raw unauthenticated
+    // fetch. The backend's no_report status distinguishes this condition.
+    const hass = document.querySelector("home-assistant")?.hass;
+    if (!hass || typeof hass.callService !== "function") return;
+    try {
+      const promise = hass.callService(
+        "continuously_casting_dashboards",
+        "report_cast_frontend",
+        {
+          cast_target: target,
+          dashboard_path: window.location.pathname,
+          phase,
+          document_state: document.readyState || "unknown",
+          metrics: snapshot(),
+        }
+      );
+      Promise.resolve(promise).catch(() => {});
+    } catch (_error) {
+      // This diagnostic path must never interrupt the Lovelace receiver.
+    }
+  }
+
+  if (canReport) {
+    for (const delay of [1500, 9000, 20000, 40000, 65000]) {
+      window.setTimeout(
+        () => report(guardMode === "done" ? "after_reload" : "observing"),
+        delay
+      );
+    }
+  }
+  if (guardMode === "done") return;
+
+  function countErrorCards(root) {
+    // Traverse bounded shadow DOM to count Lovelace errors. This captures
+    // symptoms, not private error text or potentially sensitive card config.
     const pending = [root];
     let inspected = 0;
+    let count = 0;
 
     while (pending.length && inspected < MAX_NODES) {
       const node = pending.pop();
       inspected += 1;
       if (!node) continue;
-
       if (node.tagName?.toLowerCase() === "hui-error-card") {
-        return true;
+        count += 1;
+        if (count >= 100) return count;
       }
       if (node.shadowRoot) pending.push(node.shadowRoot);
       if (node.children) {
@@ -43,7 +127,11 @@
         }
       }
     }
-    return false;
+    return count;
+  }
+
+  function errorCardPresent(root) {
+    return countErrorCards(root) > 0;
   }
 
   function storageKey() {
@@ -92,6 +180,7 @@
     }
 
     complete = true;
+    report("reload_requested");
     console.warn("[CCD] Persistent custom-card error: trying one guarded dashboard reload");
     // Mark the query flag as consumed *before* navigating. If the Cast
     // receiver drops sessionStorage during navigation, the new page still

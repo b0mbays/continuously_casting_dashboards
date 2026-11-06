@@ -160,6 +160,7 @@ class BackgroundStartupTests(unittest.TestCase):
         obj.unsubscribe_listeners = []
         obj.monitoring_manager = SimpleNamespace(cleanup=cleanup)
         obj.readiness_tracker = SimpleNamespace(clear=lambda: None)
+        obj.frontend_diagnostics = SimpleNamespace(clear=lambda: None)
         obj.device_manager = SimpleNamespace(clear_all_caches=lambda: None)
         obj.casting_manager = SimpleNamespace(cleanup=cleanup)
 

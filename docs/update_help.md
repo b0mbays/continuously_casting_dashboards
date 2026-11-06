@@ -53,12 +53,39 @@ comes from a fixed 45-second deadline around the initial device setup. It can
 fire even with one working display because initial setup previously waited the
 full default 60-second inter-device delay after its last device.
 
-Version **3.0.3 (candidate)** removes the blanket startup deadline, avoids
-a trailing delay and tracks startup tasks for clean unload. Individual CATT
-operations still have their normal timeouts. This startup warning is **not**
-evidence of a custom-card JavaScript failure. If casting succeeds but the
-screen shows `Configuration error`, troubleshoot Lovelace resource loading
-separately.
+Version **3.0.3** removes the blanket startup deadline, avoids a trailing
+delay and tracks startup tasks for clean unload. Individual CATT operations
+still have their normal timeouts. This startup warning is **not** evidence
+of a custom-card JavaScript failure. If casting succeeds but the screen
+shows `Configuration error`, use the receiver diagnostics below to
+troubleshoot Lovelace loading separately.
+
+## Diagnosing custom-card errors on Cast receivers
+
+Enable **Recover custom-card configuration errors on Cast** for the affected
+dashboard, make a fresh Cast attempt, and download the integration diagnostics
+under **Settings → Devices & Services**. The device's `cast_frontend`
+section records whether the receiver was able to report, the number of
+Lovelace `hui-error-card` elements and redacted script/resource/registration
+counters. No dashboard query values or raw JavaScript error messages are
+collected.
+
+- `no_report` after 90 seconds: either the frontend guard did not execute or
+  the receiver could not reach the authenticated reporting service. It does
+  **not** prove the resource was never requested.
+- `error_cards`: the receiver reported an actual Lovelace error element.
+  Confirm the same dashboard works in Kiosk Satellite/Chrome to compare the
+  environments; the source could still be malformed card config.
+- `script_or_resource_errors`: the receiver saw a browser script/link failure
+  **after the guard started**. Old failures may have occurred before observation.
+- `observed` but the screen is broken: capture the reported counts and HA
+  frontend version. Successful card registration is not proof of rendering.
+- `reload_requested`: a single page-reload attempt was observed. If the
+  subsequent state remains `error_cards`, do not attempt repeated recasts.
+
+Browser reports are **best-effort** and may also originate from another browser
+opening the identical guarded URL. They are a targeted diagnostic, not a
+security attestation of a specific physical receiver.
 
 ## Common checks
 

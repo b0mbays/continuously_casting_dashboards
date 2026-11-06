@@ -148,6 +148,11 @@ class StatsManager:
                     if getattr(self, "readiness_tracker", None) is not None
                     else "disabled"
                 ),
+                'cast_frontend': (
+                    self.frontend_diagnostics.snapshot(device_name)
+                    if getattr(self, "frontend_diagnostics", None) is not None
+                    else {"status": "disabled"}
+                ),
             }
 
             # Include current dashboard URL if available

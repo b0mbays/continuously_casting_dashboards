@@ -28,10 +28,14 @@ function runGuard({
   storage = new Map(),
   currentTime = 100_000,
   blockStorage = false,
+  hassAvailable = true,
 } = {}) {
   const callbacks = [];
   const warnings = [];
-  const result = {reloads: 0, lastUrl: null, callbacks, warnings, storage, root};
+  const result = {
+    reloads: 0, lastUrl: null, callbacks, warnings, storage, root,
+    reports: [], errorHandlers: [],
+  };
   const sessionStorage = {
     getItem(key) {
       if (blockStorage) throw new Error("storage denied");
@@ -54,13 +58,38 @@ function runGuard({
     },
     setTimeout(fn, delay) { callbacks.push({fn, delay}); },
     sessionStorage,
+    addEventListener() {},
+    customCards: [
+      {type: "example-custom-card"}, {type: "missing-custom-card"}
+    ],
+    performance: {
+      getEntriesByType: () => [
+        {initiatorType: "script"}, {initiatorType: "link"}
+      ],
+    },
   };
-  const document = {documentElement: root};
+  const hass = hassAvailable ? {
+    callService(_domain, _service, payload) {
+      result.reports.push(payload);
+      return Promise.resolve();
+    },
+  } : null;
+  const document = {
+    documentElement: root,
+    readyState: "complete",
+    querySelector: () => hass ? {hass} : null,
+    addEventListener(name, handler) {
+      result.errorHandlers.push({name, handler});
+    },
+  };
   class FakeDate extends Date {
     static now() { return currentTime; }
   }
   vm.runInNewContext(script, {
-    window, document, URL, URLSearchParams, Date: FakeDate, Math,
+    window, document, customElements: {
+      get: tag => tag === "example-custom-card" ? class {} : undefined,
+    },
+    URL, URLSearchParams, Date: FakeDate, Math,
     console: {warn: msg => warnings.push(msg)},
   });
   return result;
@@ -145,4 +174,62 @@ test("different or disabled query flags cannot enable recovery", () => {
     assert.equal(r.callbacks.length, 0);
     assert.equal(r.reloads, 0);
   }
+});
+
+test("opted-in browser reports startup, error cards, and registry/resource counts", () => {
+  const r = runGuard({
+    search: "?ccd_cast_guard=1&ccd_cast_target=0123456789abcdef",
+    root: dashboard(true),
+  });
+  assert.equal(r.callbacks.length, 9);
+  assert.equal(r.errorHandlers.length, 1);
+  const reportTime = r.callbacks.find(item => item.delay === 1500);
+  reportTime.fn();
+  assert.equal(r.reports.length, 1);
+  assert.equal(r.reports[0].phase, "observing");
+  assert.equal(r.reports[0].dashboard_path, "/dashboard-test/kiosk");
+  assert.equal(r.reports[0].metrics.error_cards, 1);
+  assert.equal(r.reports[0].metrics.script_resources, 2);
+  assert.equal(r.reports[0].metrics.registered_custom_cards, 1);
+  assert.equal(r.reports[0].metrics.listed_custom_cards, 2);
+  assert.equal(r.reports[0].cast_target, "0123456789abcdef");
+  assert.equal(JSON.stringify(r.reports).includes("https://"), false);
+});
+
+test("browser reports script load failures only as counts, never URLs", () => {
+  const r = runGuard({
+    search: "?ccd_cast_guard=1&ccd_cast_target=0123456789abcdef",
+  });
+  const error = r.errorHandlers.find(item => item.name === "error");
+  error.handler({
+    target: {tagName: "SCRIPT", src: "https://ha.example/private/key.js?token=secret"},
+  });
+  const reportTime = r.callbacks.find(item => item.delay === 1500);
+  reportTime.fn();
+  assert.equal(r.reports[0].metrics.resource_errors, 1);
+  assert.equal(JSON.stringify(r.reports).includes("secret"), false);
+  assert.equal(JSON.stringify(r.reports).includes("/private/"), false);
+});
+
+test("spent recovery URL continues reporting without triggering another reload", () => {
+  const r = runGuard({
+    search: "?ccd_cast_guard=done&ccd_cast_target=0123456789abcdef",
+    root: dashboard(true),
+  });
+  assert.equal(r.callbacks.length, 5);
+  for (const item of r.callbacks) item.fn();
+  assert.equal(r.reloads, 0);
+  assert.equal(r.reports.length, 5);
+  assert.ok(r.reports.every(report => report.phase === "after_reload"));
+});
+
+test("frontend with no HA authenticated hass cannot send reports or make raw fetch", () => {
+  const r = runGuard({
+    search: "?ccd_cast_guard=1&ccd_cast_target=0123456789abcdef",
+    hassAvailable: false,
+  });
+  for (const reportTime of r.callbacks.filter(item => item.delay === 1500)) {
+    reportTime.fn();
+  }
+  assert.equal(r.reports.length, 0);
 });

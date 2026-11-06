@@ -2,20 +2,16 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
-## 3.0.3 — Background startup initialization fix (candidate, 6 November 2026)
+## 3.0.3 — Background startup initialization fix (merged 6 November 2026)
 
-- Remove the **45-second blanket initialization timeout** that cancelled normal
-  background startup even when the configured inter-device delay was 60 seconds.
-- Apply `cast_delay` **only between attempted initial casts**, not after the
-  final device or for skipped dashboards/media-only devices.
-- Track the startup background task for safe cancellation on integration
-  unload/reload; leave per-operation CATT subprocess timeouts intact.
-- Add startup-delay and task-lifecycle regression tests.
-- Clarify in the README that the old timeout warning is independent of
-  Lovelace **Configuration error** / third-party custom-card loading.
+- Remove the 45-second blanket initialization timeout, which could cancel
+  successful startup when the inter-device delay was 60 seconds.
+- Apply `cast_delay` only between actual initial casting attempts.
+- Track background startup tasks and cancel them cleanly on reload/unload.
+- Add startup sequence and task lifecycle regression tests.
 
-**Validation:** code-level regression suite and CI, plus real HAOS/Nest Hub
-verification still needed. No GitHub release is implied by the metadata bump.
+The backend initialization warning is **not** proof of a Lovelace
+configuration error, which requires separate frontend diagnostics.
 
 ## 3.0.2 — Generic custom-card recovery on Cast (candidate, 6 November 2026)
 
@@ -28,6 +24,12 @@ verification still needed. No GitHub release is implied by the metadata bump.
 - Prevent reload loops with a consumed URL marker, per-dashboard
   15-minute session cooldown, and fail-closed behaviour without storage.
 - Add Python URL-parameter tests and JavaScript simulated-DOM recovery tests.
+- Add optional authenticated receiver-side diagnostic heartbeats and bounded,
+  privacy-safe counts for persistent error cards, script/link load errors,
+  JavaScript errors, custom-card registration and reload phases.
+- Expose `cast_frontend` via device status sensor attributes and downloadable
+  Home Assistant integration diagnostics, including inconclusive
+  `no_report` when receiver telemetry never reaches Home Assistant.
 
 **Default:** disabled. This mitigates some Home Assistant custom-resource
 startup races but cannot fix invalid Lovelace YAML, unavailable modules, or

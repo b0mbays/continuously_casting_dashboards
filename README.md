@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Version 3.0.3 candidate (6 November 2026):** This patch corrects startup initialization when the configured inter-device casting delay exceeds the old fixed 45-second background deadline. It also tracks the startup task so integration reload/unload can cancel it safely. The prior v3.0.2 release code adds optional custom-card recovery, and v3.0.1 pins CATT `0.13.3`. Check the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). The fix on this feature branch is not a published release until merged and tagged.
+**Current merged version: 3.0.3 (6 November 2026).** The backend startup timeout fix is merged, alongside optional Cast-wide custom-card recovery from v3.0.2 and CATT `0.13.3` from v3.0.1. This PR adds receiver-side diagnostics but does not change the integration version or claim a published release. See the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md), and [CATT compatibility notes](docs/CAST_BACKENDS.md). Browser diagnostics require physical Cast testing.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
@@ -352,10 +352,50 @@ JavaScript or missing resources. Some Cast browsers may not load the guard
 script; real receiver validation is therefore required. An error appearing
 after the final observation (roughly 36 seconds) will not automatically retry.
 
+**Receiver-side diagnostics (included with this option):** A Cast-only URL
+also receives an opaque `ccd_cast_target` correlation key (a short one-way
+hash of the Cast IP; never the IP itself). The guard attempts to send
+authenticated browser observations to Home Assistant, using the existing
+frontend's `hass.callService`, when the receiver allows it. No additional
+Lovelace resource or third-party custom-card changes are required.
+
+To troubleshoot, cast the affected dashboard with **Recover custom-card
+configuration errors on Cast** enabled, then open **Settings → Devices &
+Services → Continuously Casting Dashboards → Download diagnostics**. Find the
+affected device's `cast_frontend` status (also shown in the device status
+sensor's `cast_frontend` attribute after a status refresh):
+
+| Status | Meaning |
+| --- | --- |
+| `disabled` | Recovery/telemetry isn't enabled on the current dashboard |
+| `awaiting_report` | Cast started; first browser report hasn't arrived |
+| `no_report` | No report after 90 seconds: guard may not load, receiver may not expose an authenticated `hass`, or reporting may be blocked |
+| `observed` | The guard ran and sent a report without detecting error cards |
+| `error_cards` | One or more `hui-error-card` elements still exist in the receiver's page |
+| `script_or_resource_errors` | Browser counted script/link resource-load or JavaScript errors |
+| `reload_requested` | Guard attempted its single controlled reload |
+| `stale` | The last browser report is older than three minutes |
+
+Each report contains **only integer counts**, document readiness and stage:
+`error_cards`, `resource_errors`, `javascript_errors`,
+`script_resources`, `listed_custom_cards` and
+`registered_custom_cards`. It excludes raw error text, resource URLs,
+authentication tokens and dashboard query parameters. Observed
+`registered_custom_cards` describes the registry **when sampled**; it
+cannot prove that cards were registered before Lovelace constructed them.
+
+The `no_report` state is intentionally **inconclusive**, not proof that the
+guard failed to load: receivers can prevent frontend API calls, a stale
+connection can block service reporting, or the resource may not execute.
+The browser checks start after script initialisation and cannot reliably
+capture network failures that occurred before it ran. Reports also cannot
+guarantee that a specific physical Cast receiver, rather than another
+browser opening the exact guarded URL, supplied them.
+
 **This is independent of the optional readiness reporter below.** The
-readiness reporter remains diagnostic-only, while this recovery mode uses
-the presence of Lovelace error cards; no third-party-specific element names
-need to be configured.
+readiness reporter remains diagnostic-only. Browser diagnostics and guarded
+reloading are separate from any CATT reconnect action, and media protection
+remains unchanged.
 
 ### Optional dashboard frontend readiness (experimental)
 
@@ -591,25 +631,19 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 
 ### Background device initialization timed out
 
-In v3.0.2 and earlier, startup launched initial casting as a background task
-with a hard **45-second** deadline. The default `cast_delay` is **60 seconds**,
-and the initialization loop also slept after its *last* device. Therefore,
-even one healthy display could trigger the warning
-`Background device initialization timed out, continuing anyway`. The timeout
-cancelled initial setup before the separate monitoring pass began.
+In v3.0.2 and earlier, a 45-second deadline surrounded initial casting even
+though the default inter-device delay was 60 seconds and was applied after the
+last Cast attempt. A successful receiver could therefore produce
+`Background device initialization timed out, continuing anyway`.
 
-**Fixed in the 3.0.3 candidate:** there is no global 45-second cancellation
-for the already-background initialization task; each CATT operation retains
-its own timeout. The configured delay is applied **only between actual initial
-cast attempts**, never after the final attempt or when skipped by media/rules.
-Startup tasks are tracked and cancelled during reload/unload.
+**Fixed in v3.0.3:** the integration no longer cancels its already-background
+startup after 45 seconds; CATT operation timeouts remain intact. Delays apply
+only between actual initial casts, and startup tasks are tracked for unload.
 
-This message is about **initial casting setup**, not proof that a particular
-Lovelace custom card loaded. If the Cast screen still shows
-**Configuration error**, inspect browser resource registration and the
-[generic custom-card recovery option](#generic-custom-card-recovery-for-cast-receivers-opt-in)
-separately. The frontend-related problem may remain even after this warning
-is eliminated.
+This warning describes **backend initialization**, not the cause of any
+Lovelace **Configuration error**. Use the
+[generic custom-card recovery and receiver diagnostics](#generic-custom-card-recovery-for-cast-receivers-opt-in)
+for the latter.
 
 ### Device not found
 
