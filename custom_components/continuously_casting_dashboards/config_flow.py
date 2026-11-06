@@ -616,6 +616,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["rotation_seconds"] = int(
                     user_input.get("rotation_seconds", 0)
                 )
+                cleaned_input["verify_readiness"] = bool(
+                    user_input.get("verify_readiness", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -682,6 +685,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("rotation_seconds", default=0): vol.All(
                     vol.Coerce(int), vol.Range(min=0, max=3600)
                 ),
+                vol.Optional("verify_readiness", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
@@ -981,6 +985,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["rotation_seconds"] = int(
                     user_input.get("rotation_seconds", 0)
                 )
+                cleaned_input["verify_readiness"] = bool(
+                    user_input.get("verify_readiness", False)
+                )
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
@@ -1070,6 +1077,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "rotation_seconds", default=current.get("rotation_seconds", 0)
             ): vol.All(vol.Coerce(int), vol.Range(min=0, max=3600)),
+            vol.Optional(
+                "verify_readiness", default=current.get("verify_readiness", False)
+            ): cv.boolean,
             vol.Optional("enable_time_window", default=has_time): cv.boolean,
             vol.Optional(
                 "start_time",
@@ -1148,6 +1158,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         cleaned_input["priority"] = int(user_input.get("priority", 0))
         cleaned_input["rotation_seconds"] = int(
             user_input.get("rotation_seconds", 0)
+        )
+        cleaned_input["verify_readiness"] = bool(
+            user_input.get("verify_readiness", False)
         )
 
         if user_input.get("enable_time_window", False):
@@ -1277,6 +1290,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["rotation_seconds"] = int(
                     user_input.get("rotation_seconds", 0)
                 )
+                cleaned_input["verify_readiness"] = bool(
+                    user_input.get("verify_readiness", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -1341,6 +1357,7 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("rotation_seconds", default=0): vol.All(
                     vol.Coerce(int), vol.Range(min=0, max=3600)
                 ),
+                vol.Optional("verify_readiness", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
