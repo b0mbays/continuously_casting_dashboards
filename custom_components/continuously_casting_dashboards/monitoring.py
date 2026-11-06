@@ -67,6 +67,9 @@ class MonitoringManager:
         self._media_hold_until: dict[str, float] = {}  # Grace period after media is detected
         self.reconnect_backoff = ReconnectBackoff()
         self._process_semaphore = asyncio.Semaphore(3)
+        self._rotation_state = {}
+        self._manual_overrides = {}
+        self._refresh_task = None
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
@@ -211,6 +214,11 @@ class MonitoringManager:
         self._device_locks.clear()
         self._media_hold_until.clear()
         self.reconnect_backoff.clear()
+        self._rotation_state.clear()
+        self._manual_overrides.clear()
+        if self._refresh_task is not None:
+            self._refresh_task.cancel()
+            self._refresh_task = None
 
         # Clear active device configs
         self.active_device_configs.clear()
@@ -236,20 +244,60 @@ class MonitoringManager:
                     "Dashboard control entity %s changed; refreshing selection",
                     event.data.get("entity_id"),
                 )
-                self.hass.async_create_task(self.async_monitor_devices())
+                self._schedule_selection_refresh()
 
             unsub = async_track_state_change_event(
                 self.hass, entity_id, switch_state_listener
             )
             self._unsubscribe_listeners.append(unsub)
 
-    async def _async_select_device_config(self, device_name, configs):
-        """Return the first dashboard eligible by BOTH schedule and entity.
+    def _schedule_selection_refresh(self):
+        """Debounce bursts of HA entity state changes into one monitor pass."""
+        if self._refresh_task is None or self._refresh_task.done():
+            self._refresh_task = self.hass.async_create_task(
+                self._async_debounced_refresh()
+            )
 
-        Config order defines precedence; an ineligible entry never masks an
-        eligible later dashboard. Return (None, False) when none qualify.
+    async def _async_debounced_refresh(self):
+        """Retry briefly if an existing monitoring cycle holds the lock."""
+        await asyncio.sleep(0.3)
+        for _ in range(10):
+            if not self.monitor_lock.locked():
+                await self.async_monitor_devices()
+                return
+            await asyncio.sleep(0.3)
+
+    async def async_set_manual_dashboard(self, device_name, dashboard_index, duration=300):
+        """Temporarily prefer one configured dashboard, respecting its controls.
+
+        An override never bypasses the selected dashboard's required entity
+        state or time window. It expires automatically after duration seconds.
         """
-        for config in configs:
+        configs = self.devices.get(device_name)
+        if configs is None:
+            raise ValueError(f"Unknown Cast device: {device_name}")
+        if not isinstance(dashboard_index, int) or not 0 <= dashboard_index < len(configs):
+            raise ValueError("Dashboard index out of range")
+        if not 5 <= duration <= 3600:
+            raise ValueError("Duration must be between 5 and 3600 seconds")
+        self._manual_overrides[device_name] = (
+            dashboard_index, time.monotonic() + duration
+        )
+        self._schedule_selection_refresh()
+
+    async def async_clear_manual_dashboard(self, device_name):
+        """Clear a temporary override and reselect according to normal rules."""
+        self._manual_overrides.pop(device_name, None)
+        self._schedule_selection_refresh()
+
+    async def _async_select_device_config(self, device_name, configs):
+        """Choose by eligibility, temporary override, priority and rotation.
+
+        Higher priority wins. Equal priority uses configuration order unless
+        rotation_seconds is configured on the first equally ranked entry.
+        """
+        eligible = []
+        for index, config in enumerate(configs):
             if not await self.time_window_checker.async_is_within_time_window(
                 device_name, config
             ):
@@ -258,8 +306,51 @@ class MonitoringManager:
                 device_name, config
             ):
                 continue
-            return config, True
-        return None, False
+            eligible.append((index, config))
+
+        if not eligible:
+            self._rotation_state.pop(device_name, None)
+            self._manual_overrides.pop(device_name, None)
+            return None, False
+
+        override = self._manual_overrides.get(device_name)
+        now = time.monotonic()
+        if override:
+            index, until = override
+            if until > now:
+                for original_index, config in eligible:
+                    if original_index == index:
+                        return config, True
+            else:
+                self._manual_overrides.pop(device_name, None)
+
+        best_priority = max(int(config.get("priority", 0)) for _, config in eligible)
+        candidates = [
+            (index, config) for index, config in eligible
+            if int(config.get("priority", 0)) == best_priority
+        ]
+        interval = max(0, int(candidates[0][1].get("rotation_seconds", 0)))
+        if len(candidates) == 1 or interval == 0:
+            self._rotation_state.pop(device_name, None)
+            return candidates[0][1], True
+
+        fingerprint = tuple(
+            (index, config.get("dashboard_url")) for index, config in candidates
+        )
+        state = self._rotation_state.get(device_name)
+        if state is None or state["fingerprint"] != fingerprint:
+            position = 0
+        elif now - state["last_switched"] >= interval:
+            position = (state["position"] + 1) % len(candidates)
+        else:
+            position = state["position"]
+
+        if state is None or state["fingerprint"] != fingerprint or position != state["position"]:
+            self._rotation_state[device_name] = {
+                "fingerprint": fingerprint, "position": position,
+                "last_switched": now,
+            }
+        return candidates[position][1], True
 
     async def _async_check_single_device(self, target_device_name):
         """Check and process a single device, skipping the full monitoring cycle.
