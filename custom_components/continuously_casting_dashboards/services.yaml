@@ -80,3 +80,46 @@ resume_casting:
       example: "Living Room Display"
       selector:
         text:
+
+select_dashboard:
+  name: Temporarily Select Dashboard
+  description: >-
+    Prefer a configured dashboard by its zero-based index for a limited time.
+    The dashboard's time and entity controls must still be satisfied.
+  fields:
+    device_name:
+      name: Device Name
+      description: The exact configured Cast device name.
+      required: true
+      selector:
+        text:
+    dashboard_index:
+      name: Dashboard Index
+      description: Zero-based position of the dashboard on this device.
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          mode: box
+    duration_seconds:
+      name: Override Duration
+      description: How long to prefer the dashboard before normal rules resume.
+      required: false
+      default: 300
+      selector:
+        number:
+          min: 5
+          max: 3600
+          unit_of_measurement: seconds
+
+clear_dashboard_override:
+  name: Clear Dashboard Override
+  description: Return a device to its priority and rotation rules.
+  fields:
+    device_name:
+      name: Device Name
+      description: The exact configured Cast device name.
+      required: true
+      selector:
+        text:
