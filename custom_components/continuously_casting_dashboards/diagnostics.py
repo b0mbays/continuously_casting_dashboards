@@ -41,6 +41,7 @@ async def async_get_config_entry_diagnostics(
             "reconnect_attempts": status.get("reconnect_attempts", 0),
             "retry_in_seconds": round(monitor.reconnect_backoff.remaining(key)),
             "last_error": status.get("last_error"),
+            "frontend_readiness": caster.readiness_tracker.snapshot(device_name),
         })
 
     return {
