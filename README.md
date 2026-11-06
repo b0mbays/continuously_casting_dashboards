@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Version 3.0.0 (6 November 2026):** The integration and HACS metadata now declare **3.0.0**, with [PRs #2–#6](https://github.com/anaschillin/continuously_casting_dashboards/pulls?q=is%3Apr+is%3Amerged) merged into `main`. Review the [v3 changelog](CHANGELOG.md) and [upgrade guide](docs/update_help.md) before installing. This source-code version bump does **not** create a GitHub release or HACS download automatically. The optional frontend-readiness reporter remains diagnostic-only; it does not fix custom-card loading failures.
+**Version 3.0.1 candidate (6 November 2026):** The integration and Marketplace/HACS metadata declare **3.0.1**, updating CATT to `0.13.3`. Review the [changelog](CHANGELOG.md), [upgrade guide](docs/update_help.md) and [CATT compatibility notes](docs/CAST_BACKENDS.md). Live Chromecast/HAOS verification is still required; a source-code version bump does **not** create a published GitHub release. The optional frontend-readiness reporter remains diagnostic-only.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
@@ -64,23 +64,29 @@ Before installing, ensure you have:
 |-------------|-------------|
 | **Reachable dashboard URL** | The Cast device must be able to load the configured Home Assistant dashboard. The integration accepts `http://` and `https://` URLs; use HTTPS when practical. |
 | **Dashboard authentication** | The receiver must be able to access the dashboard. If trusted networks are necessary, restrict them to specific Cast device IPs ([setup guidance](#trusted-networks-setup)). |
-| **CATT** | The integration requires the CATT command (currently pinned in the manifest as `catt==0.12.13`). |
+| **CATT** | The integration requires the CATT CLI, now pinned to `catt==0.13.3` (Python 3.11+, PyChromecast 14.x). Home Assistant normally installs the manifest requirement automatically. |
 | **ha-catt-fix** | Recommended for affected devices if the display times out; see [installation guidance](#install-ha-catt-fix). |
 | **Kiosk Mode** | *Optional*—hides Home Assistant navigation bars ([project](https://github.com/NemesisRE/kiosk-mode)). |
 
 ## 📦 Installation
 
-### Via HACS (Recommended)
+### Home Assistant 2026.11+: Marketplace (recommended)
 
-1. Open HACS in Home Assistant
-2. Open the three-dot menu (⋮) and select **Custom repositories**.
-3. Add `https://github.com/anaschillin/continuously_casting_dashboards` as an **Integration**.
-4. Locate **Continuously Casting Dashboards**, then download/update it.
-5. Restart Home Assistant.
+Home Assistant 2026.11 includes the built-in **Marketplace**, replacing the old separately installed HACS interface.
 
-This is the **fork containing PRs #2–#6**. The original [b0mbays repository](https://github.com/b0mbays/continuously_casting_dashboards) is a separate code source. Do not configure both repositories to install the same `continuously_casting_dashboards` integration simultaneously. If migrating from the upstream version, review [the upgrade guide](docs/update_help.md) and back up your configuration first.
+1. Open **Settings → Marketplace**.
+2. Select **Add from link** in the upper-right corner.
+3. Paste `https://github.com/anaschillin/continuously_casting_dashboards`, then choose **Add**. If asked for a type, choose **Integration**.
+4. Open the repository's Marketplace page and select **Install**. Restart Home Assistant if prompted, particularly after updates.
+5. Finish setup under **Settings → Devices & Services** if the integration setup does not open automatically.
 
-Being available as a HACS **custom repository** does not mean that this fork has been accepted into the default HACS catalogue.
+Custom repositories may require you to connect GitHub using the Marketplace's device sign-in flow. Adding the repository as a custom link is **not** the same as inclusion in the Marketplace's default catalogue.
+
+### Home Assistant before 2026.11: HACS
+
+On versions that still run HACS separately, open **HACS → ⋮ → Custom repositories**, add the same repository URL as an **Integration**, download it, restart Home Assistant, then add the integration under **Settings → Devices & Services**.
+
+Use **only one** source for the `continuously_casting_dashboards` integration: the [original upstream repository](https://github.com/b0mbays/continuously_casting_dashboards) and [this fork](https://github.com/anaschillin/continuously_casting_dashboards) share the same integration domain. See the [upgrade guide](docs/update_help.md) before switching sources.
 
 ### Manual Installation
 
@@ -293,7 +299,7 @@ Cast outages remain diagnostic status changes, not persistent Repairs.
 
 ### CATT upgrade and HA Cast alternatives
 
-The manifest remains pinned to CATT **0.12.13** for v3.0.0. A newer CATT dependency is under evaluation; upgrading requires physical-device and dependency compatibility checks.
+**CATT has been upgraded from 0.12.13 to 0.13.3** (the latest published version verified on 6 November 2026). The `cast_site`, `scan`, `status`, `stop`, and `volume` CLI contracts have automated checks, including dependency resolution against Home Assistant's PyChromecast 14.1.1. **Live Cast-device tests remain necessary** before considering it hardware-certified. See [compatibility notes](docs/CAST_BACKENDS.md) and [rollback instructions](docs/update_help.md).
 See [the backend compatibility review](docs/CAST_BACKENDS.md) for the testing
 matrix and the proposed experimental HA Cast adapter design.
 
@@ -507,15 +513,11 @@ homeassistant:
 
 > **Security:** Use exact `/32` device addresses, retain the normal `homeassistant` auth provider for other clients, and make sure Cast IP assignments are stable. Trusted authentication grants access from matching source addresses and should not be enabled broadly. Use a dedicated, least-privilege account where practical.
 
-### Install ha-catt-fix
+### Install ha-catt-fix (optional)
 
-This prevents the dashboard from timing out after 10 minutes.
+Some older Chromecast devices may stop displaying a dashboard after a period of inactivity. The third-party [ha-catt-fix](https://github.com/swiergot/ha-catt-fix) frontend resource may help affected installations; it is not a required dependency for all Cast devices.
 
-1. Open HACS → Click three dots (⋮) → **Custom repositories**
-2. Add `swiergot/ha-catt-fix` as a **Dashboard** (previously called "Lovelace")
-3. Go to **Frontend** tab → Search "ha-catt-fix" → **Download**
-4. Restart Home Assistant
-5. Verify installation: Open your dashboard → Edit → Manage resources → Confirm ha-catt-fix is listed
+In Home Assistant 2026.11+, use **Settings → Marketplace → Add from link** and enter `https://github.com/swiergot/ha-catt-fix`. On older versions, add it as a HACS **Dashboard** custom repository. Follow that project's current installation instructions and verify the resource appears in your dashboard resources. This add-on and CATT's Python version are separate components.
 
 ---
 
@@ -566,7 +568,7 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 ### Device shows as unreachable
 
 If a device temporarily loses connectivity, the integration can report it as disconnected, back off repeated failed reconnections, and create a persistent notification when enabled. Casting will be attempted again when the retry delay and normal eligibility/media checks allow it.
-If you find the notifications noisy, the **Enable notifications** option is available under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. **Known limitation in merged PRs #2–#5:** the global options flow does not reliably persist an unchecked value; the fix is being developed separately. Confirm its saved value after reloading, rather than assuming the toggle has taken effect.
+If you find notifications noisy, use **Settings → Devices & Services → Continuously Casting Dashboards → Configure** to turn off **Enable notifications**. PR #6 fixed the persistence of a disabled setting; confirm the saved value after reloading if upgrading from an earlier version.
 
 ### Annoying phone notifications for "DashCast"
 

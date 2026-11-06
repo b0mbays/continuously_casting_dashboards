@@ -4,9 +4,9 @@
     "documentation": "https://github.com/anaschillin/continuously_casting_dashboards",
     "issue_tracker": "https://github.com/anaschillin/continuously_casting_dashboards/issues",
     "requirements": [
-        "catt==0.12.13"
+        "catt==0.13.3"
     ],
-    "version": "3.0.0",
+    "version": "3.0.1",
     "config_flow": true,
     "dependencies": [
         "http"

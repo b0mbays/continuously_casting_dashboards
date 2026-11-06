@@ -2,7 +2,7 @@
 
 This is the **current upgrade guide** for [anaschillin/continuously_casting_dashboards](https://github.com/anaschillin/continuously_casting_dashboards). It supersedes older instructions written for v1.1.4. Those older instructions advised removing and reinstalling everything; that is **not the normal upgrade path** and risks losing configuration.
 
-The fork's `main` includes [PRs #2–#6](../ROADMAP.md), covering independent dashboard rules, casting reliability, dashboard priorities/rotation, optional frontend readiness, a Lovelace control panel, pause/resume and actionable Repairs. Both the manifest and HACS metadata declare **3.0.0**. This is a code version: check the releases shown in GitHub/HACS before assuming a tagged v3 download exists.
+The fork's v3.0.0 baseline includes [PRs #2–#6](../ROADMAP.md), covering dashboard rules, discovery, readiness reporting, controls, pause/resume and Repairs. The follow-up **3.0.1 candidate** upgrades CATT from 0.12.13 to **0.13.3** and updates documentation. The integration and Marketplace metadata match, but check actual published GitHub releases before assuming a tagged 3.0.1 download exists. Hardware compatibility remains unverified.
 
 ## Before changing anything
 
@@ -13,8 +13,8 @@ The fork's `main` includes [PRs #2–#6](../ROADMAP.md), covering independent da
 
 ## Update an existing installation
 
-1. In HACS, verify that the integration is sourced from the intended repository. For this fork, the custom repository URL is `https://github.com/anaschillin/continuously_casting_dashboards` (category **Integration**).
-2. Update the integration using HACS, or manually replace only the integration files under `config/custom_components/continuously_casting_dashboards/` if that is how it was installed.
+1. On **Home Assistant 2026.11+**, go to **Settings → Marketplace**. Choose **Add from link** and enter `https://github.com/anaschillin/continuously_casting_dashboards` (type **Integration** if prompted). The older HACS interface is used only on Home Assistant versions before 2026.11.
+2. When a version containing the updated dependency is available, install/update it through Marketplace (or older HACS). For manual installs, replace only the integration files in `config/custom_components/continuously_casting_dashboards/`. The manifest instructs Home Assistant to install CATT; do **not** manually modify HAOS's managed Python environment.
 3. Restart Home Assistant.
 4. Open **Settings → Devices & Services → Continuously Casting Dashboards**. Verify configured devices, schedules, dashboard order and state conditions.
 5. Confirm at least one Cast display can load the expected dashboard. If using multiple dashboards, check an entity-controlled fallback and a scheduled transition.
@@ -33,6 +33,18 @@ The fork's `main` includes [PRs #2–#6](../ROADMAP.md), covering independent da
 | [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6) | Yes | Cast control panel, timed pause/resume, Repairs, notification persistence fix and 3.0.0 version bump |
 
 All five feature PRs were merged on 6 November 2026. **A merged feature is not automatically a published release or verified on every display.** See [the roadmap](../ROADMAP.md) for outstanding features and validation.
+
+## CATT 0.13.3 upgrade checks and rollback
+
+This upgrade changes the Python dependency from `catt==0.12.13` to `catt==0.13.3` without changing any dashboard settings or Home Assistant services.
+
+1. **Before updating**, take a full Home Assistant backup, record the running integration version and check whether the receiver is currently displaying a dashboard.
+2. **After updating**, restart Home Assistant so the new manifest requirement can be installed. Check the logs for dependency-resolution errors. CATT 0.13.3 requires Python 3.11+ and PyChromecast 14.x; Home Assistant's current Google Cast integration uses PyChromecast 14.1.1.
+3. Test one noncritical receiver first: a normal dashboard, name discovery, direct IP, preserve-volume behaviour and the return of dashboard casting after unrelated media or Assistant use. A successful CI test does **not** establish receiver compatibility.
+4. If repeated recasting, wrong-device selection or dependency errors occur, restore the previously working integration version from your backup (including its older CATT requirement), then restart Home Assistant. Avoid forcing a manual pip downgrade inside HAOS.
+5. If an incompatible package remains after restoring files, collect logs and follow Home Assistant's supported recovery/backup process; do not delete config entries merely to clear an error.
+
+See [the CATT compatibility matrix](CAST_BACKENDS.md) for the full device test plan and [the changelog](../CHANGELOG.md) for the 3.0.1 summary.
 
 ## Common checks
 

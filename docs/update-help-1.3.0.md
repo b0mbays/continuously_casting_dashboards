@@ -1,6 +1,6 @@
 # Historical migration note — version 1.3.0
 
-> **Archived for legacy YAML installations only.** This note explains the v1.3.0 change from one `dashboard_url` mapping per device to a **list** of dashboard entries. It is not an instruction to reinstall the integration or remove your current UI settings. For present-day upgrades and merged PRs #2–#5, use [the current upgrade guide](update_help.md), [README](../README.md), and [roadmap](../ROADMAP.md).
+> **Archived for legacy YAML installations only.** This note explains the v1.3.0 change from one `dashboard_url` mapping per device to a **list** of dashboard entries. It is not an instruction to reinstall the integration or remove your current UI settings. For present-day upgrades, including PRs #2–#6 and the CATT 0.13.3 candidate, use [the current upgrade guide](update_help.md), [README](../README.md), and [roadmap](../ROADMAP.md).
 
 In old YAML configurations the device had one dashboard mapping:
 

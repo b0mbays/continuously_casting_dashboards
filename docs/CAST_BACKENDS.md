@@ -1,48 +1,42 @@
 # Cast backend and CATT compatibility review
 
-Last checked: **2026-11-06**. This is a design and compatibility review, not a production dependency change.
+Checked **6 November 2026** against [CATT on PyPI](https://pypi.org/project/catt/), [upstream release notes](https://github.com/skorokithakis/catt/releases), the [CATT CLI source](https://github.com/skorokithakis/catt/blob/master/catt/cli.py), and [Home Assistant's Google Cast manifest](https://github.com/home-assistant/core/blob/dev/homeassistant/components/cast/manifest.json).
 
-## Current supported path
+## CATT 0.13.3 upgrade — candidate for version 3.0.1
 
-The integration uses subprocess commands from **CATT 0.12.13**, pinned in
-`manifest.json`. The monitoring engine assumes that `catt scan` provides
-discoverable device names, `catt -d DEVICE status` returns parseable playback
-state, and `catt -d DEVICE cast_site URL` uses DashCast to display a webpage.
+The integration now proposes **`catt==0.13.3`** in `custom_components/continuously_casting_dashboards/manifest.json`, upgrading from `0.12.13`. Upstream published 0.13.3 on **24 September 2026**; it was the latest stable published version when checked on **6 November 2026**.
 
-As of 2026-11-06, **CATT 0.13.3** is the latest version published on PyPI
-(2026-09-24). It requires Python 3.11 or newer. Home Assistant 2026.11
-uses a modern Python runtime, but the Python version alone does **not**
-establish CLI output or pychromecast dependency compatibility.
+CATT 0.13.3 declares **Python >=3.11** and **PyChromecast >=14.0.1,<15**. Home Assistant Core's current Google Cast integration requires **PyChromecast 14.1.1**, which is inside CATT's supported version range. A successful package resolver check does not establish that Cast receiver firmware, discovery or application IDs behave identically.
 
-Upstream sources:
-- https://pypi.org/project/catt/
-- https://github.com/skorokithakis/catt/releases
-- https://github.com/skorokithakis/catt
-- https://www.home-assistant.io/integrations/cast
+### CLI and parsing compatibility
 
-### Why this PR does not unpin CATT
+CCD currently uses these CATT subprocess commands, all of which remain in 0.13.3:
 
-CATT's 0.13.x changelog includes discovery, timeout and pychromecast changes,
-and a DashCast application ID change. CCD also uses a DashCast app ID and
-interprets `catt status` text. Changing CATT without testing those assumptions
-could make a healthy display appear disconnected or cause unwanted recasts.
+| Integration operation | CATT command | Compatibility concern |
+| --- | --- | --- |
+| Device discovery | `catt scan` | Output must retain `IP - device name - manufacturer model`, with safe handling of ambiguous names |
+| Cast dashboard URL | `catt -d IP cast_site URL` | DashCast receiver readiness, app ID, and network access can change |
+| Current state / volume | `catt -d IP status` | CCD parses `Title:`, `State:` and `Volume:` text; DashCast may have no media session |
+| Change/restore volume | `catt -d IP volume LEVEL` | Use integer levels 0–100; `preserve_volume` skips these commands |
+| Stop cast | `catt -d IP stop` | Must not interrupt external media or Assistant activity |
 
-Upgrade checklist:
+The new CI checks the pinned version, resolves it with `PyChromecast==14.1.1`, runs `pip check`, verifies the CLI command help and checks the scan/status output format using mocks. Tests run on Python 3.13 and 3.14. They do **not** discover real Cast devices or issue destructive Cast commands.
 
-1. Reproduce CATT 0.12.13 baseline on Home Assistant 2026.11 using a Nest
-   Hub / Chromecast, with two configured devices and custom cards.
-2. On an isolated feature branch, pin 0.13.3, test resolution of its
-   dependencies with Home Assistant, and confirm `catt --help`,
-   `catt scan`, `catt status`, `cast_site`, `volume` and `stop`.
-3. Confirm the DashCast app ID actually reported by HA's Google Cast entity.
-4. Test normal cast, media playing/paused, Google Assistant, unreachable,
-   device rename, timeouts, reconnect and Home Assistant restart.
-5. Test API/CLI changes without changing user settings or service contracts.
-6. Roll back to 0.12.13 if any display loops or media gets interrupted.
+Relevant upstream changes since 0.12.13 include updated DashCast application handling, PyChromecast dependencies, discovery and timeout fixes. The integration continues to monitor real device identity and respect user-media protection; never assume an app is healthy solely because CATT exited successfully.
 
-**Decision:** retain CATT 0.12.13 until at least one physical Cast device
-passes the upgrade test matrix. This avoids hiding an untested dependency
-upgrade among unrelated UI and Repairs changes.
+### Live upgrade test matrix (still required)
+
+1. Back up Home Assistant; record current integration version, CATT version and device configurations.
+2. Install the candidate on a test HA instance or noncritical device and restart Home Assistant; verify the Python requirement resolves.
+3. Test direct-IP casting and name discovery on Nest Hub/Chromecast, including Google's name/model suffixes and ambiguous names.
+4. Verify `cast_site` displays a normal Lovelace view and a custom-card view. Look for repeated recasts and compare the DashCast app ID against Home Assistant's Cast media-player entity.
+5. Test `status`, volume preservation and volume restore, initial cast, sleep/idle, user media playing/paused, Assistant use and group playback without unwanted interruptions.
+6. Test timeout recovery, an unreachable/offline receiver, multiple dashboards, manual pause/resume and HA reload/restart.
+7. Only after hardware and integration validation should this be treated as an operationally verified dependency upgrade.
+
+**Rollback:** restore the previously working integration version (which pins `catt==0.12.13`) from a backup or a known-good source, then restart HA. For HAOS, do not manually edit packages in Home Assistant's managed environment. See [upgrade help](update_help.md).
+
+**Status:** CATT 0.13.3 is a source-code dependency update pending live receiver validation, not a replacement casting backend.
 
 ## Alternative backend: native Home Assistant Cast
 
@@ -80,7 +74,4 @@ its own status and non-interruption tests before it is offered to users.
 
 ## Remaining validation
 
-No physical Chromecast or HAOS deployment test was run as part of this
-review. The existing automated tests exercise local logic and mocked
-subprocesses, not receiver firmware, display rendering, or live network
-behavior.
+The CATT 0.13.3 candidate includes pinned-package resolver and CLI compatibility tests, plus existing integration-logic regression tests. Physical Chromecast and HAOS runtime checks are still outstanding; mocked scan/status output is not evidence that all real receiver models behave the same. Verify these before marking the upgrade complete in the roadmap.

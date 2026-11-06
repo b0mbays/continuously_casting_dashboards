@@ -2,7 +2,7 @@
 
 This roadmap tracks work in [Continuously Casting Dashboards](https://github.com/anaschillin/continuously_casting_dashboards). It distinguishes **merged functionality**, **remaining work**, and **validation not yet performed on real Home Assistant/Cast hardware**. Merged does not necessarily mean released, deployed, or tested on every receiver.
 
-**Version 3.0.0 code baseline (6 November 2026):** `main` includes merged [PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5), and [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6), plus the documentation update [#7](https://github.com/anaschillin/continuously_casting_dashboards/pull/7). Manifest and HACS metadata declare `3.0.0`. A GitHub release/tag must still be published separately before describing this as a downloadable v3 release.
+**Version 3.0.0 merged baseline (6 November 2026):** `main` includes merged [PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5), and [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6), plus the documentation update [#7](https://github.com/anaschillin/continuously_casting_dashboards/pull/7). The follow-up CATT update branch proposes version `3.0.1` with `catt==0.13.3`. Neither version metadata alone nor a merged pull request publishes a GitHub release/tag.
 
 ## Baseline — merged
 
@@ -30,7 +30,8 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [x] Distinguish dashboard, idle, unreachable, media-playing and Assistant states using existing device/monitoring checks.
 - [x] Expose retry delay and failure summaries through Home Assistant diagnostic sensors and config-entry diagnostics.
 - [x] Add actionable Home Assistant Repairs for missing CATT and duplicate name-only device configurations ([PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6)).
-- [ ] Evaluate a CATT dependency upgrade against Home Assistant Python compatibility and actual Cast hardware ([upstream #160](https://github.com/b0mbays/continuously_casting_dashboards/issues/160)); continue using the pinned version until validated.
+- [x] Review and propose the latest CATT `0.13.3` pin, confirm published Python requirement (3.11+) and PyChromecast compatibility with Home Assistant's 14.1.1, and add CLI smoke tests on Python 3.13/3.14 ([upstream #160](https://github.com/b0mbays/continuously_casting_dashboards/issues/160)).
+- [ ] Validate CATT 0.13.3 on real Nest Hub/Chromecast receivers and verify integration operation with the installed Home Assistant runtime. Automated CLI tests do not certify hardware.
 
 ## Milestone 3 — smarter casting and controls
 
@@ -55,12 +56,12 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 
 ## Outstanding compatibility and readiness work
 
-- [ ] Validate v3.0.0 in an actual Home Assistant installation across normal reloads/restarts, multiple devices, media interruptions, and frontend resource reloads.
-- [ ] Test newer CATT versions on supported Python and Chromecast hardware; do not update the pinned `catt==0.12.13` until compatibility is established.
+- [ ] Validate the latest 3.0.x candidate in an actual Home Assistant installation across normal reloads/restarts, multiple devices, media interruptions, and frontend resource reloads.
+- [ ] Verify the proposed CATT `0.13.3` upgrade on actual HAOS and Cast hardware, including media protection, status interpretation, discovery and Dashboard URLs. The feature branch contains the new pin; a successful CLI smoke test alone is not sufficient.
 - [ ] Investigate alternative Cast backends with an opt-in adapter; [backend assessment](docs/CAST_BACKENDS.md) is design/evaluation, not a released backend.
 - [ ] Verify receiver-specific, authenticated frontend readiness rather than accepting a heartbeat that could come from another browser.
 - [ ] Design any automatic recovery from a missing frontend heartbeat to avoid unnecessary recasts or interrupting user media.
-- [ ] Publish and validate a `v3.0.0` release/tag after final hardware verification; changing version metadata alone does not publish one.
+- [ ] Publish and validate a tagged 3.0.x release after hardware checks; changing version metadata alone does not publish one.
 
 ## Continuous quality and release work
 

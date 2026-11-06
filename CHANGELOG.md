@@ -2,6 +2,20 @@
 
 All changes here refer to the [anaschillin fork](https://github.com/anaschillin/continuously_casting_dashboards). Home Assistant integration and HACS metadata are maintained together; a merged commit or version field does **not** automatically create a tagged GitHub release or HACS download.
 
+## 3.0.1 — CATT compatibility update (proposed, 6 November 2026)
+
+- Upgrade the Home Assistant integration requirement from `catt==0.12.13` to **`catt==0.13.3`**, the latest stable version published on PyPI as of 6 November 2026 (published 24 September 2026).
+- CATT 0.13.3 requires Python 3.11+ and PyChromecast `>=14.0.1,<15`. Home Assistant's current Cast integration pins PyChromecast 14.1.1, within this range.
+- Add CI installation/resolution and CLI contract tests on Python 3.13 and 3.14 for `scan`, `cast_site`, `status`, `stop` and `volume`. CLI-level tests do **not** verify Cast firmware, HA runtime behaviour or actual dashboard rendering.
+- Refresh README, upgrade guide, Marketplace/HACS terminology and backend compatibility review.
+- Keep all existing casting options, configuration data and service contracts unchanged. No native HA Cast replacement backend is introduced.
+
+**Upgrade precaution:** restart Home Assistant after installing updated integration code, and verify casting on a noncritical receiver before switching production screens. If CATT 0.13.3 introduces a regression, return to a known-good integration version with `catt==0.12.13` using your backup and restart HA. Do not try to manage HA's Python packages manually inside HAOS.
+
+**Publishing:** The metadata version `3.0.1` is a candidate until this PR is merged and a corresponding GitHub release/tag is published. Hardware validation remains open.
+
+---
+
 ## 3.0.0 — merged code (6 November 2026)
 
 The major version reflects a large set of configuration, casting, and Lovelace improvements implemented in [PRs #2–#6](https://github.com/anaschillin/continuously_casting_dashboards/pulls?q=is%3Apr+is%3Amerged).
@@ -25,7 +39,7 @@ The major version reflects a large set of configuration, casting, and Lovelace i
 
 1. **Back up Home Assistant** before upgrading, especially if coming from the original upstream repository or YAML configuration.
 2. Use only one HACS installation source for the `continuously_casting_dashboards` integration domain. This fork's custom repository is `https://github.com/anaschillin/continuously_casting_dashboards`.
-3. The manifest still pins `catt==0.12.13`. A newer CATT version has **not** been adopted and needs compatibility testing.
+3. In the **3.0.0 code baseline**, the manifest pinned `catt==0.12.13`; the proposed **3.0.1** update changes that pin to 0.13.3 and requires separate device validation.
 4. Optional UI features require registering the JavaScript resources: `/ccd_cast/ccd-control-panel.js` for the control panel, and `/ccd_cast/ccd-readiness-card.js` for readiness reporting.
 5. `stop_casting` remains a one-off stop. Use `pause_casting` for a temporary or indefinite pause. Indefinite pauses are **in memory** and end after a restart or explicit resume.
 6. A frontend heartbeat cannot prove that a particular Chromecast rendered the dashboard. No automatic recast is initiated from a missing heartbeat.
