@@ -200,8 +200,11 @@ class DeviceManager:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
         except asyncio.TimeoutError:
             _LOGGER.warning("Status check timed out for %s", ip)
-            await terminate_process(process, TIMEOUT_PROCESS_TERMINATE)
             return None, None, None, False
+        finally:
+            # Also reap when the monitor task is cancelled during HA shutdown.
+            if process.returncode is None:
+                await terminate_process(process, TIMEOUT_PROCESS_TERMINATE)
 
         stdout_str = stdout.decode().strip()
         stderr_str = stderr.decode().strip()
