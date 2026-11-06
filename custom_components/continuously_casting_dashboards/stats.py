@@ -114,6 +114,7 @@ class StatsManager:
         
         connected_count = sum(1 for d in active_devices.values() if d.get('status') == 'connected')
         disconnected_count = sum(1 for d in active_devices.values() if d.get('status') == 'disconnected')
+        paused_count = sum(1 for d in active_devices.values() if d.get('status') == 'paused')
         media_playing_count = sum(1 for d in active_devices.values() if d.get('status') == 'media_playing')
         other_content_count = sum(1 for d in active_devices.values() if d.get('status') == 'other_content')
         assistant_active_count = sum(1 for d in active_devices.values() if d.get('status') == STATUS_ASSISTANT_ACTIVE)
@@ -123,6 +124,7 @@ class StatsManager:
             'total_devices': len(active_devices),
             'connected_devices': connected_count,
             'disconnected_devices': disconnected_count,
+            'paused_devices': paused_count,
             'media_playing_devices': media_playing_count,
             'other_content_devices': other_content_count,
             'assistant_active_devices': assistant_active_count,

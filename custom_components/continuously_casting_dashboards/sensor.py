@@ -62,6 +62,9 @@ async def async_setup_entry(
             hass, entry, "disconnected_devices", "Disconnected Devices"
         ),
         ContinuouslyCastingSummarySensor(
+            hass, entry, "paused_devices", "Paused Devices"
+        ),
+        ContinuouslyCastingSummarySensor(
             hass, entry, "media_playing_devices", "Media Playing"
         ),
         ContinuouslyCastingSummarySensor(
@@ -251,6 +254,8 @@ class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
             return "mdi:cast-off"
         elif status == "media_playing":
             return "mdi:cast-audio"
+        elif status == "paused":
+            return "mdi:pause-circle-outline"
         elif status == "assistant_active":
             return "mdi:google-assistant"
         elif status == "speaker_group_active":

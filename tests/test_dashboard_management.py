@@ -19,6 +19,7 @@ class PriorityAndRotationTests(unittest.TestCase):
         obj = harness()
         obj._rotation_state = {}
         obj._manual_overrides = {}
+        obj.is_paused = lambda _name: False
 
         async def is_within(_name, config):
             return config.get("within", True)

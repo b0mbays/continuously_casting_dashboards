@@ -22,6 +22,7 @@ from .device import DeviceManager
 from .monitoring import MonitoringManager
 from .stats import StatsManager
 from .readiness import ReadinessTracker
+from .repairs import async_check_configuration_repairs
 from .utils import TimeWindowChecker, SwitchEntityChecker
 from .config_flow import async_migrate_entry
 from .const import (
@@ -240,6 +241,24 @@ async def _async_register_services(hass: HomeAssistant) -> None:
                         if ip:
                             await caster.monitoring_manager.async_stop_casting(ip)
 
+    async def handle_pause_casting(call):
+        """Pause dashboard casting without interrupting third-party media."""
+        name = call.data.get("device_name", "").strip()
+        managers = [
+            data["caster"].monitoring_manager
+            for data in hass.data.get(DOMAIN, {}).values()
+            if isinstance(data, dict) and "caster" in data
+            and name in data["caster"].monitoring_manager.devices
+        ]
+        if len(managers) != 1:
+            _LOGGER.error("Pause refused: expected one configured device named %s", name)
+            return
+        try:
+            duration = int(call.data.get("duration_seconds", 0))
+            await managers[0].async_pause_device(name, duration)
+        except (TypeError, ValueError) as exc:
+            _LOGGER.error("Invalid Cast pause request: %s", exc)
+
     async def handle_resume_casting(call):
         """Trigger a cast check for one device or a full monitoring cycle for all.
 
@@ -254,11 +273,15 @@ async def _async_register_services(hass: HomeAssistant) -> None:
                 if device_name:
                     # Check specific device
                     _LOGGER.info("Triggering cast check for device: %s", device_name)
-                    if hasattr(caster.monitoring_manager, '_async_check_single_device'):
+                    if device_name in caster.monitoring_manager.devices:
+                        await caster.monitoring_manager.async_resume_device(device_name)
                         await caster.monitoring_manager._async_check_single_device(device_name)
                 else:
                     # Trigger full monitoring cycle
                     _LOGGER.info("Triggering monitoring cycle for all devices")
+                    for name in caster.monitoring_manager.devices:
+                        if caster.monitoring_manager.is_paused(name):
+                            await caster.monitoring_manager.async_resume_device(name)
                     await caster.monitoring_manager.async_monitor_devices(None)
 
     async def handle_select_dashboard(call):
@@ -342,6 +365,7 @@ async def _async_register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "set_start_time", handle_set_start_time)
     hass.services.async_register(DOMAIN, "set_end_time", handle_set_end_time)
     hass.services.async_register(DOMAIN, "stop_casting", handle_stop_casting)
+    hass.services.async_register(DOMAIN, "pause_casting", handle_pause_casting)
     hass.services.async_register(DOMAIN, "resume_casting", handle_resume_casting)
     hass.services.async_register(DOMAIN, "select_dashboard", handle_select_dashboard)
     hass.services.async_register(
@@ -374,6 +398,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
         StaticPathConfig(
             "/ccd_cast/ccd-readiness-card.js",
             str(Path(__file__).parent / "www" / "ccd-readiness-card.js"),
+            False,
+        ),
+        StaticPathConfig(
+            "/ccd_cast/ccd-control-panel.js",
+            str(Path(__file__).parent / "www" / "ccd-control-panel.js"),
             False,
         )
     ])
@@ -913,6 +942,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             config["devices"] = devices
             config["device_identifiers"] = device_identifiers
             _LOGGER.debug("Merged config: %s", config)
+
+            # Report actionable configuration problems without blocking startup.
+            await async_check_configuration_repairs(
+                hass, entry, device_identifiers
+            )
 
             # Extract configuration with fallback to defaults
             logging_level = config.get("logging_level", DEFAULT_LOGGING_LEVEL)

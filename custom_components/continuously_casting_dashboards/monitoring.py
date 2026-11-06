@@ -69,6 +69,7 @@ class MonitoringManager:
         self._process_semaphore = asyncio.Semaphore(3)
         self._rotation_state = {}
         self._manual_overrides = {}
+        self._paused_devices = {}  # Device -> expiry or None for indefinite
         self._refresh_task = None
 
         # Set up switch entity state change listener if configured
@@ -216,6 +217,7 @@ class MonitoringManager:
         self.reconnect_backoff.clear()
         self._rotation_state.clear()
         self._manual_overrides.clear()
+        self._paused_devices.clear()
         if self._refresh_task is not None:
             self._refresh_task.cancel()
             self._refresh_task = None
@@ -267,6 +269,44 @@ class MonitoringManager:
                 return
             await asyncio.sleep(0.3)
 
+    def is_paused(self, device_name):
+        """Return whether dashboard casting is manually paused for a device."""
+        if device_name not in self._paused_devices:
+            return False
+        expiry = self._paused_devices[device_name]
+        if expiry is not None and time.monotonic() >= expiry:
+            self._paused_devices.pop(device_name, None)
+            return False
+        return True
+
+    def pause_remaining(self, device_name):
+        """Return remaining pause seconds, -1 when indefinite, 0 when active."""
+        if not self.is_paused(device_name):
+            return 0
+        expiry = self._paused_devices[device_name]
+        return -1 if expiry is None else max(0, int(expiry - time.monotonic()))
+
+    async def async_pause_device(self, device_name, duration_seconds=0):
+        """Pause only our dashboard casting; never interrupt unrelated media.
+
+        Duration 0 means until resume/restart; otherwise pause for up to 24h.
+        """
+        if device_name not in self.devices:
+            raise ValueError(f"Unknown Cast device: {device_name}")
+        if not isinstance(duration_seconds, int) or not 0 <= duration_seconds <= 86400:
+            raise ValueError("Pause duration must be 0–86400 seconds")
+        self._paused_devices[device_name] = (
+            time.monotonic() + duration_seconds if duration_seconds else None
+        )
+        self._schedule_selection_refresh()
+
+    async def async_resume_device(self, device_name):
+        """Clear a manual pause and resume the normal dashboard rules."""
+        if device_name not in self.devices:
+            raise ValueError(f"Unknown Cast device: {device_name}")
+        self._paused_devices.pop(device_name, None)
+        self._schedule_selection_refresh()
+
     async def async_set_manual_dashboard(self, device_name, dashboard_index, duration=300):
         """Temporarily prefer one configured dashboard, respecting its controls.
 
@@ -293,9 +333,12 @@ class MonitoringManager:
     async def _async_select_device_config(self, device_name, configs):
         """Choose by eligibility, temporary override, priority and rotation.
 
+        A manual pause prevents selection until resumed or the pause expires.
         Higher priority wins. Equal priority uses configuration order unless
         rotation_seconds is configured on the first equally ranked entry.
         """
+        if self.is_paused(device_name):
+            return None, False
         eligible = []
         for index, config in enumerate(configs):
             if not await self.time_window_checker.async_is_within_time_window(
@@ -431,8 +474,10 @@ class MonitoringManager:
                     _LOGGER.info("No eligible dashboard for %s; stopping cast", device_name)
                     await self.async_stop_casting(ip)
                 self.device_manager.update_active_device(
-                    device_key=device_key, status='stopped',
+                    device_key=device_key,
+                    status='paused' if self.is_paused(device_name) else 'stopped',
                     name=device_name, ip=ip,
+                    current_dashboard=None,
                     last_checked=datetime.now().isoformat(),
                 )
                 return
@@ -1219,6 +1264,11 @@ class MonitoringManager:
                     await _process_device_safe(name)
 
             await asyncio.gather(*[_bounded_process(name) for name in self.devices])
+
+            # Keep the dashboard-control sensors current after each monitoring
+            # pass, including changes caused by manual pause/resume actions.
+            if self.stats_manager is not None:
+                await self.stats_manager.async_generate_status_data()
 
     async def async_stop_casting(self, ip):
         """Send a catt stop command to a device.

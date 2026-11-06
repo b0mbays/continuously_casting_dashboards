@@ -11,17 +11,30 @@ permissions:
 jobs:
   smoke:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: ${{ matrix.python-version }}
       - name: Check Python syntax
         run: python -m compileall -q custom_components/continuously_casting_dashboards tests
       - name: Validate translations
-        run: python -m json.tool custom_components/continuously_casting_dashboards/translations/en.json > /dev/null
+        run: |
+          python -m json.tool custom_components/continuously_casting_dashboards/translations/en.json > /dev/null
+          python -m json.tool custom_components/continuously_casting_dashboards/strings.json > /dev/null
+          python -c "import json; from pathlib import Path; p=Path('custom_components/continuously_casting_dashboards'); assert json.loads((p/'strings.json').read_text()) == json.loads((p/'translations/en.json').read_text())"
+      - name: Validate services YAML
+        run: |
+          python -m pip install PyYAML
+          python -c "import yaml; from pathlib import Path; path=Path('custom_components/continuously_casting_dashboards/services.yaml'); assert isinstance(yaml.safe_load(path.read_text()),dict)"
       - name: Check companion JavaScript syntax
-        run: node --check custom_components/continuously_casting_dashboards/www/ccd-readiness-card.js
+        run: |
+          node --check custom_components/continuously_casting_dashboards/www/ccd-readiness-card.js
+          node --check custom_components/continuously_casting_dashboards/www/ccd-control-panel.js
       - name: Ruff check new reliability and readiness code
         run: |
           python -m pip install ruff
@@ -29,6 +42,8 @@ jobs:
             custom_components/continuously_casting_dashboards/reliability.py \
             custom_components/continuously_casting_dashboards/readiness.py \
             custom_components/continuously_casting_dashboards/diagnostics.py \
+            custom_components/continuously_casting_dashboards/repairs.py \
+            tests/test_cast_operations.py \
             tests/test_cast_resilience.py \
             tests/test_dashboard_management.py \
             tests/test_dashboard_readiness.py

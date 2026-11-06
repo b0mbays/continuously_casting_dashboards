@@ -51,6 +51,8 @@ See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgra
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 - **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
+- **Optional control panel and timed pause (PR #6)** - Lovelace device status, dashboard selection, timed/indefinite pause, resume and one-off stop
+- **Actionable configuration Repairs (PR #6)** - Identify missing CATT CLI and ambiguous name-only Cast configurations
 - **Dashboard priorities and rotation** - Higher-priority eligible views take precedence; optionally rotate equally ranked views
 - **Manual overrides** - Select a configured dashboard temporarily and clear the override through HA actions
 
@@ -224,6 +226,78 @@ data:
 
 Clear it early with `continuously_casting_dashboards.clear_dashboard_override` and `device_name`. If multiple configured devices have the exact same name across integration entries, selection is refused to avoid affecting the wrong Cast device. Entity-triggered switches are debounced to reduce redundant scans.
 
+### Cast control panel (optional)
+
+A bundled `custom:ccd-control-panel` Lovelace card shows each configured Cast
+device's current status, dashboard path, retry state, readiness and recent errors.
+It offers **Resume/check**, **Pause**, **Timed pause**, **Stop once**, and
+optional temporary dashboard selection.
+
+Register `/ccd_cast/ccd-control-panel.js` under
+**Settings → Dashboards → Resources** as a **JavaScript module**. Then add:
+
+```yaml
+type: custom:ccd-control-panel
+title: Cast displays
+devices:
+  - name: Kitchen Hub
+    entity: sensor.kitchen_hub_status
+    dashboards:
+      - Main
+      - Salah
+  - name: Living Room Display
+    entity: sensor.living_room_display_status
+```
+
+Use the exact device name configured in CCD and the **actual** corresponding
+sensor entity ID from **Developer Tools → States**. Dashboard labels must be
+listed in the same order as the integration's dashboard configuration.
+These are labels, not URLs, and the control panel does not discover them
+automatically. If a name is present in multiple config entries, the manual
+override and pause services reject the ambiguous device name.
+
+- **Pause** suppresses dashboard selection until resumed or HA restarts.
+  **Timed pause** resumes normal rules at the chosen expiration.
+- **Resume/check** removes a pause and requests another monitoring cycle.
+  It does not bypass time windows, entity conditions, or active user media.
+- **Stop once** sends one stop command, but normal monitoring may recast.
+  Use Pause to suspend automatic casting.
+- **Show temporarily** requests the specified dashboard for up to one hour,
+  provided its time/entity conditions permit it. It never overrides media protection.
+
+You can also use these Home Assistant actions directly:
+`continuously_casting_dashboards.pause_casting`,
+`continuously_casting_dashboards.resume_casting`,
+`continuously_casting_dashboards.select_dashboard` and
+`continuously_casting_dashboards.clear_dashboard_override`.
+
+Example timed pause:
+
+```yaml
+action: continuously_casting_dashboards.pause_casting
+data:
+  device_name: Kitchen Hub
+  duration_seconds: 900
+```
+
+Pause state is intentionally **in-memory only** and resets after HA restarts.
+Sensor data updates after completed monitoring passes.
+
+### Actionable configuration Repairs
+
+The integration creates a Home Assistant **Settings → System → Repairs** issue
+if its CATT command cannot be found, or if multiple configured devices rely
+on the same name for discovery without explicit IPs. Fix the installation or
+device identity to clear the issue at the next setup/reload. Ordinary temporary
+Cast outages remain diagnostic status changes, not persistent Repairs.
+
+### CATT upgrade and HA Cast alternatives
+
+The manifest remains pinned to CATT **0.12.13**. CATT **0.13.3** is available,
+but the version change needs dedicated physical Chromecast and dependency
+testing: later CATT releases modified discovery and DashCast behaviour.
+See [the backend compatibility review](docs/CAST_BACKENDS.md) for the testing
+matrix and the proposed experimental HA Cast adapter design.
 ### Home Assistant dashboard controls
 
 Device status is exposed through Home Assistant sensors. You can create an ordinary Entities dashboard with status sensors and buttons calling `stop_casting`, `resume_casting`, `select_dashboard`, and `clear_dashboard_override`. These actions are available under **Developer Tools → Actions**.
@@ -369,6 +443,8 @@ data:
 - `set_logging_level` — debug, info, warning, error, critical
 - `set_start_time` / `set_end_time` — runtime global casting window (HH:MM)
 - `stop_casting` — one-off stop on a device or all devices, **not** a persistent pause
+- `pause_casting` — pause an individual device for 0 seconds (until resumed/restart) or 5–86,400 seconds
+- `resume_casting` — clear pauses and request a cast eligibility check on a device or all devices
 - `resume_casting` — trigger a cast check on a device or all devices
 - `select_dashboard` — temporarily prefer a dashboard by zero-based index, 5–3600 seconds
 - `clear_dashboard_override` — return a named device to automatic priority/rotation selection
@@ -497,7 +573,6 @@ DEBUG Status output for Office display: Title: Dummy 22:27:13 GMT+0000
 ### Device shows as unreachable
 
 If a device temporarily loses connectivity, the integration can report it as disconnected, back off repeated failed reconnections, and create a persistent notification when enabled. Casting will be attempted again when the retry delay and normal eligibility/media checks allow it.
-
 If you find the notifications noisy, the **Enable notifications** option is available under **Settings → Devices & Services → Continuously Casting Dashboards → Configure**. **Known limitation in merged PRs #2–#5:** the global options flow does not reliably persist an unchecked value; the fix is being developed separately. Confirm its saved value after reloading, rather than assuming the toggle has taken effect.
 
 ### Annoying phone notifications for "DashCast"

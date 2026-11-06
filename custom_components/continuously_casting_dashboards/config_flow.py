@@ -400,7 +400,19 @@ class GlobalSettingsOptionsFlow(config_entries.OptionsFlow):
 
                 for key in ["logging_level", "cast_delay", "start_time", "end_time"]:
                     if key in user_input and user_input[key] is not None:
-                        cleaned_input[key] = user_input[key]
+                        cleaned_input[key] = (
+                            _normalise_time_selector(user_input[key])
+                            if key in ("start_time", "end_time")
+                            else user_input[key]
+                        )
+
+                # Persist false rather than reverting to the default on reload.
+                cleaned_input["enable_notifications"] = bool(
+                    user_input.get(
+                        "enable_notifications",
+                        self._config.get("enable_notifications", True),
+                    )
+                )
 
                 if user_input.get("include_entity", False):
                     entity_id = user_input.get("switch_entity_id", "").strip()
@@ -416,9 +428,8 @@ class GlobalSettingsOptionsFlow(config_entries.OptionsFlow):
                                 cleaned_input["switch_entity_state"] = entity_state
 
                 if not errors:
-                    # Preserve devices from options
-                    devices = self._entry.options.get("devices", {})
-                    new_options = {**cleaned_input, "devices": devices}
+                    # Preserve any legacy/unrecognized options as well as devices.
+                    new_options = {**self._entry.options, **cleaned_input}
 
                     # Clean up empty entity fields
                     if "switch_entity_id" not in cleaned_input:

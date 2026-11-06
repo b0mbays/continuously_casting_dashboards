@@ -69,6 +69,30 @@ stop_casting:
       selector:
         text:
 
+pause_casting:
+  name: Pause Casting
+  description: >-
+    Suspend CCD dashboard casting for one device. Zero seconds means until
+    Resume Casting or integration restart; other Cast apps are not interrupted.
+  fields:
+    device_name:
+      name: Device Name
+      description: Exact configured display name. Must resolve to one device.
+      required: true
+      selector:
+        text:
+    duration_seconds:
+      name: Pause Duration
+      description: Zero to pause indefinitely until manually resumed or HA restarts.
+      required: false
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 86400
+          unit_of_measurement: seconds
+          mode: box
+
 resume_casting:
   name: Resume Casting
   description: Resume casting on a specific device or trigger a check on all devices.

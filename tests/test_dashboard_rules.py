@@ -81,6 +81,7 @@ class SelectionTests(unittest.TestCase):
         obj = harness()
         obj._rotation_state = {}
         obj._manual_overrides = {}
+        obj.is_paused = lambda _name: False
         obj.time_window_checker = types.SimpleNamespace(
             async_is_within_time_window=check_time
         )
@@ -165,6 +166,7 @@ class SelectionTests(unittest.TestCase):
             update_active_device=lambda **kwargs: statuses.append(kwargs),
         )
         obj.async_stop_casting = stop
+        obj.is_paused = lambda _name: False
         obj.readiness_tracker = types.SimpleNamespace(
             cast_started=lambda *args, **kwargs: None
         )

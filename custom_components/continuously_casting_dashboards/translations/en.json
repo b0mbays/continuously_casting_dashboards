@@ -259,5 +259,15 @@
                 "reconfigure_successful": "Device configuration saved!"
             }
         }
+    },
+    "issues": {
+        "ambiguous_cast_name": {
+            "title": "Duplicate Cast device names",
+            "description": "{count} device name(s) are duplicated among devices that rely on name discovery. In the integration settings, give each display a unique Chromecast name or configure a specific IP address for each display. This prevents casting to the wrong screen."
+        },
+        "catt_executable_missing": {
+            "title": "CATT command not found",
+            "description": "Continuously Casting Dashboards could not find the `catt` executable in Home Assistant's process PATH. Check the CATT installation and supported integration setup, then restart or reload the integration. Dashboard casting cannot work without this command."
+        }
     }
 }

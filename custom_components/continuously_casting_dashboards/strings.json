@@ -1,0 +1,273 @@
+{
+    "config": {
+        "title": "Continuously Casting Dashboards",
+        "step": {
+            "user": {
+                "title": "Setup Global Settings",
+                "description": "Configure the global settings for dashboard casting.\n\nAfter setup, you can add devices from the integration page.",
+                "data": {
+                    "logging_level": "Logging Level",
+                    "cast_delay": "Cast Delay (seconds)",
+                    "start_time": "Default start casting at",
+                    "end_time": "Default stop casting at",
+                    "include_entity": "Control casting with an entity",
+                    "switch_entity_id": "Control Entity ID",
+                    "switch_entity_state": "Required State",
+                    "enable_notifications": "Enable notifications"
+                },
+                "data_description": {
+                    "logging_level": "Use 'Warning' normally. Switch to 'Debug' when troubleshooting — it logs a lot.",
+                    "cast_delay": "How often each device is checked (5-300 seconds). Lower = more responsive, higher = less load.",
+                    "start_time": "24-hour format — casting starts at this time by default. Can be overridden per device.",
+                    "end_time": "24-hour format — casting stops at this time by default. Can be overridden per device.",
+                    "switch_entity_id": "Entity that enables or disables casting for all devices",
+                    "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                    "enable_notifications": "Show a notification when a device becomes unreachable"
+                }
+            }
+        },
+        "error": {
+            "invalid_device_name": "Please enter a valid device name (letters, numbers, spaces, hyphens, underscores only)",
+            "device_name_too_long": "Device name is too long (maximum 100 characters)",
+            "device_already_exists": "A device with this name already exists",
+            "device_name_or_ip_required": "Please provide at least a Device Name or an IP Address",
+            "invalid_device_ip": "Invalid IP address format (e.g., 192.168.1.50)",
+            "missing_dashboard_url": "Dashboard URL is required",
+            "invalid_url_format": "Invalid URL format. Please enter a valid URL",
+            "invalid_url_scheme": "URL must start with http:// or https://",
+            "unknown": "An unexpected error occurred",
+            "entity_not_found": "Entity not found in Home Assistant",
+            "update_failed": "Failed to save configuration"
+        },
+        "abort": {
+            "single_instance_allowed": "Only one instance is allowed.",
+            "options_updated": "Configuration saved!"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Global Settings",
+                "description": "Configure global settings that apply to all devices.\n\n**Devices configured:** {device_count}\n\nTo add or manage devices, go back and use the 'Add Device' button.",
+                "data": {
+                    "logging_level": "Logging Level",
+                    "cast_delay": "Cast Delay (seconds)",
+                    "start_time": "Default start casting at",
+                    "end_time": "Default stop casting at",
+                    "include_entity": "Control casting with an entity",
+                    "switch_entity_id": "Control Entity ID",
+                    "switch_entity_state": "Required State",
+                    "enable_notifications": "Enable notifications"
+                },
+                "data_description": {
+                    "logging_level": "Use 'Warning' normally. Switch to 'Debug' when troubleshooting — it logs a lot.",
+                    "cast_delay": "How often each device is checked (5-300 seconds). Lower = more responsive, higher = less load.",
+                    "start_time": "24-hour format — casting starts at this time by default. Can be overridden per device.",
+                    "end_time": "24-hour format — casting stops at this time by default. Can be overridden per device.",
+                    "switch_entity_id": "Entity that enables or disables casting for all devices",
+                    "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                    "enable_notifications": "Show a notification when a device becomes unreachable"
+                }
+            }
+        },
+        "error": {
+            "entity_not_found": "Entity not found in Home Assistant",
+            "unknown": "An unexpected error occurred"
+        },
+        "abort": {
+            "options_updated": "Settings saved!"
+        }
+    },
+    "config_subentries": {
+        "device": {
+            "title": "Chromecast Device",
+            "initiate_flow": {
+                "user": "Add Device"
+            },
+            "step": {
+                "user": {
+                    "title": "Add New Device",
+                    "description": "Configure your Chromecast device. Provide a **Device Name** (from Google Home), an **IP Address**, or both. At least one is required.\n\nOptionally set an **Alias** to give the device a custom display name.",
+                    "data": {
+                        "device_name": "Device Name",
+                        "device_ip": "IP Address",
+                        "device_alias": "Alias (Display Name)"
+                    },
+                    "data_description": {
+                        "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
+                        "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
+                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')"
+                    }
+                },
+                "add_dashboard": {
+                    "title": "Add Dashboard to {device_name}",
+                    "description": "Configure a dashboard to cast to this device.\n\n**Dashboards added:** {dashboard_count}",
+                    "data": {
+                        "dashboard_url": "Dashboard URL",
+                        "volume": "Volume (0-100)",
+                        "preserve_volume": "Keep device volume unchanged",
+                        "cast_continuously": "Cast continuously (ignore all time windows)",
+                        "priority": "Dashboard priority (0–100)",
+                        "rotation_seconds": "Rotate every (seconds; 0 disables)",
+                        "verify_readiness": "Monitor frontend readiness (requires reporter card)",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
+                        "switch_entity_id": "Control Entity ID",
+                        "switch_entity_state": "Required State",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
+                        "speaker_groups": "Speaker Group Names",
+                        "add_another": "Add another dashboard after this one",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
+                    },
+                    "data_description": {
+                        "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
+                        "volume": "Volume to set when casting (ignored when preserving volume)",
+                        "preserve_volume": "When enabled, casting never mutes or changes volume; the volume field is ignored.",
+                        "cast_continuously": "When enabled, this dashboard ignores both global and custom casting times.",
+                        "priority": "Higher-priority eligible dashboards take precedence. Equal priority keeps configured order or rotates when enabled.",
+                        "rotation_seconds": "Set on the first eligible dashboard in a priority group. Use 0 to keep the first eligible dashboard without rotating.",
+                        "verify_readiness": "Opt-in diagnostics only. Add the CCD Readiness Reporter card to this Lovelace view; missing reports never force a recast.",
+                        "enable_time_window": "When continuous casting is disabled, use these times instead of the global schedule.",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
+                    }
+                },
+                "reconfigure_device": {
+                    "title": "{device_name}{dashboard_info}",
+                    "description": "Edit device and dashboard settings.",
+                    "data": {
+                        "device_name": "Device Name",
+                        "device_ip": "IP Address",
+                        "device_alias": "Alias (Display Name)",
+                        "dashboard_url": "Dashboard URL",
+                        "volume": "Volume (0-100)",
+                        "preserve_volume": "Keep device volume unchanged",
+                        "cast_continuously": "Cast continuously (ignore all time windows)",
+                        "priority": "Dashboard priority (0–100)",
+                        "rotation_seconds": "Rotate every (seconds; 0 disables)",
+                        "verify_readiness": "Monitor frontend readiness (requires reporter card)",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
+                        "switch_entity_id": "Control Entity ID",
+                        "switch_entity_state": "Required State",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
+                        "speaker_groups": "Speaker Group Names",
+                        "add_another_dashboard": "Add another dashboard after saving",
+                        "change_dashboard": "Edit a different dashboard",
+                        "delete_this_dashboard": "Delete this dashboard",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
+                    },
+                    "data_description": {
+                        "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
+                        "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
+                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')",
+                        "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
+                        "volume": "Volume to set when casting (ignored when preserving volume)",
+                        "preserve_volume": "When enabled, casting never mutes or changes volume; the volume field is ignored.",
+                        "cast_continuously": "When enabled, this dashboard ignores both global and custom casting times.",
+                        "priority": "Higher-priority eligible dashboards take precedence. Equal priority keeps configured order or rotates when enabled.",
+                        "rotation_seconds": "Set on the first eligible dashboard in a priority group. Use 0 to keep the first eligible dashboard without rotating.",
+                        "verify_readiness": "Opt-in diagnostics only. Add the CCD Readiness Reporter card to this Lovelace view; missing reports never force a recast.",
+                        "enable_time_window": "When continuous casting is disabled, use these times instead of the global schedule.",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
+                        "add_another_dashboard": "Saves this dashboard and opens a blank form for another one",
+                        "change_dashboard": "Save your changes and pick a different dashboard to edit",
+                        "delete_this_dashboard": "Remove this dashboard (cannot delete the last one)",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
+                    }
+                },
+                "reconfigure_select_dashboard": {
+                    "title": "{device_name}",
+                    "description": "This device has **{dashboard_count} dashboards**. Select one to edit:",
+                    "data": {
+                        "dashboard_action": "Select dashboard"
+                    }
+                },
+                "reconfigure_rename": {
+                    "title": "Rename Device",
+                    "description": "Enter a new name for this device.",
+                    "data": {
+                        "new_device_name": "New Device Name"
+                    }
+                },
+                "reconfigure_add_dashboard": {
+                    "title": "Add Dashboard to {device_name}",
+                    "description": "Configure a new dashboard to cast to this device.",
+                    "data": {
+                        "dashboard_url": "Dashboard URL",
+                        "volume": "Volume (0-100)",
+                        "preserve_volume": "Keep device volume unchanged",
+                        "cast_continuously": "Cast continuously (ignore all time windows)",
+                        "priority": "Dashboard priority (0–100)",
+                        "rotation_seconds": "Rotate every (seconds; 0 disables)",
+                        "verify_readiness": "Monitor frontend readiness (requires reporter card)",
+                        "enable_time_window": "Use a custom casting time window",
+                        "start_time": "Start casting at",
+                        "end_time": "Stop casting at",
+                        "include_entity": "Control casting with an entity",
+                        "switch_entity_id": "Control Entity ID",
+                        "switch_entity_state": "Required State",
+                        "include_speaker_groups": "Pause casting when a speaker group is active",
+                        "speaker_groups": "Speaker Group Names",
+                        "remote_device_for_keepalive": "Entity to use for keepalive (Remote)"
+                    },
+                    "data_description": {
+                        "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
+                        "volume": "Volume to set when casting (ignored when preserving volume)",
+                        "preserve_volume": "When enabled, casting never mutes or changes volume; the volume field is ignored.",
+                        "cast_continuously": "When enabled, this dashboard ignores both global and custom casting times.",
+                        "priority": "Higher-priority eligible dashboards take precedence. Equal priority keeps configured order or rotates when enabled.",
+                        "rotation_seconds": "Set on the first eligible dashboard in a priority group. Use 0 to keep the first eligible dashboard without rotating.",
+                        "verify_readiness": "Opt-in diagnostics only. Add the CCD Readiness Reporter card to this Lovelace view; missing reports never force a recast.",
+                        "enable_time_window": "When continuous casting is disabled, use these times instead of the global schedule.",
+                        "start_time": "24-hour format — the dashboard starts casting at this time each day",
+                        "end_time": "24-hour format — the dashboard stops casting at this time each day",
+                        "switch_entity_id": "Entity that enables or disables casting for this device",
+                        "switch_entity_state": "State that enables casting. Leave blank for defaults (on, true, home, open)",
+                        "speaker_groups": "Comma-separated list of speaker group names to check",
+                        "remote_device_for_keepalive": "Use this device to send Keepalive messages.  Prevents Google TV Ambient Screensaver."
+                    }
+                }
+            },
+            "error": {
+                "invalid_device_name": "Please enter a valid device name (letters, numbers, spaces, hyphens, underscores only)",
+                "device_name_too_long": "Device name is too long (maximum 100 characters)",
+                "device_already_exists": "A device with this name already exists",
+                "device_name_or_ip_required": "Please provide at least a Device Name or an IP Address",
+                "invalid_device_ip": "Invalid IP address format (e.g., 192.168.1.50)",
+                "missing_dashboard_url": "Dashboard URL is required",
+                "invalid_url_format": "Invalid URL format. Please enter a valid URL",
+                "invalid_url_scheme": "URL must start with http:// or https://",
+                "entity_not_found": "Entity not found",
+                "cannot_delete_last": "Cannot delete the only dashboard. Add another first or delete the device.",
+                "unknown": "An unexpected error occurred"
+            },
+            "abort": {
+                "subentry_updated": "Device saved!",
+                "reconfigure_successful": "Device configuration saved!"
+            }
+        }
+    },
+    "issues": {
+        "ambiguous_cast_name": {
+            "title": "Duplicate Cast device names",
+            "description": "{count} device name(s) are duplicated among devices that rely on name discovery. In the integration settings, give each display a unique Chromecast name or configure a specific IP address for each display. This prevents casting to the wrong screen."
+        },
+        "catt_executable_missing": {
+            "title": "CATT command not found",
+            "description": "Continuously Casting Dashboards could not find the `catt` executable in Home Assistant's process PATH. Check the CATT installation and supported integration setup, then restart or reload the integration. Dashboard casting cannot work without this command."
+        }
+    }
+}
