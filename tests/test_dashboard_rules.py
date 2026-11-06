@@ -69,6 +69,7 @@ class SelectionTests(unittest.TestCase):
     def manager(self):
         harness = isolated_method(
             "monitoring.py", "MonitoringManager", "_async_select_device_config",
+            {"time": time},
         )
 
         async def check_time(name, config):
@@ -78,6 +79,8 @@ class SelectionTests(unittest.TestCase):
             return config.get("enabled", True)
 
         obj = harness()
+        obj._rotation_state = {}
+        obj._manual_overrides = {}
         obj.time_window_checker = types.SimpleNamespace(
             async_is_within_time_window=check_time
         )
