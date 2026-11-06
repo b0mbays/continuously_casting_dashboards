@@ -67,8 +67,7 @@ class MonitoringManager:
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
-        if self.switch_entity_id:
-            self.setup_switch_entity_listener()
+        self.setup_switch_entity_listener()
 
     async def _async_resolve_device_ip(self, device_key: str) -> str | None:
         """Resolve the IP address for a device by its key.
@@ -215,89 +214,48 @@ class MonitoringManager:
         _LOGGER.debug("Monitoring manager cleanup complete")
     
     def setup_switch_entity_listener(self):
-        """Set up state change listeners for the global and per-device switch entities."""
-        @callback
-        async def switch_state_listener(event):
-            """Handle the state change event for global switch entity."""
-            new_state = event.data.get('new_state')
-            if new_state is None:
-                return
-            
-            if new_state.state.lower() not in ('on', 'true', 'home', 'open'):
-                _LOGGER.info("Global switch entity %s turned off, stopping dashboards for devices without specific switches", self.switch_entity_id)
-                
-                # Only stop dashboards for devices without their own switch
-                for device_name, device_configs in self.devices.items():
-                    current_config, _ = self.time_window_checker.get_current_device_config(device_name, device_configs)
-                    if not current_config.get('switch_entity_id'):
-                        # This device uses the global switch, stop its dashboard
-                        ip = await self._async_resolve_device_ip(device_name)
-                        if ip:
-                            is_casting = await self.device_manager.async_check_device_status(ip)
-                            if is_casting:
-                                _LOGGER.info("Stopping dashboard for %s due to global switch off", device_name)
-                                await self.async_stop_casting(ip)
-                                
-                                device_key = f"{device_name}_{ip}"
-                                self.device_manager.update_active_device(
-                                    device_key=device_key,
-                                    status='stopped',
-                                    last_checked=datetime.now().isoformat()
-                                )
-        
-        # Register the listener for the global switch
+        """Watch global and per-dashboard entity controls, even without a global switch."""
+        switch_entities = set()
         if self.switch_entity_id:
+            switch_entities.add(self.switch_entity_id)
+        for configs in self.devices.values():
+            for config in configs:
+                entity_id = config.get("switch_entity_id")
+                if entity_id:
+                    switch_entities.add(entity_id)
+
+        for entity_id in sorted(switch_entities):
+            @callback
+            def switch_state_listener(event):
+                """Refresh selections when any configured control entity changes."""
+                _LOGGER.debug(
+                    "Dashboard control entity %s changed; refreshing selection",
+                    event.data.get("entity_id"),
+                )
+                self.hass.async_create_task(self.async_monitor_devices())
+
             unsub = async_track_state_change_event(
-                self.hass, self.switch_entity_id, switch_state_listener
+                self.hass, entity_id, switch_state_listener
             )
             self._unsubscribe_listeners.append(unsub)
-            _LOGGER.info("Registered state change listener for global switch entity: %s", self.switch_entity_id)
-        
-        # Set up listeners for device-specific switches
-        for device_name, device_configs in self.devices.items():
-            for config in device_configs:
-                if 'switch_entity_id' in config:
-                    device_switch = config.get('switch_entity_id')
-                    if device_switch:
-                        # Use a closure to capture the current device_name and config
-                        @callback
-                        async def device_switch_listener(event, device=device_name, conf=config):
-                            """Handle the state change event for device-specific switch entity."""
-                            new_state = event.data.get('new_state')
-                            if new_state is None:
-                                return
-                            
-                            entity_id = event.data.get('entity_id')
-                            
-                            # Check if the device is active and should be stopped
-                            if new_state.state.lower() not in ('on', 'true', 'home', 'open'):
-                                # Find the device IP
-                                ip = await self._async_resolve_device_ip(device)
-                                if ip:
-                                    # Check if it's currently casting
-                                    is_casting = await self.device_manager.async_check_device_status(ip)
-                                    if is_casting:
-                                        _LOGGER.info("Device switch entity %s turned off for %s, stopping dashboard", entity_id, device)
-                                        await self.async_stop_casting(ip)
-                                        
-                                        # Update device status
-                                        device_key = f"{device}_{ip}"
-                                        self.device_manager.update_active_device(
-                                            device_key=device_key,
-                                            status='stopped',
-                                            last_checked=datetime.now().isoformat()
-                                        )
-                            else:
-                                # If switch turned on, trigger a re-check of ONLY this specific device
-                                _LOGGER.info("Device switch entity %s turned on for %s, scheduling check for %s only", entity_id, device, device)
-                                self.hass.async_create_task(self._async_check_single_device(device))
-                        
-                        # Register the listener for this device's switch
-                        unsub = async_track_state_change_event(
-                            self.hass, device_switch, device_switch_listener
-                        )
-                        self._unsubscribe_listeners.append(unsub)
-                        _LOGGER.info("Registered state change listener for device %s switch entity: %s", device_name, device_switch)
+
+    async def _async_select_device_config(self, device_name, configs):
+        """Return the first dashboard eligible by BOTH schedule and entity.
+
+        Config order defines precedence; an ineligible entry never masks an
+        eligible later dashboard. Return (None, False) when none qualify.
+        """
+        for config in configs:
+            if not await self.time_window_checker.async_is_within_time_window(
+                device_name, config
+            ):
+                continue
+            if not await self.switch_checker.async_check_switch_entity(
+                device_name, config
+            ):
+                continue
+            return config, True
+        return None, False
 
     async def _async_check_single_device(self, target_device_name):
         """Check and process a single device, skipping the full monitoring cycle.
@@ -318,16 +276,15 @@ class MonitoringManager:
                 _LOGGER.warning("Could not get IP for %s, skipping check", target_device_name)
                 return
 
-            # Get the current device config
+            # Refresh selection first: a control can change before the first
+            # regular poll created an active entry for the target device.
+            await self.async_update_device_configs()
             if target_device_name not in self.active_device_configs:
-                _LOGGER.warning("No active configuration for %s, skipping", target_device_name)
+                _LOGGER.warning("No configuration for %s, skipping", target_device_name)
                 return
-                
             active_config_info = self.active_device_configs[target_device_name]
             current_config = active_config_info['config']
-            
-            # Process this single device using the same logic as the main monitoring
-            await self._process_single_device(target_device_name, ip, current_config, force_check=True)
+            await self._process_single_device(target_device_name, ip, current_config)
 
     async def _send_keepalive_button(self, remote_entity_id: str | None) -> None:
         """Keep Google TV awake only when a remote entity is configured.
@@ -369,6 +326,19 @@ class MonitoringManager:
             # SINGLE STATUS CHECK - do this once and reuse the result
             is_casting = await self.device_manager.async_check_device_status(ip)
             
+            # No eligible dashboard: stop our existing cast, never adopt an
+            # unrelated dashboard or act on a disabled configuration.
+            if current_config is None:
+                if is_casting:
+                    _LOGGER.info("No eligible dashboard for %s; stopping cast", device_name)
+                    await self.async_stop_casting(ip)
+                self.device_manager.update_active_device(
+                    device_key=device_key, status='stopped',
+                    name=device_name, ip=ip,
+                    last_checked=datetime.now().isoformat(),
+                )
+                return
+
             # Check if casting is enabled for this specific device
             if not await self.switch_checker.async_check_switch_entity(device_name, current_config):
                 _LOGGER.info("Casting disabled for device %s, checking if dashboard is active to stop it", device_name)
@@ -387,7 +357,9 @@ class MonitoringManager:
                 return  # Skip to the next device
             
             # Check if the current time is within any of the device's time windows
-            _, is_in_window = self.time_window_checker.get_current_device_config(device_name, self.devices[device_name])
+            is_in_window = await self.time_window_checker.async_is_within_time_window(
+                device_name, current_config
+            )
                 
             # Handle device outside all time windows
             if not is_in_window:
@@ -910,9 +882,11 @@ class MonitoringManager:
                 
             ip = device_ip_map[device_name]
             
-            # Get the current device config based on the time window
-            current_config, is_in_window = self.time_window_checker.get_current_device_config(device_name, device_configs)
-            
+            # Select only dashboards whose own rules pass.
+            current_config, is_in_window = await self._async_select_device_config(
+                device_name, device_configs
+            )
+
             # Store the active config for this device
             self.active_device_configs[device_name] = {
                 'config': current_config,
@@ -920,9 +894,8 @@ class MonitoringManager:
                 'last_updated': datetime.now()
             }
             
-            # Check if casting is enabled for this specific device
-            if not await self.switch_checker.async_check_switch_entity(device_name, current_config):
-                _LOGGER.info("Casting disabled for device %s, skipping initial cast", device_name)
+            if current_config is None:
+                _LOGGER.info("No eligible dashboard for %s; skipping initial cast", device_name)
                 continue
 
             # Skip devices outside their time window
@@ -1062,42 +1035,26 @@ class MonitoringManager:
             )
     
     async def async_update_device_configs(self):
-        """Refresh active device configs from time windows and flag changed dashboards.
-
-        Returns:
-            List of device names whose dashboard URL changed since the last update.
-        """
+        """Reselect dashboards by independent time and entity rules."""
         updated_devices = []
-        
-        for device_name, device_configs in self.devices.items():
-            # Get the current device config based on the time window
-            current_config, is_in_window = self.time_window_checker.get_current_device_config(device_name, device_configs)
-            
-            # Check if this device already has an active config
-            if device_name in self.active_device_configs:
-                previous_config = self.active_device_configs[device_name]['config']
-                
-                # Check if the dashboard URL has changed
-                if (previous_config.get('dashboard_url') != current_config.get('dashboard_url')):
-                    _LOGGER.info("Dashboard configuration changed for %s: new dashboard URL: %s", device_name, current_config.get('dashboard_url'))
-                    self.active_device_configs[device_name] = {
-                        'config': current_config,
-                        'instance_change': True,
-                        'last_updated': datetime.now()
-                    }
-                    updated_devices.append(device_name)
-                else:
-                    # No change, just update the timestamp
-                    self.active_device_configs[device_name]['last_updated'] = datetime.now()
-                    self.active_device_configs[device_name]['instance_change'] = False
-            else:
-                # First time seeing this device
-                self.active_device_configs[device_name] = {
-                    'config': current_config,
-                    'instance_change': False,  # No change on first run
-                    'last_updated': datetime.now()
-                }
-        
+        for device_name, configs in self.devices.items():
+            selected, _ = await self._async_select_device_config(device_name, configs)
+            previous = self.active_device_configs.get(device_name, {}).get("config")
+            previous_url = previous.get("dashboard_url") if previous else None
+            selected_url = selected.get("dashboard_url") if selected else None
+            changed = previous_url != selected_url
+
+            self.active_device_configs[device_name] = {
+                'config': selected,
+                'instance_change': changed,
+                'last_updated': datetime.now(),
+            }
+            if changed:
+                updated_devices.append(device_name)
+                _LOGGER.info(
+                    "Dashboard selection changed for %s: %s",
+                    device_name, selected_url or "(none)",
+                )
         return updated_devices
 
     async def async_monitor_devices(self, *args):

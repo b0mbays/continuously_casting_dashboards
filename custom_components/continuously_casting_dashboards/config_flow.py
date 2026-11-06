@@ -38,6 +38,14 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+
+def _normalise_time_selector(value):
+    """Convert TimeSelector values into persistent, serializable time strings."""
+    if isinstance(value, datetime.time):
+        return value.strftime("%H:%M:%S")
+    return value
+
+
 # Validation constants
 MAX_DEVICE_NAME_LENGTH = 100
 ALLOWED_URL_SCHEMES = ("http", "https")
@@ -598,6 +606,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
+                cleaned_input["preserve_volume"] = bool(
+                    user_input.get("preserve_volume", False)
+                )
+                cleaned_input["cast_continuously"] = bool(
+                    user_input.get("cast_continuously", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -605,9 +619,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
-                        cleaned_input["start_time"] = user_input["start_time"]
+                        cleaned_input["start_time"] = _normalise_time_selector(user_input["start_time"])
                     if user_input.get("end_time"):
-                        cleaned_input["end_time"] = user_input["end_time"]
+                        cleaned_input["end_time"] = _normalise_time_selector(user_input["end_time"])
 
                 if user_input.get("include_entity", False):
                     entity_id = user_input.get("switch_entity_id", "").strip()
@@ -656,6 +670,8 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("volume", default=5): vol.All(
                     vol.Coerce(int), vol.Range(min=0, max=100)
                 ),
+                vol.Optional("preserve_volume", default=False): cv.boolean,
+                vol.Optional("cast_continuously", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
@@ -696,7 +712,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         for dashboard in self._dashboards:
             cleaned = {}
             for key, value in dashboard.items():
-                if isinstance(value, (datetime.datetime, datetime.time)):
+                if isinstance(value, datetime.datetime):
+                    continue
+                if isinstance(value, datetime.time):
+                    if key in ("start_time", "end_time"):
+                        cleaned[key] = _normalise_time_selector(value)
                     continue
                 if key in ["switch_entity_id", "switch_entity_state"]:
                     if value and str(value).strip():
@@ -941,12 +961,18 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
+                cleaned_input["preserve_volume"] = bool(
+                    user_input.get("preserve_volume", False)
+                )
+                cleaned_input["cast_continuously"] = bool(
+                    user_input.get("cast_continuously", False)
+                )
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
-                        cleaned_input["start_time"] = user_input["start_time"]
+                        cleaned_input["start_time"] = _normalise_time_selector(user_input["start_time"])
                     if user_input.get("end_time"):
-                        cleaned_input["end_time"] = user_input["end_time"]
+                        cleaned_input["end_time"] = _normalise_time_selector(user_input["end_time"])
 
                 if user_input.get("include_entity", False):
                     entity_id = user_input.get("switch_entity_id", "").strip()
@@ -1018,6 +1044,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "volume", default=current.get("volume", 5)
             ): vol.All(vol.Coerce(int), vol.Range(min=0, max=100)),
+            vol.Optional(
+                "preserve_volume", default=current.get("preserve_volume", False)
+            ): cv.boolean,
+            vol.Optional(
+                "cast_continuously", default=current.get("cast_continuously", False)
+            ): cv.boolean,
             vol.Optional("enable_time_window", default=has_time): cv.boolean,
             vol.Optional(
                 "start_time",
@@ -1087,12 +1119,18 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
         if user_input.get("volume") is not None:
             cleaned_input["volume"] = user_input["volume"]
+        cleaned_input["preserve_volume"] = bool(
+            user_input.get("preserve_volume", False)
+        )
+        cleaned_input["cast_continuously"] = bool(
+            user_input.get("cast_continuously", False)
+        )
 
         if user_input.get("enable_time_window", False):
             if user_input.get("start_time"):
-                cleaned_input["start_time"] = user_input["start_time"]
+                cleaned_input["start_time"] = _normalise_time_selector(user_input["start_time"])
             if user_input.get("end_time"):
-                cleaned_input["end_time"] = user_input["end_time"]
+                cleaned_input["end_time"] = _normalise_time_selector(user_input["end_time"])
 
         if user_input.get("include_entity", False):
             entity_id = user_input.get("switch_entity_id", "").strip()
@@ -1205,6 +1243,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                 if user_input.get("volume") is not None:
                     cleaned_input["volume"] = user_input["volume"]
+                cleaned_input["preserve_volume"] = bool(
+                    user_input.get("preserve_volume", False)
+                )
+                cleaned_input["cast_continuously"] = bool(
+                    user_input.get("cast_continuously", False)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -1212,9 +1256,9 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
-                        cleaned_input["start_time"] = user_input["start_time"]
+                        cleaned_input["start_time"] = _normalise_time_selector(user_input["start_time"])
                     if user_input.get("end_time"):
-                        cleaned_input["end_time"] = user_input["end_time"]
+                        cleaned_input["end_time"] = _normalise_time_selector(user_input["end_time"])
 
                 if user_input.get("include_entity", False):
                     entity_id = user_input.get("switch_entity_id", "").strip()
@@ -1261,6 +1305,8 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("volume", default=5): vol.All(
                     vol.Coerce(int), vol.Range(min=0, max=100)
                 ),
+                vol.Optional("preserve_volume", default=False): cv.boolean,
+                vol.Optional("cast_continuously", default=False): cv.boolean,
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
@@ -1299,7 +1345,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         for dashboard in self._dashboards:
             cleaned = {}
             for key, value in dashboard.items():
-                if isinstance(value, (datetime.datetime, datetime.time)):
+                if isinstance(value, datetime.datetime):
+                    continue
+                if isinstance(value, datetime.time):
+                    if key in ("start_time", "end_time"):
+                        cleaned[key] = _normalise_time_selector(value)
                     continue
                 if key in ["switch_entity_id", "switch_entity_state"]:
                     if value and str(value).strip():

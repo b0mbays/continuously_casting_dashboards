@@ -15,6 +15,7 @@
   <a href="#installation">Installation</a> •
   <a href="#quick-start">Quick Start</a> •
   <a href="#configuration">Configuration</a> •
+  <a href="ROADMAP.md">Roadmap</a> •
   <a href="#-migrating-from-yaml-to-ui">Migration</a> •
   <a href="#troubleshooting">Troubleshooting</a>
 </p>
@@ -36,6 +37,9 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Entity control** - Start/stop casting based on any Home Assistant entity state
 - **Speaker group aware** - Won't cast if device is part of an active speaker group
 - **Per-device settings** - Volume, time windows, and dashboards configured per device
+- **Independent dashboard rules** - Checks each dashboard's own schedule and required entity state before selecting it
+- **Continuous casting** - Opt out of global and custom time windows on an individual dashboard
+- **Preserve device volume** - Opt out of initial muting and all explicit volume changes
 - **Reliable DashCast status** - Detects active DashCast sessions using the correct HA Cast entity to avoid unnecessary recasts
 - **Timeout recovery** - Retries after repeated status timeouts while respecting active/paused media and a five-minute media grace period
 - **Google TV keepalive (opt-in)** - Sends MENU through a selected Home Assistant remote entity to prevent ambient mode
@@ -145,13 +149,44 @@ continuously_casting_dashboards:
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `dashboard_url` | Yes | - | Full URL to the dashboard |
-| `volume` | No | - | Device volume (0-100) |
+| `volume` | No | - | Device volume (0-100); ignored if `preserve_volume` is enabled |
+| `preserve_volume` | No | `false` | Never mute or set device volume while casting |
+| `cast_continuously` | No | `false` | Ignore global and per-dashboard time windows, but still respect entity controls |
 | `start_time` | No | Global | Override the global start time |
 | `end_time` | No | Global | Override the global end time |
 | `switch_entity_id` | No | - | Entity that controls this specific device |
 | `switch_entity_state` | No | `on` | State value that enables casting for this device |
 | `speaker_groups` | No | - | Speaker groups to check before casting |
 | `remote_device_for_keepalive` | No | Disabled | Home Assistant `remote.*` entity used to keep Google TV awake (sends MENU when the configured dashboard is active) |
+
+### Dashboard rules, scheduling, and volume
+
+For each Cast device, dashboards are evaluated **in their configured order**. A dashboard qualifies only if its own time window (or `cast_continuously: true`) **and** its required control-entity state match. The first eligible dashboard is selected. A disabled dashboard does **not** prevent a later eligible one from being chosen. When no dashboard qualifies, the integration stops its active dashboard cast, without stopping unrelated media.
+
+- To cast without schedule restrictions, enable **Cast continuously** in that dashboard's settings. Entity conditions still apply.
+- To avoid sound-level changes, enable **Keep device volume unchanged**. When enabled, the integration does not run CATT volume commands, including initial volume zero.
+- Without these options, existing behaviour remains: the global time window applies unless overridden, and configured volume is still used.
+- For legacy YAML dashboard entries, add `cast_continuously: true` or `preserve_volume: true` under the desired dashboard, not at the root.
+
+For example:
+
+```yaml
+continuously_casting_dashboards:
+  devices:
+    "Kitchen Hub":
+      - dashboard_url: "https://home.example/dashboard/day"
+        start_time: "06:00"
+        end_time: "22:00"
+        switch_entity_id: "person.someone"
+        switch_entity_state: "home"
+      - dashboard_url: "https://home.example/dashboard/always"
+        cast_continuously: true
+        preserve_volume: true
+```
+
+Here the first dashboard is preferred while its own time/entity rules match; otherwise the always-on dashboard is eligible as fallback. Set the entries in your desired priority order. No migration or new options are required for existing configurations.
+
+See the full [development roadmap](ROADMAP.md) for future reliability, discovery, diagnostics, and dashboard-readiness work.
 
 ### Cast reliability and Google TV keepalive
 

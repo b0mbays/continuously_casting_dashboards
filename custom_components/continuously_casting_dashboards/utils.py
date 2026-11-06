@@ -25,6 +25,9 @@ class TimeWindowChecker:
 
     async def async_is_within_time_window(self, device_name, device_config):
         """Check if current time is within the casting window for a device."""
+        if device_config.get("cast_continuously", False):
+            return True
+
         now = dt_util.now().time()
 
         # First check device-specific time window
@@ -53,6 +56,8 @@ class TimeWindowChecker:
 
         # Try to find a config whose time window includes the current time
         for config in device_configs:
+            if config.get("cast_continuously", False):
+                return config, True
             device_start = config.get("start_time", self.default_start_time)
             device_end = config.get("end_time", self.default_end_time)
 
@@ -77,9 +82,6 @@ class TimeWindowChecker:
                 _LOGGER.debug(
                     f"Found matching time window for {device_name}: {start_time}-{end_time}"
                 )
-                # Add the parsed time objects to the config for convenience
-                config["parsed_start_time"] = start_time
-                config["parsed_end_time"] = end_time
                 return config, True
 
         # If no matching time window is found, return the first config as default (with an indicator that no match was found)
@@ -144,8 +146,11 @@ class SwitchEntityChecker:
                 state = self.hass.states.get(device_switch)
                 if state is None:
                     _LOGGER.warning(
-                        f"Device switch entity {device_switch} not found for {device_name}"
+                        "Device switch entity %s not found for %s; not enabling its dashboard",
+                        device_switch,
+                        device_name,
                     )
+                    return False
                 else:
                     # If device has custom state configured, check against that
                     if device_state:
