@@ -2,7 +2,7 @@
 
 This roadmap tracks work in [Continuously Casting Dashboards](https://github.com/anaschillin/continuously_casting_dashboards). It distinguishes **merged functionality**, **remaining work**, and **validation not yet performed on real Home Assistant/Cast hardware**. Merged does not necessarily mean released, deployed, or tested on every receiver.
 
-**Repository baseline:** `main` includes [PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [PR #3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [PR #4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), and [PR #5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5). All four were merged on 6 November 2026. The integration manifest currently declares version `2.1.0`; do not treat a merged PR as evidence that a new release has been published.
+**Version 3.0.0 code baseline (6 November 2026):** `main` includes merged [PR #2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5), and [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6), plus the documentation update [#7](https://github.com/anaschillin/continuously_casting_dashboards/pull/7). Manifest and HACS metadata declare `3.0.0`. A GitHub release/tag must still be published separately before describing this as a downloadable v3 release.
 
 ## Baseline — merged
 
@@ -29,7 +29,7 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [x] Share and serialize discovery scans; cap concurrent checks; add subprocess cleanup and per-device exponential backoff ([upstream #139](https://github.com/b0mbays/continuously_casting_dashboards/issues/139)).
 - [x] Distinguish dashboard, idle, unreachable, media-playing and Assistant states using existing device/monitoring checks.
 - [x] Expose retry delay and failure summaries through Home Assistant diagnostic sensors and config-entry diagnostics.
-- [ ] Implement actionable Home Assistant Repairs for enduring configuration problems; **in follow-up development, not yet merged**.
+- [x] Add actionable Home Assistant Repairs for missing CATT and duplicate name-only device configurations ([PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6)).
 - [ ] Evaluate a CATT dependency upgrade against Home Assistant Python compatibility and actual Cast hardware ([upstream #160](https://github.com/b0mbays/continuously_casting_dashboards/issues/160)); continue using the pinned version until validated.
 
 ## Milestone 3 — smarter casting and controls
@@ -38,10 +38,10 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 
 - [x] Debounce relevant entity changes and re-evaluate dashboard eligibility ([upstream #159](https://github.com/b0mbays/continuously_casting_dashboards/issues/159)); periodic polling remains as a fallback.
 - [x] Add `priority`, optional `rotation_seconds`, and temporary manual dashboard override/clear-override Home Assistant services.
-- [ ] Offer a dedicated Lovelace multi-device control panel with status and actions; **in follow-up development, not yet merged**.
-- [ ] Add durable per-device pause/resume behaviour; **in follow-up development, not yet merged**. Current `stop_casting` is a one-off action, not a lasting pause.
+- [x] Add a bundled optional Lovelace multi-device control panel with connection status, retries, pause/resume and manual dashboard actions ([PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6)).
+- [x] Add **in-memory** per-device pause/resume (until resumed/restart or a timed expiry), distinct from the one-off `stop_casting` action ([PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6)).
 - [ ] Evaluate compatible alternative Cast backends; do not assume Home Assistant Cast can replace CATT/DashCast in every situation.
-- [ ] Fix global notification-option persistence ([upstream #155](https://github.com/b0mbays/continuously_casting_dashboards/issues/155)); **in follow-up development, not yet merged**.
+- [x] Persist the disabled global notification setting and preserve other options ([upstream #155](https://github.com/b0mbays/continuously_casting_dashboards/issues/155), [PR #6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6)).
 
 ## Milestone 4 — optional dashboard readiness reporting
 
@@ -52,6 +52,15 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 - [ ] Verify **actual rendered dashboard content**. A registered custom element or successful Cast command alone does not prove rendering; any browser opening the same page may send a heartbeat.
 - [ ] Explore bounded, safe troubleshooting/recovery for missing resources without interrupting media. **Automatic recasting from a missing heartbeat is deliberately not implemented.**
 - [ ] Validate receiver-specific behaviour on multiple Cast devices, frontend reloads, kiosk layouts and supported Home Assistant versions.
+
+## Outstanding compatibility and readiness work
+
+- [ ] Validate v3.0.0 in an actual Home Assistant installation across normal reloads/restarts, multiple devices, media interruptions, and frontend resource reloads.
+- [ ] Test newer CATT versions on supported Python and Chromecast hardware; do not update the pinned `catt==0.12.13` until compatibility is established.
+- [ ] Investigate alternative Cast backends with an opt-in adapter; [backend assessment](docs/CAST_BACKENDS.md) is design/evaluation, not a released backend.
+- [ ] Verify receiver-specific, authenticated frontend readiness rather than accepting a heartbeat that could come from another browser.
+- [ ] Design any automatic recovery from a missing frontend heartbeat to avoid unnecessary recasts or interrupting user media.
+- [ ] Publish and validate a `v3.0.0` release/tag after final hardware verification; changing version metadata alone does not publish one.
 
 ## Continuous quality and release work
 
