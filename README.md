@@ -46,6 +46,7 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Resilient discovery** - Supports Google-suffixed device names without unsafe prefix matching
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
+- **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
 
 ## 📋 Requirements
 
@@ -224,6 +225,29 @@ Concurrent device lookups share one CATT scan, with short-lived scan results and
 Home Assistant's integration diagnostics now provide device statuses, retry delays, scan state, and non-sensitive error summaries. Per-device diagnostic sensors expose `retry_in_seconds` and `last_error`. Dashboard URLs and authentication details are excluded from the diagnostics report. Sensor retry delays are a snapshot from the last status update and may be stale until refreshed.
 
 **Compatibility note:** These safety changes do not replace CATT or override user media/Assistant protection. An offline device cannot be confirmed from CATT status alone. Test against your Cast devices and HA version before merging.
+
+### Optional dashboard frontend readiness (experimental)
+
+A Cast receiver acknowledging a URL is not proof that your custom cards have registered or rendered correctly. This feature adds **diagnostic-only** reporting through a small Lovelace card; it does not recast, restart or modify the dashboard based on missing reports.
+
+1. Enable **Monitor frontend readiness** on the dashboard in the integration editor.
+2. Under **Settings → Dashboards → Resources**, add the bundled JavaScript module `/ccd_cast/ccd-readiness-card.js` with type **JavaScript module**.
+3. Place this card on the dashboard view that is being cast:
+
+```yaml
+type: custom:ccd-readiness-card
+device_name: Kitchen Hub
+required_elements:
+  - salah-timetable-card
+interval_seconds: 30
+hide: false
+```
+
+Use the same **configured device name** as the integration. Supply the actual custom-element tag names your dashboard depends on; `customElements.get()` checks registration, **not** visual rendering or loaded entity data. `hide: true` conceals the small status label, but might still reserve space depending on Lovelace layout. The companion can run on any browser opening the same dashboard; therefore the signal is best-effort, not proof of a specific Cast receiver.
+
+Readiness appears as `frontend_readiness` in device sensor attributes and as a status in integration diagnostics. Possible values are `disabled`, `pending`, `ready`, `missing_elements`, `unconfirmed` (no report within two minutes), and `stale` (last report older than three minutes). Reports are sent via an authenticated Home Assistant service and include only the path, device name and missing tag names—no dashboard query parameters, passwords or access tokens.
+
+**Important:** If the reporter's JavaScript fails to load on a Cast device, the integration cannot determine which page elements loaded. This is intentional: no automatic recovery is triggered from an absent report, avoiding unnecessary interruptions and recast loops.
 
 ### Cast reliability and Google TV keepalive
 
