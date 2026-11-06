@@ -165,6 +165,9 @@ class SelectionTests(unittest.TestCase):
             update_active_device=lambda **kwargs: statuses.append(kwargs),
         )
         obj.async_stop_casting = stop
+        obj.readiness_tracker = types.SimpleNamespace(
+            cast_started=lambda *args, **kwargs: None
+        )
         run(obj._process_single_device("Kitchen", "192.0.2.10", None))
         self.assertEqual(stopped, ["192.0.2.10"])
         self.assertEqual(statuses[0]["status"], "stopped")
