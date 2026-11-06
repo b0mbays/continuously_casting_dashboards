@@ -66,8 +66,8 @@ class FrontendReadinessTests(unittest.TestCase):
         self.assertEqual(state["missing_elements"], ["salah-timetable-card"])
         tracker.report("Kitchen", "/dashboard/home", True, [], now=120)
         self.assertEqual(tracker.snapshot("Kitchen", now=121)["status"], "ready")
-        self.assertEqual(tracker.snapshot("Kitchen", now=301)["status"], "ready")
-        self.assertEqual(tracker.snapshot("Kitchen", now=302)["status"], "stale")
+        self.assertEqual(tracker.snapshot("Kitchen", now=300)["status"], "ready")
+        self.assertEqual(tracker.snapshot("Kitchen", now=301)["status"], "stale")
 
     def test_recasting_resets_previous_session(self):
         tracker = readiness.ReadinessTracker()
