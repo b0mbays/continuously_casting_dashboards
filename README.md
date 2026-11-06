@@ -155,6 +155,8 @@ continuously_casting_dashboards:
 | `volume` | No | - | Device volume (0-100); ignored if `preserve_volume` is enabled |
 | `preserve_volume` | No | `false` | Never mute or set device volume while casting |
 | `cast_continuously` | No | `false` | Ignore global and per-dashboard time windows, but still respect entity controls |
+| `priority` | No | `0` | Higher priorities win among eligible dashboards (0–100) |
+| `rotation_seconds` | No | `0` | Rotate equally ranked eligible dashboards; set on the first ranked dashboard (0 = disabled) |
 | `start_time` | No | Global | Override the global start time |
 | `end_time` | No | Global | Override the global end time |
 | `switch_entity_id` | No | - | Entity that controls this specific device |
@@ -190,6 +192,28 @@ continuously_casting_dashboards:
 Here the first dashboard is preferred while its own time/entity rules match; otherwise the always-on dashboard is eligible as fallback. Set the entries in your desired priority order. No migration or new options are required for existing configurations.
 
 See the full [development roadmap](ROADMAP.md) for future reliability, discovery, diagnostics, and dashboard-readiness work.
+
+### Priority selection and dashboard rotation
+
+An eligible dashboard with the highest `priority` (0–100) wins. If priorities tie, the first eligible configured dashboard wins unless its `rotation_seconds` is greater than zero. In that case, equally ranked eligible dashboards rotate after that many seconds. Rotation is intentionally disabled by default; each switch triggers a new Cast operation.
+
+If several dashboards should rotate, set the **same priority** on them and set `rotation_seconds` on the first of that priority group. Time windows, entity controls, Assistant detection and user-media protection still apply.
+
+Use the Home Assistant `continuously_casting_dashboards.select_dashboard` service to **temporarily** prefer another configured dashboard. Indexes are zero-based and duration is 5–3600 seconds. Overrides cannot bypass the selected dashboard's schedule or required entity state:
+
+```yaml
+action: continuously_casting_dashboards.select_dashboard
+data:
+  device_name: "Kitchen Hub"
+  dashboard_index: 1
+  duration_seconds: 300
+```
+
+Clear it early with `continuously_casting_dashboards.clear_dashboard_override` and `device_name`. If multiple configured devices have the exact same name across integration entries, selection is refused to avoid affecting the wrong Cast device. Entity-triggered switches are debounced to reduce redundant scans.
+
+### Native Home Assistant control card
+
+Device status is already exposed as Home Assistant sensors. You can use a standard Entities card with the device's status sensor and two buttons wired to `stop_casting` / `resume_casting`. No new custom frontend dependency is needed. See the registered services under **Developer Tools → Actions**.
 
 ### Device discovery, retries, and diagnostics
 
