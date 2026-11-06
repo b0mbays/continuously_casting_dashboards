@@ -258,6 +258,47 @@ async def _async_register_services(hass: HomeAssistant) -> None:
                     _LOGGER.info("Triggering monitoring cycle for all devices")
                     await caster.monitoring_manager.async_monitor_devices(None)
 
+    async def handle_select_dashboard(call):
+        """Select one configured dashboard temporarily, without bypassing rules."""
+        device_name = call.data.get("device_name", "")
+        managers = [
+            data["caster"].monitoring_manager
+            for data in hass.data.get(DOMAIN, {}).values()
+            if isinstance(data, dict) and "caster" in data
+            and device_name in data["caster"].monitoring_manager.devices
+        ]
+        if len(managers) != 1:
+            _LOGGER.error(
+                "Cannot select dashboard: expected one device named %s, found %s",
+                device_name, len(managers),
+            )
+            return
+        try:
+            await managers[0].async_set_manual_dashboard(
+                device_name,
+                int(call.data.get("dashboard_index", 0)),
+                int(call.data.get("duration_seconds", 300)),
+            )
+        except (ValueError, TypeError) as exc:
+            _LOGGER.error("Invalid dashboard selection: %s", exc)
+
+    async def handle_clear_dashboard_override(call):
+        """Resume the normal priority/rotation rules for one Cast device."""
+        device_name = call.data.get("device_name", "")
+        managers = [
+            data["caster"].monitoring_manager
+            for data in hass.data.get(DOMAIN, {}).values()
+            if isinstance(data, dict) and "caster" in data
+            and device_name in data["caster"].monitoring_manager.devices
+        ]
+        if len(managers) != 1:
+            _LOGGER.error(
+                "Cannot clear override: expected one device named %s, found %s",
+                device_name, len(managers),
+            )
+            return
+        await managers[0].async_clear_manual_dashboard(device_name)
+
     # Register all services
     hass.services.async_register(DOMAIN, "set_cast_delay", handle_set_cast_delay)
     hass.services.async_register(DOMAIN, "set_logging_level", handle_set_logging_level)
@@ -265,6 +306,10 @@ async def _async_register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "set_end_time", handle_set_end_time)
     hass.services.async_register(DOMAIN, "stop_casting", handle_stop_casting)
     hass.services.async_register(DOMAIN, "resume_casting", handle_resume_casting)
+    hass.services.async_register(DOMAIN, "select_dashboard", handle_select_dashboard)
+    hass.services.async_register(
+        DOMAIN, "clear_dashboard_override", handle_clear_dashboard_override
+    )
 
     _LOGGER.debug("Registered integration services")
 
