@@ -123,3 +123,31 @@ clear_dashboard_override:
       required: true
       selector:
         text:
+
+report_dashboard_ready:
+  name: Report Dashboard Frontend Readiness
+  description: >-
+    Optional internal reporter service, called from the CCD Readiness Reporter
+    Lovelace card. Does not force a recast.
+  fields:
+    device_name:
+      name: Device Name
+      required: true
+      selector:
+        text:
+    dashboard_path:
+      name: Dashboard Path
+      description: Browser pathname (not credentials or full URL).
+      required: true
+      selector:
+        text:
+    ready:
+      name: Required Custom Elements Registered
+      required: true
+      selector:
+        boolean:
+    missing_elements:
+      name: Missing Element Tags
+      required: false
+      selector:
+        object:
