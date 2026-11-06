@@ -612,6 +612,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["cast_continuously"] = bool(
                     user_input.get("cast_continuously", False)
                 )
+                cleaned_input["priority"] = int(user_input.get("priority", 0))
+                cleaned_input["rotation_seconds"] = int(
+                    user_input.get("rotation_seconds", 0)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -672,6 +676,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 ),
                 vol.Optional("preserve_volume", default=False): cv.boolean,
                 vol.Optional("cast_continuously", default=False): cv.boolean,
+                vol.Optional("priority", default=0): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=100)
+                ),
+                vol.Optional("rotation_seconds", default=0): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=3600)
+                ),
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
@@ -967,6 +977,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["cast_continuously"] = bool(
                     user_input.get("cast_continuously", False)
                 )
+                cleaned_input["priority"] = int(user_input.get("priority", 0))
+                cleaned_input["rotation_seconds"] = int(
+                    user_input.get("rotation_seconds", 0)
+                )
 
                 if user_input.get("enable_time_window", False):
                     if user_input.get("start_time"):
@@ -1050,6 +1064,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "cast_continuously", default=current.get("cast_continuously", False)
             ): cv.boolean,
+            vol.Optional("priority", default=current.get("priority", 0)): vol.All(
+                vol.Coerce(int), vol.Range(min=0, max=100)
+            ),
+            vol.Optional(
+                "rotation_seconds", default=current.get("rotation_seconds", 0)
+            ): vol.All(vol.Coerce(int), vol.Range(min=0, max=3600)),
             vol.Optional("enable_time_window", default=has_time): cv.boolean,
             vol.Optional(
                 "start_time",
@@ -1124,6 +1144,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         )
         cleaned_input["cast_continuously"] = bool(
             user_input.get("cast_continuously", False)
+        )
+        cleaned_input["priority"] = int(user_input.get("priority", 0))
+        cleaned_input["rotation_seconds"] = int(
+            user_input.get("rotation_seconds", 0)
         )
 
         if user_input.get("enable_time_window", False):
@@ -1249,6 +1273,10 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 cleaned_input["cast_continuously"] = bool(
                     user_input.get("cast_continuously", False)
                 )
+                cleaned_input["priority"] = int(user_input.get("priority", 0))
+                cleaned_input["rotation_seconds"] = int(
+                    user_input.get("rotation_seconds", 0)
+                )
 
                 # Update the keepalive remote entity if provided
                 if user_input.get("remote_device_for_keepalive") is not None:
@@ -1307,6 +1335,12 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 ),
                 vol.Optional("preserve_volume", default=False): cv.boolean,
                 vol.Optional("cast_continuously", default=False): cv.boolean,
+                vol.Optional("priority", default=0): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=100)
+                ),
+                vol.Optional("rotation_seconds", default=0): vol.All(
+                    vol.Coerce(int), vol.Range(min=0, max=3600)
+                ),
                 vol.Optional("enable_time_window", default=False): cv.boolean,
                 vol.Optional(
                     "start_time",
