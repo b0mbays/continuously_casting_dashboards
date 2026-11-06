@@ -33,6 +33,9 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 
 ## Milestone 3 — casting management and automation
 
+**Implementation:** stacked draft PR #4 introduces priority-based dashboard selection, configurable rotation, debounced entity-change monitoring and manual dashboard override services. A dedicated frontend control panel and alternate Cast backends remain future work.
+
+
 - [ ] Event-driven refresh with debounce and limited device scans, rather than relying exclusively on polling ([upstream #159](https://github.com/b0mbays/continuously_casting_dashboards/issues/159)).
 - [ ] Add explicit dashboard priorities, fallback selection, and optional rotation intervals.
 - [ ] Build a Home Assistant device-control view for cast/pause/resume, current dashboard, connectivity, and recent errors.
