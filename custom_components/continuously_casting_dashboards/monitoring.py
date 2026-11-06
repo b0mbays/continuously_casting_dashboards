@@ -1019,7 +1019,10 @@ class MonitoringManager:
         # Add delay between scanning and casting to avoid overwhelming the network
         await asyncio.sleep(2)
         
-        # Start each device with appropriate delay
+        # Delay only BETWEEN actual initial cast attempts, never after the
+        # final device. A trailing 60s sleep previously guaranteed a false
+        # 45s background-initialization timeout even for one healthy display.
+        cast_attempts = 0
         for device_name, device_configs in self.devices.items():
             if device_name not in device_ip_map:
                 continue
@@ -1080,12 +1083,12 @@ class MonitoringManager:
                     )
                     continue
             
-            # Create task for each device
-            await self.async_start_device(device_name, current_config, ip)
-            
-            # Apply cast delay between devices
-            if self.cast_delay > 0:
+            # Space actual cast attempts without delaying the completion of
+            # the last device, or delaying between skipped media-only devices.
+            if cast_attempts and self.cast_delay > 0:
                 await asyncio.sleep(self.cast_delay)
+            await self.async_start_device(device_name, current_config, ip)
+            cast_attempts += 1
         
         return True
     

@@ -80,6 +80,16 @@ This roadmap tracks work in [Continuously Casting Dashboards](https://github.com
 **Status:** code above is on a feature branch, not part of the merged
 v3.0.1 release until its PR passes review and is merged.
 
+## Startup reliability — 3.0.3 candidate
+
+- [x] Remove the false 45-second limit from background initialization: the
+  default 60-second delay used to guarantee a timeout after even one cast.
+- [x] Apply the initial inter-device cast delay only between attempts and track
+  background tasks for clean integration reload/unload.
+- [ ] Confirm the revised startup sequence on HAOS and Cast devices.
+- [ ] Diagnose persistent Lovelace **Configuration error** separately; it
+  cannot be established from a CATT initialization timeout log.
+
 ## Continuous quality and release work
 
 - [x] CI includes Python compilation, translation JSON checks, JavaScript syntax checks, Ruff checks on added modules and regression tests (the merged PR #5 branch passed 51 tests).
