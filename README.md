@@ -24,7 +24,7 @@
 
 A Home Assistant integration that casts dashboards to Chromecast-compatible displays and monitors them for recovery. It respects eligible time windows, entity states, active media and Assistant activity before attempting to resume a dashboard.
 
-**Repository status (6 November 2026):** PRs [#2](https://github.com/anaschillin/continuously_casting_dashboards/pull/2), [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3), [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4), and [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5) have been merged into `main`. The integration manifest currently declares version `2.1.0`; merging does **not** by itself publish a new HACS release. Optional frontend readiness is diagnostic-only, not an automatic fix for JavaScript card loading.
+**Version 3.0.0 (6 November 2026):** The integration and HACS metadata now declare **3.0.0**, with [PRs #2–#6](https://github.com/anaschillin/continuously_casting_dashboards/pulls?q=is%3Apr+is%3Amerged) merged into `main`. Review the [v3 changelog](CHANGELOG.md) and [upgrade guide](docs/update_help.md) before installing. This source-code version bump does **not** create a GitHub release or HACS download automatically. The optional frontend-readiness reporter remains diagnostic-only; it does not fix custom-card loading failures.
 
 See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgrade guide](docs/update_help.md) before switching from another installation source.
 
@@ -51,8 +51,8 @@ See [ROADMAP.md](ROADMAP.md) for implemented and unfinished work, and [the upgra
 - **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
 - **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 - **Optional frontend readiness** - Companion Lovelace card reports whether required custom elements registered, with safe diagnostic-only heartbeat monitoring
-- **Optional control panel and timed pause (PR #6)** - Lovelace device status, dashboard selection, timed/indefinite pause, resume and one-off stop
-- **Actionable configuration Repairs (PR #6)** - Identify missing CATT CLI and ambiguous name-only Cast configurations
+- **Optional control panel and timed pause** - Lovelace device status, dashboard selection, timed/indefinite pause, resume and one-off stop
+- **Actionable configuration Repairs** - Identify missing CATT CLI and ambiguous name-only Cast configurations
 - **Dashboard priorities and rotation** - Higher-priority eligible views take precedence; optionally rotate equally ranked views
 - **Manual overrides** - Select a configured dashboard temporarily and clear the override through HA actions
 
@@ -78,7 +78,7 @@ Before installing, ensure you have:
 4. Locate **Continuously Casting Dashboards**, then download/update it.
 5. Restart Home Assistant.
 
-This is the **fork containing PRs #2–#5**. The original [b0mbays repository](https://github.com/b0mbays/continuously_casting_dashboards) is a separate code source. Do not configure both repositories to install the same `continuously_casting_dashboards` integration simultaneously. If migrating from the upstream version, review [the upgrade guide](docs/update_help.md) and back up your configuration first.
+This is the **fork containing PRs #2–#6**. The original [b0mbays repository](https://github.com/b0mbays/continuously_casting_dashboards) is a separate code source. Do not configure both repositories to install the same `continuously_casting_dashboards` integration simultaneously. If migrating from the upstream version, review [the upgrade guide](docs/update_help.md) and back up your configuration first.
 
 Being available as a HACS **custom repository** does not mean that this fork has been accepted into the default HACS catalogue.
 
@@ -293,16 +293,9 @@ Cast outages remain diagnostic status changes, not persistent Repairs.
 
 ### CATT upgrade and HA Cast alternatives
 
-The manifest remains pinned to CATT **0.12.13**. CATT **0.13.3** is available,
-but the version change needs dedicated physical Chromecast and dependency
-testing: later CATT releases modified discovery and DashCast behaviour.
+The manifest remains pinned to CATT **0.12.13** for v3.0.0. A newer CATT dependency is under evaluation; upgrading requires physical-device and dependency compatibility checks.
 See [the backend compatibility review](docs/CAST_BACKENDS.md) for the testing
 matrix and the proposed experimental HA Cast adapter design.
-### Home Assistant dashboard controls
-
-Device status is exposed through Home Assistant sensors. You can create an ordinary Entities dashboard with status sensors and buttons calling `stop_casting`, `resume_casting`, `select_dashboard`, and `clear_dashboard_override`. These actions are available under **Developer Tools → Actions**.
-
-A dedicated Lovelace multi-device control panel and lasting pause/resume controls are **not included in merged PRs #2–#5**; those enhancements are being developed separately. The existing `stop_casting` action stops an active dashboard once and is **not** an indefinite pause—monitoring may cast it again when normal conditions qualify.
 
 ### Device discovery, retries, and diagnostics
 
