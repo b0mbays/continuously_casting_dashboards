@@ -281,13 +281,13 @@ class DeviceManager:
         """
         device_name = device_name.strip()
         cached = self.device_ip_cache.get(device_name)
-        if cached and time.monotonic() - cached["timestamp"] < 300:
+        if cached and time.time() - cached["timestamp"] < 300:
             return cached["ip"]
 
         async with self._scan_lock:
             # A different device may have refreshed discovery while we waited.
             cached = self.device_ip_cache.get(device_name)
-            if cached and time.monotonic() - cached["timestamp"] < 300:
+            if cached and time.time() - cached["timestamp"] < 300:
                 return cached["ip"]
             if time.monotonic() - self._scan_last_at < 15:
                 return match_discovered_device(device_name, self._scan_devices)
@@ -318,7 +318,7 @@ class DeviceManager:
 
                 self._scan_devices = discovered
                 self.last_discovery_error = None
-                now = time.monotonic()
+                now = time.time()
                 for name, ip in discovered:
                     self.device_ip_cache[name] = {"ip": ip, "timestamp": now}
 
