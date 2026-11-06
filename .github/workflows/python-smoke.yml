@@ -1,0 +1,24 @@
+name: Python smoke and regression tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Check Python syntax
+        run: python -m compileall -q custom_components/continuously_casting_dashboards tests
+      - name: Validate translations
+        run: python -m json.tool custom_components/continuously_casting_dashboards/translations/en.json > /dev/null
+      - name: Run regression tests
+        run: python -m unittest discover -s tests -p 'test_*.py' -v

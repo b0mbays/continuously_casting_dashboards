@@ -36,6 +36,9 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Entity control** - Start/stop casting based on any Home Assistant entity state
 - **Speaker group aware** - Won't cast if device is part of an active speaker group
 - **Per-device settings** - Volume, time windows, and dashboards configured per device
+- **Reliable DashCast status** - Detects active DashCast sessions using the correct HA Cast entity to avoid unnecessary recasts
+- **Timeout recovery** - Retries after repeated status timeouts while respecting active/paused media and a five-minute media grace period
+- **Google TV keepalive (opt-in)** - Sends MENU through a selected Home Assistant remote entity to prevent ambient mode
 
 ## 📋 Requirements
 
@@ -148,6 +151,18 @@ continuously_casting_dashboards:
 | `switch_entity_id` | No | - | Entity that controls this specific device |
 | `switch_entity_state` | No | `on` | State value that enables casting for this device |
 | `speaker_groups` | No | - | Speaker groups to check before casting |
+| `remote_device_for_keepalive` | No | Disabled | Home Assistant `remote.*` entity used to keep Google TV awake (sends MENU when the configured dashboard is active) |
+
+### Cast reliability and Google TV keepalive
+
+The integration uses Home Assistant's Cast media-player entity to recognize DashCast (app ID `84912283`) when `catt status` reports only volume. It requires the device's configured Chromecast name to match the HA Cast device name or its entity ID. It deliberately does **not** use an unrelated DashCast session as evidence that the target display is casting.
+
+After repeated `catt status` timeouts, the integration can attempt a recovery cast. It checks Home Assistant media-player state and avoids interrupting active, paused, or buffering user media, with a **five-minute grace period** after media was last seen. Note that recovery after a timeout is best-effort; connectivity failures and unrecognized media apps still require care.
+
+Google TV keepalive is disabled unless you select a `remote.*` entity in that dashboard's UI settings (or supply `remote_device_for_keepalive` in its legacy YAML dashboard configuration). The integration sends `MENU` only while the dashboard is already being monitored as connected. This keypress may be visible or disruptive on some TVs, so only enable it when necessary.
+
+These changes incorporate upstream [PR #152](https://github.com/b0mbays/continuously_casting_dashboards/pull/152), [PR #153](https://github.com/b0mbays/continuously_casting_dashboards/pull/153), [PR #154](https://github.com/b0mbays/continuously_casting_dashboards/pull/154) and the [Home Assistant 2026.11 import fix from issue #161](https://github.com/b0mbays/continuously_casting_dashboards/issues/161).
+
 
 ---
 
@@ -324,6 +339,16 @@ This prevents the dashboard from timing out after 10 minutes.
 ---
 
 ## ❓ Troubleshooting
+
+### Home Assistant 2026.11 integration import error
+
+In Home Assistant 2026.11, `EntityCategory` must be imported from `homeassistant.const`, not `homeassistant.components.sensor`. This branch includes the fix reported in [issue #161](https://github.com/b0mbays/continuously_casting_dashboards/issues/161). Restart Home Assistant after updating.
+
+### DashCast dashboard keeps recasting every minute or few minutes
+
+Confirm that the target display has a matching **Cast** `media_player` entity in Home Assistant and that its configured Chromecast name resolves to the same device. If the entity is missing or mismatched, the integration intentionally cannot infer which DashCast session belongs to it. Check debug logs for DashCast identity messages. Timeout recovery and optional Google TV keepalive serve different purposes and do not resolve custom-card JavaScript loading problems.
+
+
 
 ### Dashboard stops after a few seconds
 

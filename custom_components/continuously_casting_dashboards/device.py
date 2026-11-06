@@ -13,6 +13,7 @@ import re
 from datetime import datetime
 from homeassistant.core import HomeAssistant
 from .const import (
+    DASHCAST_APP_ID,
     TIMEOUT_STATUS_CHECK,
     TIMEOUT_PROCESS_TERMINATE,
     TIMEOUT_SCAN,
@@ -536,6 +537,12 @@ class DeviceManager:
                 
                 # Check for "idle" state that only shows volume info
                 if len(stdout_str.splitlines()) <= 2 and all(line.startswith("Volume") for line in stdout_str.splitlines()):
+                    # DashCast (DASHCAST_APP_ID) renders dashboard URLs as webpages but
+                    # registers no Chromecast media session, so catt status returns only
+                    # volume info even when the dashboard is actively displayed.
+                    # Fall back to checking the HA media_player entity for this device.
+                    if await self._async_check_dashcast_via_ha(ip):
+                        return True
                     _LOGGER.debug("Device at %s is idle (only volume info returned)", ip)
                     return False
 
@@ -713,6 +720,82 @@ class DeviceManager:
                 len(stale_status),
                 len(stale_checks),
             )
+
+    async def _async_check_dashcast_via_ha(self, ip: str) -> bool:
+        """Check the target Cast device's HA entity for an active DashCast session.
+
+        Match by the device IP in CCD's configuration (or its resolved-IP
+        cache), then by the Cast entity/device name. An unrelated Cast device
+        must never be taken as proof that this target is still displaying our
+        dashboard, even when only one DashCast session is active.
+        """
+        try:
+            from homeassistant.helpers import device_registry as dr
+            from homeassistant.helpers import entity_registry as er
+            from homeassistant.util import slugify
+
+            configured_name = ""
+            for identifier in self.config.get("device_identifiers", {}).values():
+                device_name = (identifier.get("device_name") or "").strip()
+                configured_ip = (identifier.get("device_ip") or "").strip()
+                resolved_ip = (
+                    self.device_ip_cache.get(device_name, {}).get("ip")
+                    if device_name else None
+                )
+                if configured_ip == ip or resolved_ip == ip:
+                    configured_name = device_name
+                    break
+
+            if not configured_name:
+                _LOGGER.debug(
+                    "Cannot identify Cast entity for %s: no matching configured device name",
+                    ip,
+                )
+                return False
+
+            name = configured_name.casefold()
+            expected_entity_id = f"media_player.{slugify(configured_name)}"
+            entity_registry = er.async_get(self.hass)
+            device_registry = dr.async_get(self.hass)
+            matches = []
+
+            for entity in entity_registry.entities.values():
+                if entity.domain != "media_player" or entity.platform != "cast":
+                    continue
+                device = (
+                    device_registry.async_get(entity.device_id)
+                    if entity.device_id else None
+                )
+                registered_names = {
+                    (device.name or "").strip().casefold(),
+                    (device.name_by_user or "").strip().casefold(),
+                } if device else set()
+                if entity.entity_id != expected_entity_id and name not in registered_names:
+                    continue
+                state = self.hass.states.get(entity.entity_id)
+                if state is not None:
+                    matches.append((entity.entity_id, state))
+
+            if len(matches) != 1:
+                _LOGGER.debug(
+                    "DashCast identity for %s is not unique (matched %d Cast entities)",
+                    ip,
+                    len(matches),
+                )
+                return False
+
+            entity_id, state = matches[0]
+            is_dashcast = state.attributes.get("app_id") == DASHCAST_APP_ID
+            if is_dashcast:
+                _LOGGER.debug(
+                    "DashCast detected on %s via verified HA entity %s",
+                    ip,
+                    entity_id,
+                )
+            return is_dashcast
+        except Exception as exc:
+            _LOGGER.debug("HA DashCast check failed for %s: %s", ip, exc)
+            return False
 
     def clear_all_caches(self) -> None:
         """Clear all caches. Call on integration unload."""
