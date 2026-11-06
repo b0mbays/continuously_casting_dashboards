@@ -2,7 +2,7 @@
 
 This is the **current upgrade guide** for [anaschillin/continuously_casting_dashboards](https://github.com/anaschillin/continuously_casting_dashboards). It supersedes older instructions written for v1.1.4. Those older instructions advised removing and reinstalling everything; that is **not the normal upgrade path** and risks losing configuration.
 
-The fork's `main` includes merged [PRs #2–#5](../ROADMAP.md), which introduce independent dashboard rules, continuous casting, volume preservation, improved discovery/retries, dashboard priority/rotation and optional frontend-readiness reporting. The manifest currently declares version `2.1.0`. Check the actual release shown in HACS before assuming a merged feature is installed.
+The fork's `main` includes [PRs #2–#6](../ROADMAP.md), covering independent dashboard rules, casting reliability, dashboard priorities/rotation, optional frontend readiness, a Lovelace control panel, pause/resume and actionable Repairs. Both the manifest and HACS metadata declare **3.0.0**. This is a code version: check the releases shown in GitHub/HACS before assuming a tagged v3 download exists.
 
 ## Before changing anything
 
@@ -30,8 +30,9 @@ The fork's `main` includes merged [PRs #2–#5](../ROADMAP.md), which introduce 
 | [#3](https://github.com/anaschillin/continuously_casting_dashboards/pull/3) | Yes | Strict Cast discovery matching, shared scans, recoverable backoff, runtime diagnostics |
 | [#4](https://github.com/anaschillin/continuously_casting_dashboards/pull/4) | Yes | Priorities, rotation, debounced entity switching, temporary dashboard override services |
 | [#5](https://github.com/anaschillin/continuously_casting_dashboards/pull/5) | Yes | Optional custom-element readiness reporter and non-disruptive diagnostics |
+| [#6](https://github.com/anaschillin/continuously_casting_dashboards/pull/6) | Yes | Cast control panel, timed pause/resume, Repairs, notification persistence fix and 3.0.0 version bump |
 
-All four were merged on 6 November 2026. **A merged feature is not automatically a published release or verified on every display.** See [the roadmap](../ROADMAP.md) for outstanding features and validation.
+All five feature PRs were merged on 6 November 2026. **A merged feature is not automatically a published release or verified on every display.** See [the roadmap](../ROADMAP.md) for outstanding features and validation.
 
 ## Common checks
 
@@ -40,8 +41,10 @@ All four were merged on 6 November 2026. **A merged feature is not automatically
 - **Dashboard not appearing:** Check the URL from the Cast device's network, authentication and certificates. A successful cast command does not prove the browser loaded custom cards.
 - **JavaScript card error:** If `custom:ccd-readiness-card` is configured, confirm that `/ccd_cast/ccd-readiness-card.js` is registered as a JavaScript module resource and that `verify_readiness` is enabled. The reporter checks custom-element registration only and cannot fix frontend race conditions.
 - **Volume changes unexpectedly:** Enable `preserve_volume` on the specific dashboard if you do not want CCD to issue volume commands.
+- **Control panel not visible:** Add `/ccd_cast/ccd-control-panel.js` under dashboard Resources as a JavaScript module and use `type: custom:ccd-control-panel` with the device's exact configured name and real status sensor entity ID.
+- **System Repairs:** v3 registers actionable Repairs if CATT is missing or ambiguous Cast names are configured without explicit IPs. Temporary network outages do not produce Repairs.
 - **Unreachable/retry delay:** Download the integration diagnostics and inspect the per-device status sensor's `last_error` / `retry_in_seconds`. Repeated failures use bounded exponential backoff rather than permanent lockout.
-- **`stop_casting` did not stay stopped:** As of PR #5 it is a one-time stop, **not** a persistent pause. A lasting pause control is a separate roadmap item.
+- **`stop_casting` did not stay stopped:** It remains a one-time stop. In v3 code, use **Pause casting** / `pause_casting` for an indefinite (until resume/restart) or timed pause; `resume_casting` clears it.
 - **Home Assistant import failure:** This fork's `main` includes the Home Assistant 2026.11 `EntityCategory` import fix. Confirm that the installed copy is current and restart Home Assistant.
 
 If updating fails, collect the exact Home Assistant Core version, integration version, relevant log excerpt (with tokens and addresses redacted), and integration diagnostics before opening an [issue in this fork](https://github.com/anaschillin/continuously_casting_dashboards/issues). Avoid repeated deletion/reinstallation unless a specific migration or repair procedure requires it.
