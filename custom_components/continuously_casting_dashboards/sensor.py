@@ -272,6 +272,7 @@ class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
                 "reconnect_attempts": device_info.get("reconnect_attempts", 0),
                 "retry_in_seconds": device_info.get("retry_in_seconds", 0),
                 "last_error": device_info.get("last_error"),
+                "frontend_readiness": device_info.get("frontend_readiness", "disabled"),
                 "device_name": self._device_name,
             }
             # Add current dashboard if available

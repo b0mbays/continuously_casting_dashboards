@@ -424,6 +424,9 @@ class MonitoringManager:
             # No eligible dashboard: stop our existing cast, never adopt an
             # unrelated dashboard or act on a disabled configuration.
             if current_config is None:
+                self.readiness_tracker.cast_started(
+                    device_name, "", enabled=False
+                )
                 if is_casting:
                     _LOGGER.info("No eligible dashboard for %s; stopping cast", device_name)
                     await self.async_stop_casting(ip)
@@ -1105,6 +1108,10 @@ class MonitoringManager:
         success = await self.casting_manager.async_cast_dashboard(ip, dashboard_url, device_config)
         
         if success:
+            self.readiness_tracker.cast_started(
+                device_name, dashboard_url,
+                enabled=bool(device_config.get("verify_readiness", False)),
+            )
             _LOGGER.info("Successfully connected to %s (%s)", device_name, ip)
             self.device_manager.update_active_device(
                 device_key=device_key,
@@ -1407,6 +1414,10 @@ class MonitoringManager:
         success = await self.casting_manager.async_cast_dashboard(ip, dashboard_url, device_config)
         
         if success:
+            self.readiness_tracker.cast_started(
+                device_name, dashboard_url,
+                enabled=bool(device_config.get("verify_readiness", False)),
+            )
             self.reconnect_backoff.record_success(device_key)
             self.device_manager.update_active_device(
                 device_key, 'connected',

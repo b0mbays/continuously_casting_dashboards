@@ -141,6 +141,11 @@ class StatsManager:
                 'reconnect_attempts': device.get('reconnect_attempts', 0),
                 'last_error': device.get('last_error'),
                 'retry_in_seconds': device.get('retry_in_seconds', 0),
+                'frontend_readiness': (
+                    self.readiness_tracker.snapshot(device_name).get('status')
+                    if getattr(self, "readiness_tracker", None) is not None
+                    else "disabled"
+                ),
             }
 
             # Include current dashboard URL if available

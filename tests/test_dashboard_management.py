@@ -1,8 +1,6 @@
 """Regression tests for priority ordering, dashboard rotation and overrides."""
 
 import asyncio
-import logging
-import time
 import types
 import unittest
 

@@ -44,6 +44,9 @@ This roadmap tracks planned improvements for [Continuously Casting Dashboards](h
 
 ## Milestone 4 — dashboard readiness and custom-card support
 
+**Implementation:** stacked draft PR #5 includes an optional Lovelace reporter, authenticated readiness service, frontend-element registration checks, heartbeat health states and diagnostic integration. Automated recasting based on these signals is deliberately not included until receiver-specific validation is reliable.
+
+
 - [ ] Prototype an **optional** frontend heartbeat for dashboard readiness and custom-card registration; Python cannot directly inspect rendered browser content.
 - [ ] Distinguish an accepted cast from successfully rendered dashboard content.
 - [ ] Add bounded retries and actionable troubleshooting when a dashboard or JavaScript card fails to initialize.

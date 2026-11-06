@@ -6,6 +6,8 @@ import os
 from datetime import timedelta
 import voluptuous as vol
 import json
+from pathlib import Path
+from homeassistant.components.http import StaticPathConfig
 
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_DEVICES, CONF_SCAN_INTERVAL
@@ -19,6 +21,7 @@ from .casting import CastingManager
 from .device import DeviceManager
 from .monitoring import MonitoringManager
 from .stats import StatsManager
+from .readiness import ReadinessTracker
 from .utils import TimeWindowChecker, SwitchEntityChecker
 from .config_flow import async_migrate_entry
 from .const import (
@@ -299,6 +302,40 @@ async def _async_register_services(hass: HomeAssistant) -> None:
             return
         await managers[0].async_clear_manual_dashboard(device_name)
 
+    async def handle_report_dashboard_ready(call):
+        """Accept readiness signals from the optional authenticated Lovelace card."""
+        device_name = call.data.get("device_name")
+        if not isinstance(device_name, str) or not device_name.strip():
+            return
+        path = call.data.get("dashboard_path", "")
+        if not isinstance(path, str) or not path.startswith("/") or len(path) > 1024:
+            return
+
+        matches = [
+            data["caster"]
+            for data in hass.data.get(DOMAIN, {}).values()
+            if isinstance(data, dict) and "caster" in data
+            and device_name in data["caster"].monitoring_manager.devices
+        ]
+        if len(matches) != 1:
+            _LOGGER.debug("Readiness ignored: ambiguous or unknown device %s", device_name)
+            return
+        caster = matches[0]
+        current = caster.monitoring_manager.active_device_configs.get(device_name, {})
+        config = current.get("config") if isinstance(current, dict) else None
+        if not config or not config.get("verify_readiness", False):
+            return
+        missing = call.data.get("missing_elements", [])
+        if not isinstance(missing, list):
+            missing = []
+        accepted = caster.readiness_tracker.report(
+            device_name, path,
+            call.data.get("ready") is True,
+            missing_elements=missing,
+        )
+        if not accepted:
+            _LOGGER.debug("Readiness ignored: unexpected dashboard path for %s", device_name)
+
     # Register all services
     hass.services.async_register(DOMAIN, "set_cast_delay", handle_set_cast_delay)
     hass.services.async_register(DOMAIN, "set_logging_level", handle_set_logging_level)
@@ -309,6 +346,9 @@ async def _async_register_services(hass: HomeAssistant) -> None:
     hass.services.async_register(DOMAIN, "select_dashboard", handle_select_dashboard)
     hass.services.async_register(
         DOMAIN, "clear_dashboard_override", handle_clear_dashboard_override
+    )
+    hass.services.async_register(
+        DOMAIN, "report_dashboard_ready", handle_report_dashboard_ready
     )
 
     _LOGGER.debug("Registered integration services")
@@ -326,8 +366,17 @@ async def async_setup(hass: HomeAssistant, config: dict):
     """
     hass.data.setdefault(DOMAIN, {})
 
-    # Register services once at component setup
+    # Register services once at component setup.
     await _async_register_services(hass)
+
+    # Serve only bundled, public JavaScript; never expose config or tokens.
+    await hass.http.async_register_static_paths([
+        StaticPathConfig(
+            "/ccd_cast/ccd-readiness-card.js",
+            str(Path(__file__).parent / "www" / "ccd-readiness-card.js"),
+            False,
+        )
+    ])
 
     # Simple file-based approach to track notification state
     storage_file = hass.config.path(f".{DOMAIN}_notification_state.json")
@@ -1097,6 +1146,9 @@ class ContinuouslyCastingDashboards:
             self.switch_checker,
         )
         self.stats_manager = StatsManager(hass, config)
+        self.readiness_tracker = ReadinessTracker()
+        self.monitoring_manager.readiness_tracker = self.readiness_tracker
+        self.stats_manager.readiness_tracker = self.readiness_tracker
 
         # Share components between managers
         self.monitoring_manager.set_stats_manager(self.stats_manager)
@@ -1232,6 +1284,8 @@ class ContinuouslyCastingDashboards:
         # Clean up monitoring manager listeners
         if self.monitoring_manager:
             await self.monitoring_manager.cleanup()
+
+        self.readiness_tracker.clear()
 
         # Clean up device manager caches
         if self.device_manager:
