@@ -20,5 +20,17 @@ jobs:
         run: python -m compileall -q custom_components/continuously_casting_dashboards tests
       - name: Validate translations
         run: python -m json.tool custom_components/continuously_casting_dashboards/translations/en.json > /dev/null
+      - name: Check companion JavaScript syntax
+        run: node --check custom_components/continuously_casting_dashboards/www/ccd-readiness-card.js
+      - name: Ruff check new reliability and readiness code
+        run: |
+          python -m pip install ruff
+          ruff check --select E4,E7,E9,F \
+            custom_components/continuously_casting_dashboards/reliability.py \
+            custom_components/continuously_casting_dashboards/readiness.py \
+            custom_components/continuously_casting_dashboards/diagnostics.py \
+            tests/test_cast_resilience.py \
+            tests/test_dashboard_management.py \
+            tests/test_dashboard_readiness.py
       - name: Run regression tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
