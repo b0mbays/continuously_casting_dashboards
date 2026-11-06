@@ -270,6 +270,8 @@ class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
                 "ip": device_info.get("ip", "Unknown"),
                 "last_checked": device_info.get("last_checked", ""),
                 "reconnect_attempts": device_info.get("reconnect_attempts", 0),
+                "retry_in_seconds": device_info.get("retry_in_seconds", 0),
+                "last_error": device_info.get("last_error"),
                 "device_name": self._device_name,
             }
             # Add current dashboard if available

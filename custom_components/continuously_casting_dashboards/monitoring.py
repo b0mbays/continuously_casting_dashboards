@@ -8,6 +8,7 @@ from homeassistant.const import CONF_DEVICES
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.event import async_track_state_change_event
+from .reliability import ReconnectBackoff, terminate_process
 from .const import (
     EVENT_CONNECTION_ATTEMPT,
     EVENT_CONNECTION_SUCCESS,
@@ -64,6 +65,8 @@ class MonitoringManager:
         self._unsubscribe_listeners: list = []  # Track listeners for cleanup
         self._unreachable_counts: dict[str, int] = {}  # Consecutive unreachable cycle count per device
         self._media_hold_until: dict[str, float] = {}  # Grace period after media is detected
+        self.reconnect_backoff = ReconnectBackoff()
+        self._process_semaphore = asyncio.Semaphore(3)
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
@@ -207,6 +210,7 @@ class MonitoringManager:
         # Clear device locks
         self._device_locks.clear()
         self._media_hold_until.clear()
+        self.reconnect_backoff.clear()
 
         # Clear active device configs
         self.active_device_configs.clear()
@@ -537,11 +541,7 @@ class MonitoringManager:
                         is_idle = len(status_output.splitlines()) <= 2 and all(line.startswith("Volume") for line in status_output.splitlines())
                     except asyncio.TimeoutError:
                         _LOGGER.warning("Status check timed out for %s (%s)", device_name, ip)
-                        status_process.terminate()
-                        try:
-                            await asyncio.wait_for(status_process.wait(), timeout=5.0)
-                        except asyncio.TimeoutError:
-                            status_process.kill()
+                        await terminate_process(status_process)
                         is_idle = False
                         is_unreachable = True
                         status_output = ""
@@ -637,6 +637,11 @@ class MonitoringManager:
 
                     # Device is showing our dashboard
                     self._media_hold_until.pop(device_key, None)
+                    self.reconnect_backoff.record_success(device_key)
+                    self.device_manager.update_active_device(
+                        device_key, 'connected',
+                        last_error=None, retry_in_seconds=0,
+                    )
                     if previous_status != 'connected':
                         self.device_manager.update_active_device(
                             device_key=device_key,
@@ -1111,7 +1116,11 @@ class MonitoringManager:
                 except Exception as e:
                     _LOGGER.error("Unexpected error processing %s: %s", device_name, e)
 
-            await asyncio.gather(*[_process_device_safe(name) for name in self.devices.keys()])
+            async def _bounded_process(name):
+                async with self._process_semaphore:
+                    await _process_device_safe(name)
+
+            await asyncio.gather(*[_bounded_process(name) for name in self.devices])
 
     async def async_stop_casting(self, ip):
         """Send a catt stop command to a device.
@@ -1234,18 +1243,28 @@ class MonitoringManager:
             self._mark_media_playing(device_key, device_name, ip)
             return False
         
-        # Increment reconnect attempts
+        # Exponential retry backoff: never permanently disable a recovering device.
+        if not self.reconnect_backoff.can_retry(device_key):
+            self.device_manager.update_active_device(
+                device_key, 'disconnected',
+                retry_in_seconds=round(
+                    self.reconnect_backoff.remaining(device_key)
+                ),
+                last_error="Retry backoff active",
+            )
+            _LOGGER.debug(
+                "Reconnect deferred for %s (%.0fs remaining)",
+                device_name, self.reconnect_backoff.remaining(device_key),
+            )
+            return False
+
         active_device = self.device_manager.get_active_device(device_key)
         if active_device:
             attempts = active_device.get('reconnect_attempts', 0) + 1
-            self.device_manager.update_active_device(device_key, active_device.get('status'), reconnect_attempts=attempts)
-            
-            # If too many reconnect attempts, back off
-            if attempts > 10:
-                _LOGGER.warning("Device %s (%s) has had %s reconnect attempts, backing off", device_name, ip, attempts)
-                if self.stats_manager:
-                    await self.stats_manager.async_update_health_stats(device_key, EVENT_RECONNECT_FAILED)
-                return False
+            self.device_manager.update_active_device(
+                device_key, active_device.get('status'),
+                reconnect_attempts=attempts,
+            )
         
         if skip_idle_status_check:
             _LOGGER.info(
@@ -1275,11 +1294,7 @@ class MonitoringManager:
                         return False
             except asyncio.TimeoutError:
                 _LOGGER.warning("Status check timed out for %s (%s)", device_name, ip)
-                status_process.terminate()
-                try:
-                    await asyncio.wait_for(status_process.wait(), timeout=5.0)
-                except asyncio.TimeoutError:
-                    status_process.kill()
+                await terminate_process(status_process)
                 # Skip reconnect if we can't determine status
                 return False
             except Exception as e:
@@ -1301,6 +1316,11 @@ class MonitoringManager:
         success = await self.casting_manager.async_cast_dashboard(ip, dashboard_url, device_config)
         
         if success:
+            self.reconnect_backoff.record_success(device_key)
+            self.device_manager.update_active_device(
+                device_key, 'connected',
+                last_error=None, retry_in_seconds=0,
+            )
             _LOGGER.info("Successfully reconnected to %s (%s)", device_name, ip)
             if active_device:
                 self.device_manager.update_active_device(
@@ -1314,7 +1334,16 @@ class MonitoringManager:
                 await self.stats_manager.async_update_health_stats(device_key, EVENT_RECONNECT_SUCCESS)
             return True
         else:
-            _LOGGER.error("Failed to reconnect to %s (%s)", device_name, ip)
+            retry_delay = self.reconnect_backoff.record_failure(device_key)
+            self.device_manager.update_active_device(
+                device_key, 'disconnected',
+                retry_in_seconds=round(retry_delay),
+                last_error="Reconnect failed; retry scheduled",
+            )
+            _LOGGER.error(
+                "Failed to reconnect to %s (%s); next attempt in %.0fs",
+                device_name, ip, retry_delay,
+            )
             if active_device:
                 self.device_manager.update_active_device(
                     device_key=device_key,

@@ -13,6 +13,8 @@ from datetime import datetime
 from homeassistant.core import HomeAssistant
 from .const import DEFAULT_MAX_RETRIES, DEFAULT_RETRY_DELAY, DEFAULT_VERIFICATION_WAIT_TIME, DEFAULT_CASTING_TIMEOUT, TIMEOUT_PROCESS_TERMINATE, TIMEOUT_PROCESS_KILL, TIMEOUT_VOLUME_COMMAND
 
+from .reliability import terminate_process
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -148,7 +150,7 @@ class CastingManager:
                         await asyncio.wait_for(stop_process.communicate(), timeout=TIMEOUT_VOLUME_COMMAND)
                     except asyncio.TimeoutError:
                         _LOGGER.warning("Stop command timed out for %s", ip)
-                        stop_process.terminate()
+                        await terminate_process(stop_process)
                     finally:
                         self.active_subprocesses.pop(f"{ip}_stop", None)
 
@@ -167,7 +169,7 @@ class CastingManager:
                             await asyncio.wait_for(vol_process.communicate(), timeout=TIMEOUT_VOLUME_COMMAND)
                         except asyncio.TimeoutError:
                             _LOGGER.warning("Initial volume command timed out for %s", ip)
-                            vol_process.terminate()
+                            await terminate_process(vol_process)
                         finally:
                             self.active_subprocesses.pop(f"{ip}_vol_initial", None)
                     
@@ -191,12 +193,7 @@ class CastingManager:
                         _LOGGER.error("Cast command timed out after %ss", timeout)
                         if f"{ip}_cast" in self.active_subprocesses:
                             process = self.active_subprocesses.pop(f"{ip}_cast")
-                            process.terminate()
-                            try:
-                                await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-                            except asyncio.TimeoutError:
-                                _LOGGER.error("Force killing cast process for %s", ip)
-                                process.kill()
+                            await terminate_process(process)
                         raise Exception(f"Cast command timed out after {timeout}s")
                     
                     # Log the full output
@@ -264,11 +261,7 @@ class CastingManager:
                                 _LOGGER.error("Volume command timed out")
                                 if f"{ip}_vol_final" in self.active_subprocesses:
                                     process = self.active_subprocesses.pop(f"{ip}_vol_final")
-                                    process.terminate()
-                                    try:
-                                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-                                    except asyncio.TimeoutError:
-                                        process.kill()
+                                    await terminate_process(process)
                         
                             # Log volume command output
                             vol_stdout_str = vol_stdout.decode().strip() if 'vol_stdout' in locals() else ""
@@ -321,12 +314,7 @@ class CastingManager:
                 process = self.active_subprocesses.pop(key)
                 if process.returncode is None:  # Process is still running
                     _LOGGER.warning("Terminating lingering process: %s", key)
-                    process.terminate()
-                    try:
-                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-                    except asyncio.TimeoutError:
-                        _LOGGER.error("Force killing process: %s", key)
-                        process.kill()
+                    await terminate_process(process)
         
     async def async_get_current_volume(self, ip):
         """Query and return the current volume percentage of a device.
@@ -355,11 +343,7 @@ class CastingManager:
                 _LOGGER.error("Volume status command timed out")
                 if f"{ip}_status_vol" in self.active_subprocesses:
                     process = self.active_subprocesses.pop(f"{ip}_status_vol")
-                    process.terminate()
-                    try:
-                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-                    except asyncio.TimeoutError:
-                        process.kill()
+                    await terminate_process(process)
                 return 50  # Default fallback
             
             if process.returncode != 0:
@@ -393,8 +377,4 @@ class CastingManager:
             if f"{ip}_status_vol" in self.active_subprocesses:
                 process = self.active_subprocesses.pop(f"{ip}_status_vol")
                 if process.returncode is None:
-                    process.terminate()
-                    try:
-                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-                    except asyncio.TimeoutError:
-                        process.kill()
+                    await terminate_process(process)

@@ -43,6 +43,9 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Reliable DashCast status** - Detects active DashCast sessions using the correct HA Cast entity to avoid unnecessary recasts
 - **Timeout recovery** - Retries after repeated status timeouts while respecting active/paused media and a five-minute media grace period
 - **Google TV keepalive (opt-in)** - Sends MENU through a selected Home Assistant remote entity to prevent ambient mode
+- **Resilient discovery** - Supports Google-suffixed device names without unsafe prefix matching
+- **Per-device reconnect backoff** - Limits repeated reconnect failures without permanently disabling recovery
+- **Diagnostics** - Exposes discovery metadata, retry delay, and failure reason through HA diagnostics and status sensors
 
 ## 📋 Requirements
 
@@ -187,6 +190,16 @@ continuously_casting_dashboards:
 Here the first dashboard is preferred while its own time/entity rules match; otherwise the always-on dashboard is eligible as fallback. Set the entries in your desired priority order. No migration or new options are required for existing configurations.
 
 See the full [development roadmap](ROADMAP.md) for future reliability, discovery, diagnostics, and dashboard-readiness work.
+
+### Device discovery, retries, and diagnostics
+
+Chromecasts can now be discovered by an exact name **or** by a uniquely matched name ending in Google's observed `- Google Inc. Google …` suffix. Case-insensitive exact names take priority. Ambiguous or generic prefix matches fail closed; supply the Cast device's IP address or its exact name if resolution is ambiguous.
+
+Concurrent device lookups share one CATT scan, with short-lived scan results and a lock to avoid a subprocess per display. Dashboard checks are processed with bounded concurrency. Timed-out CATT processes are terminated and reaped. Reconnection uses bounded exponential backoff (30 seconds up to 15 minutes) per device; a successful connection resets the delay. It never permanently stops trying after a fixed number of failures.
+
+Home Assistant's integration diagnostics now provide device statuses, retry delays, scan state, and non-sensitive error summaries. Per-device diagnostic sensors expose `retry_in_seconds` and `last_error`. Dashboard URLs and authentication details are excluded from the diagnostics report. Sensor retry delays are a snapshot from the last status update and may be stale until refreshed.
+
+**Compatibility note:** These safety changes do not replace CATT or override user media/Assistant protection. An offline device cannot be confirmed from CATT status alone. Test against your Cast devices and HA version before merging.
 
 ### Cast reliability and Google TV keepalive
 

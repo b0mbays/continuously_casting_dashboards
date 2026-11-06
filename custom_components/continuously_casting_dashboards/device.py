@@ -12,6 +12,7 @@ import time
 import re
 from datetime import datetime
 from homeassistant.core import HomeAssistant
+from .reliability import match_discovered_device, terminate_process
 from .const import (
     DASHCAST_APP_ID,
     TIMEOUT_STATUS_CHECK,
@@ -96,6 +97,11 @@ class DeviceManager:
         self.active_devices = {}   # Track active devices
         self.active_checks = {}    # Track active status checks
         self.status_cache = {}     # Short-lived cache for catt status output
+        self._scan_lock = asyncio.Lock()  # Avoid duplicate scans for many devices
+        self._scan_last_at = 0.0
+        self._scan_devices = []
+        self.last_discovery_error = None
+        self.last_scan_at = None
 
     def _cache_status_output(self, ip, output):
         """Cache catt status output briefly to avoid duplicate network calls.
@@ -194,12 +200,11 @@ class DeviceManager:
             stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
         except asyncio.TimeoutError:
             _LOGGER.warning("Status check timed out for %s", ip)
-            process.terminate()
-            try:
-                await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
-            except asyncio.TimeoutError:
-                process.kill()
             return None, None, None, False
+        finally:
+            # Also reap when the monitor task is cancelled during HA shutdown.
+            if process.returncode is None:
+                await terminate_process(process, TIMEOUT_PROCESS_TERMINATE)
 
         stdout_str = stdout.decode().strip()
         stderr_str = stderr.decode().strip()
@@ -272,97 +277,82 @@ class DeviceManager:
         return None
 
     async def _async_get_ip_by_name(self, device_name: str) -> str | None:
-        """Scan for a Chromecast device by name and return its IP address.
+        """Scan once for all configured names and resolve unambiguous matches.
 
-        Args:
-            device_name: The Chromecast display name to search for.
-
-        Returns:
-            The IP address if found, or None.
+        Accept only exact matches or the known Google Inc. device suffix;
+        arbitrary prefix matching is deliberately not supported.
         """
-        try:
-            _LOGGER.info("Scanning for device by name: %s", device_name)
-            # Check if we've already cached the device to speed up lookups
-            if device_name in self.device_ip_cache and self.device_ip_cache[device_name]['timestamp'] > (time.time() - 300):
-                _LOGGER.debug("Using cached IP for %s: %s", device_name, self.device_ip_cache[device_name]['ip'])
-                return self.device_ip_cache[device_name]['ip']
+        device_name = device_name.strip()
+        cached = self.device_ip_cache.get(device_name)
+        if cached and time.time() - cached["timestamp"] < 300:
+            return cached["ip"]
 
-            # Do a fresh scan
-            process = await asyncio.create_subprocess_exec(
-                'catt', 'scan',
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
+        async with self._scan_lock:
+            # A different device may have refreshed discovery while we waited.
+            cached = self.device_ip_cache.get(device_name)
+            if cached and time.time() - cached["timestamp"] < 300:
+                return cached["ip"]
+            if time.monotonic() - self._scan_last_at < 15:
+                return match_discovered_device(device_name, self._scan_devices)
 
-            stdout = stderr = None
+            process = None
+            self._scan_last_at = time.monotonic()
+            self.last_scan_at = datetime.now().isoformat()
             try:
-                try:
-                    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=TIMEOUT_SCAN)
-                except asyncio.TimeoutError:
-                    _LOGGER.warning("Scan for device %s timed out after %ss", device_name, TIMEOUT_SCAN)
+                process = await asyncio.create_subprocess_exec(
+                    "catt", "scan",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                )
+                stdout, stderr = await asyncio.wait_for(
+                    process.communicate(), timeout=TIMEOUT_SCAN
+                )
+                if process.returncode:
+                    self.last_discovery_error = stderr.decode(errors="replace").strip()
+                    _LOGGER.warning("CATT device discovery failed: %s", self.last_discovery_error)
                     return None
+
+                discovered = []
+                for line in stdout.decode(errors="replace").splitlines():
+                    parts = line.strip().split(" - ", 1)
+                    if len(parts) != 2 or not is_valid_ipv4(parts[0].strip()):
+                        continue
+                    discovered.append((parts[1].strip(), parts[0].strip()))
+
+                self._scan_devices = discovered
+                self.last_discovery_error = None
+                now = time.time()
+                for name, ip in discovered:
+                    self.device_ip_cache[name] = {"ip": ip, "timestamp": now}
+
+                matched = match_discovered_device(device_name, discovered)
+                if matched:
+                    self.device_ip_cache[device_name] = {
+                        "ip": matched, "timestamp": now,
+                    }
+                    _LOGGER.debug("Discovered %s at %s", device_name, matched)
+                    return matched
+
+                _LOGGER.warning(
+                    "Cannot uniquely match %s among discovered Cast devices: %s",
+                    device_name, [name for name, _ in discovered],
+                )
+                return None
+            except asyncio.TimeoutError:
+                self.last_discovery_error = "CATT discovery timed out"
+                _LOGGER.warning("Device discovery timed out for %s", device_name)
+                return None
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                self.last_discovery_error = str(exc)
+                _LOGGER.warning("Cast device discovery failed: %s", exc)
+                return None
             finally:
-                # Always terminate the subprocess — including when this coroutine is cancelled
-                # by an outer asyncio.wait_for. Without this guard, orphaned `catt scan`
-                # processes accumulate and cause a memory leak.
-                if process.returncode is None:
-                    process.terminate()
-                    try:
-                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_SCAN_TERMINATE)
-                    except (asyncio.TimeoutError, asyncio.CancelledError):
-                        process.kill()
-                        try:
-                            await asyncio.shield(process.wait())
-                        except Exception:
-                            pass
-
-            if stdout is None:
-                return None
-
-            scan_output = stdout.decode()
-            _LOGGER.debug("Full scan output: %s", scan_output)
-
-            if process.returncode != 0:
-                _LOGGER.warning("Catt scan failed: %s", stderr.decode().strip())
-                return None
-
-            # Parse scan results and find exact matching device
-            found_devices = []
-            for line in scan_output.splitlines():
-                # Skip the header line or empty lines
-                if "Scanning Chromecasts..." in line or not line.strip():
-                    continue
-
-                # Parse format: IP - Name (name may itself contain " - ", so split on first only)
-                parts = line.split(' - ', 1)
-                if len(parts) < 2:
-                    continue
-
-                ip = parts[0].strip()
-                found_name = parts[1].strip()
-
-                # Collect all found devices for logging
-                found_devices.append((found_name, ip))
-
-                # Update the cache for all found devices to speed up future lookups
-                self.device_ip_cache[found_name] = {
-                    'ip': ip,
-                    'timestamp': time.time()
-                }
-
-                # Exact match check (case-insensitive)
-                if found_name.lower() == device_name.lower():
-                    _LOGGER.info("Matched device '%s' with IP %s", device_name, ip)
-                    return ip
-
-            # If we get here, no exact match was found
-            found_names = [name for name, _ in found_devices]
-            _LOGGER.warning("Device '%s' not found in scan results. Found devices: %s", device_name, found_names)
-            _LOGGER.warning("Make sure the name matches exactly what appears in the scan output, or provide a direct IP address.")
-            return None
-        except Exception as e:
-            _LOGGER.warning("Error scanning for devices: %s", e)
-            return None
+                if process is not None:
+                    await terminate_process(
+                        process, TIMEOUT_SCAN_TERMINATE, TIMEOUT_PROCESS_TERMINATE
+                    )
 
     async def async_is_media_playing(self, ip):
         """Check whether third-party media is playing or paused on the device.

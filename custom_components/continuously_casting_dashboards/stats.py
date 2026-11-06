@@ -138,7 +138,9 @@ class StatsManager:
                 'ip': ip,
                 'status': device.get('status', 'unknown'),
                 'last_checked': device.get('last_checked', ''),
-                'reconnect_attempts': device.get('reconnect_attempts', 0)
+                'reconnect_attempts': device.get('reconnect_attempts', 0),
+                'last_error': device.get('last_error'),
+                'retry_in_seconds': device.get('retry_in_seconds', 0),
             }
 
             # Include current dashboard URL if available
