@@ -33,6 +33,11 @@ from .const import (
     DEFAULT_START_TIME,
     DEFAULT_END_TIME,
     LOGGING_LEVELS,
+    CONF_ENABLE_AUTO_REBOOT,
+    CONF_REBOOT_AFTER_UNREACHABLE_COUNT,
+    CONF_REBOOT_COOLDOWN_SECONDS,
+    CONF_REBOOT_POWER_OFF_SECONDS,
+    CONF_REBOOT_SWITCH_ENTITY_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -501,7 +506,16 @@ def _build_devices_from_subentries(entry: ConfigEntry) -> tuple[dict, dict]:
         # Legacy devices only have a name (no IP/alias) — normalize in case name was an IP
         for name in legacy_devices:
             norm_name, norm_ip, norm_alias = _normalize_device_fields(name, "", "")
-            device_identifiers[name] = {"device_name": norm_name, "device_ip": norm_ip, "device_alias": norm_alias}
+            device_identifiers[name] = {
+                "device_name": norm_name,
+                "device_ip": norm_ip,
+                "device_alias": norm_alias,
+                CONF_REBOOT_SWITCH_ENTITY_ID: "",
+                CONF_ENABLE_AUTO_REBOOT: False,
+                CONF_REBOOT_AFTER_UNREACHABLE_COUNT: 5,
+                CONF_REBOOT_POWER_OFF_SECONDS: 10,
+                CONF_REBOOT_COOLDOWN_SECONDS: 1800,
+            }
 
     # Then, add/override with subentry devices
     for subentry_id, subentry in entry.subentries.items():
@@ -528,6 +542,11 @@ def _build_devices_from_subentries(entry: ConfigEntry) -> tuple[dict, dict]:
             "device_name": device_name,
             "device_ip": device_ip,
             "device_alias": device_alias,
+            CONF_REBOOT_SWITCH_ENTITY_ID: subentry.data.get(CONF_REBOOT_SWITCH_ENTITY_ID, ""),
+            CONF_ENABLE_AUTO_REBOOT: subentry.data.get(CONF_ENABLE_AUTO_REBOOT, False),
+            CONF_REBOOT_AFTER_UNREACHABLE_COUNT: subentry.data.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5),
+            CONF_REBOOT_POWER_OFF_SECONDS: subentry.data.get(CONF_REBOOT_POWER_OFF_SECONDS, 10),
+            CONF_REBOOT_COOLDOWN_SECONDS: subentry.data.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800),
         }
 
     return devices, device_identifiers
@@ -602,6 +621,11 @@ async def _migrate_legacy_devices_to_subentries(hass: HomeAssistant, entry: Conf
                 "device_name": norm_name,
                 "device_ip": norm_ip,
                 "device_alias": norm_alias,
+                CONF_REBOOT_SWITCH_ENTITY_ID: "",
+                CONF_ENABLE_AUTO_REBOOT: False,
+                CONF_REBOOT_AFTER_UNREACHABLE_COUNT: 5,
+                CONF_REBOOT_POWER_OFF_SECONDS: 10,
+                CONF_REBOOT_COOLDOWN_SECONDS: 1800,
                 "dashboards": dashboards,
             }
 

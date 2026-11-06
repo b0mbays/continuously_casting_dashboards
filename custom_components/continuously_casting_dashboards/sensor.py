@@ -256,6 +256,8 @@ class ContinuouslyCastingDeviceSensor(ContinuouslyCastingSensorBase):
             return "mdi:speaker-multiple"
         elif status == "casting_in_progress":
             return "mdi:cast"
+        elif status == "rebooting":
+            return "mdi:restart"
         else:
             return "mdi:cast"
 

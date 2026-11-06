@@ -1,0 +1,1000 @@
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 582)[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:06:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 407)[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:06:40.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:06:40.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:06:40.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:06:40.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:06:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:06:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:06:40.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:06:40.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:06:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:06:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:06:42.077 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:06:42.077 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:06:42.077 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:06:42.077 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:06:42.077 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:06:42.078 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:06:42.078 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:06:42.078 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:06:42.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:06:42.503 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:06:42.530 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:06:42.530 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:06:42.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[33m2026-05-03 18:06:55.389 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:06:55.389 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:06:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:06:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:06:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:06:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 408)[0m
+[36m2026-05-03 18:06:55.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:06:55.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:06:55.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:06:55.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 583)[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:07:25.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:07:25.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:07:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:07:25.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:07:25.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:07:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:07:25.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:07:25.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:07:25.380 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:07:25.380 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:07:27.052 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:07:27.367 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:07:27.368 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:07:27.531 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:07:40.386 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:07:40.386 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 409)[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:07:40.397 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:07:40.398 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 584)[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:08:10.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:08:10.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:08:10.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:08:10.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:08:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:08:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:08:10.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:08:10.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:08:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:08:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:08:12.003 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:12.003 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:12.003 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:12.003 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:12.004 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:12.004 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:08:12.004 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:08:12.004 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:08:12.251 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:12.251 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:08:12.252 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:08:12.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:12.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:12.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:12.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:12.555 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:12.555 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:08:12.555 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:08:12.555 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:08:25.382 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:08:25.383 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:08:25.393 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 585)[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:08:25.394 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 410)[0m
+[36m2026-05-03 18:08:40.006 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.sensor] Received status update event, refreshing sensors[0m
+[36m2026-05-03 18:08:40.006 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.stats] Fired status update event for sensor refresh[0m
+[36m2026-05-03 18:08:55.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:08:55.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:55.369 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:08:55.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:08:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:08:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:08:55.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:08:55.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:08:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:08:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:08:55.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:08:55.380 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:08:57.333 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:57.333 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:57.333 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:57.333 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:57.334 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:08:57.334 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:08:57.334 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:08:57.334 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:08:57.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:08:57.534 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:09:10.387 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:09:10.388 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:09:10.398 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:09:10.398 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:09:10.398 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:09:10.398 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 586)[0m
+[36m2026-05-03 18:09:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:09:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:09:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:09:10.399 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 411)[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:09:40.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:09:40.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:09:40.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:09:40.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:09:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:09:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:09:40.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:09:40.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:09:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:09:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:09:40.383 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:09:40.383 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:09:41.925 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:09:42.353 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:09:42.496 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:09:42.497 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:09:55.389 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:09:55.390 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:09:55.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 587)[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:09:55.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 412)[0m
+[36m2026-05-03 18:10:25.370 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:10:25.371 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:10:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:10:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:10:25.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:10:25.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:10:25.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:10:25.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:10:25.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:10:25.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:10:27.312 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:10:27.313 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:10:27.313 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:10:27.436 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:10:27.436 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:10:27.436 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:10:27.436 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:01:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:10:27.437 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:10:27.437 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:10:27.437 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:10:27.437 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:10:27.505 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:10:27.506 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:10:40.389 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:10:40.390 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 588)[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:10:40.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 413)[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:11:10.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:11:10.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:11:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:11:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:11:10.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:11:10.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:11:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:11:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:11:10.386 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:11:10.387 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:12.063 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:11:12.064 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:11:12.064 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:11:12.284 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:11:12.285 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:11:12.286 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:11:12.400 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[33m2026-05-03 18:11:25.391 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:11:25.394 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:11:25.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:11:25.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:11:25.401 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:11:25.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 589)[0m
+[36m2026-05-03 18:11:25.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:11:25.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:11:25.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:11:25.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 414)[0m
+[31m2026-05-03 18:11:36.427 ERROR (MainThread) [frontend.js.modern.202603120] Uncaught error from Firefox 150.0 on macOS 10.15
+Error: Failed to execute 'define' on 'CustomElementRegistry': the name "focus-trap" has already been used with this registry
+88431/</S.prototype.define (node_modules/@webcomponents/scoped-custom-element-registry/src/scoped-custom-element-registry.ts:180:12)
+/hacsfiles/advanced-camera-card/card-855fd26e.js:75:3686[0m
+[31m2026-05-03 18:11:36.475 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% set trends = state_attr('sensor.google_trends', 'trends') %}
+## Google Trends
+{% for trend in trends %}
+- {{ trend }}
+{% endfor %}) renders=2>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 461, in async_render
+    render_result = render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template/context.py", line 45, in render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 3, in top-level template code
+TypeError: 'NoneType' object is not iterable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 579, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 463, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: TypeError: 'NoneType' object is not iterable[0m
+[33m2026-05-03 18:11:39.177 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:39.176 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[33m2026-05-03 18:11:39.185 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:39.185 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[33m2026-05-03 18:11:39.252 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:39.251 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[33m2026-05-03 18:11:39.257 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:39.257 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[31m2026-05-03 18:11:40.622 ERROR (MainThread) [homeassistant.helpers.event] Error while processing template: Template<template=({% set trends = state_attr('sensor.google_trends', 'trends') %}
+## Google Trends
+{% for trend in trends %}
+- {{ trend }}
+{% endfor %}) renders=6>
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 461, in async_render
+    render_result = render_with_context(self.template, compiled, **kwargs)
+  File "/usr/src/homeassistant/homeassistant/helpers/template/context.py", line 45, in render_with_context
+    return template.render(**kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^
+  File "/usr/local/lib/python3.14/site-packages/jinja2/environment.py", line 1295, in render
+    self.environment.handle_exception()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/usr/local/lib/python3.14/site-packages/jinja2/environment.py", line 942, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "<template>", line 3, in top-level template code
+TypeError: 'NoneType' object is not iterable
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 579, in async_render_to_info
+    render_info._result = self.async_render(  # noqa: SLF001
+                          ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+        variables, strict=strict, log_fn=log_fn, **kwargs
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/usr/src/homeassistant/homeassistant/helpers/template/__init__.py", line 463, in async_render
+    raise TemplateError(err) from err
+homeassistant.exceptions.TemplateError: TypeError: 'NoneType' object is not iterable[0m
+[33m2026-05-03 18:11:41.116 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:41.116 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[33m2026-05-03 18:11:41.138 WARNING (MainThread) [homeassistant.components.go2rtc.server] 18:11:41.137 ERR github.com/AlexxIT/go2rtc/internal/mjpeg/mjpeg.go:126 > error="write unix /tmp/go2rtc-25ovx4mh/go2rtc.sock->@: write: broken pipe"[0m
+[36m2026-05-03 18:11:55.372 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:11:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:11:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:11:55.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:11:55.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:11:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:11:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:11:55.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:11:55.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:11:55.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:11:55.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:11:55.387 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:11:55.387 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:11:57.201 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:57.203 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:57.203 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:57.203 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:57.203 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:57.203 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:11:57.205 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:11:57.205 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:11:57.325 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:57.325 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:11:57.326 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:03:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:11:57.430 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:12:10.393 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:12:10.393 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 415)[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:12:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 590)[0m
+[36m2026-05-03 18:12:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:12:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:12:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:12:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:12:40.373 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:12:40.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:12:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:12:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:12:40.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:12:40.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:12:40.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:12:40.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:12:40.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:12:40.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:12:42.025 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:12:42.026 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:12:42.245 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:12:42.480 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:12:55.396 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:12:55.397 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 416)[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:12:55.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 591)[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:13:25.374 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:13:25.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:13:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:13:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:13:25.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:13:25.380 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:13:25.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:13:25.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:13:25.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:13:25.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:13:27.336 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:13:27.337 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:13:27.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:13:27.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:13:27.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:13:27.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:13:27.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:13:27.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:13:27.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:13:27.405 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:13:27.502 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:13:40.008 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.sensor] Received status update event, refreshing sensors[0m
+[36m2026-05-03 18:13:40.008 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.stats] Fired status update event for sensor refresh[0m
+[33m2026-05-03 18:13:40.395 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:13:40.395 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:13:40.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:13:40.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:13:40.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:13:40.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 592)[0m
+[36m2026-05-03 18:13:40.406 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:13:40.406 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:13:40.406 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:13:40.406 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 417)[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:14:10.375 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:14:10.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:14:10.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:14:10.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:14:10.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:14:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:14:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:14:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:14:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:14:10.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:14:10.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:14:10.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:14:10.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:14:10.386 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:14:10.386 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:14:12.264 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:12.264 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:14:12.265 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:14:12.392 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:14:12.456 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:12.456 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:12.456 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:12.456 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:12.456 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:12.457 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:14:12.457 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:14:12.457 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:14:25.392 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:14:25.392 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:14:25.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:14:25.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:14:25.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:14:25.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 593)[0m
+[36m2026-05-03 18:14:25.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:14:25.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:14:25.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:14:25.404 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 418)[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:14:55.376 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:14:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:14:55.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:14:55.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:14:55.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:14:55.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:14:55.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:14:55.383 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:14:55.383 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:14:55.387 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:14:55.387 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:14:57.512 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:57.512 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:57.512 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:57.513 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:57.513 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:14:57.513 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:14:57.513 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:14:57.513 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:14:57.535 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:06:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:14:57.554 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[33m2026-05-03 18:15:10.392 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:15:10.392 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:15:10.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:15:10.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:15:10.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:15:10.402 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 419)[0m
+[36m2026-05-03 18:15:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:15:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:15:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:15:10.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 594)[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:15:40.377 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:15:40.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:15:40.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:15:40.381 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:15:40.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:15:40.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:15:40.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:15:40.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:15:40.388 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:15:40.388 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:15:42.120 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:15:42.121 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:15:42.466 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:15:42.550 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:15:42.551 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:15:55.393 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:15:55.393 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 595)[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:15:55.403 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 420)[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:16:25.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:16:25.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:16:25.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:16:25.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:16:25.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:16:25.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:16:25.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:16:25.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:16:25.385 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:16:25.388 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:16:25.388 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:16:27.427 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:16:27.431 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:16:27.488 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:16:27.491 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:16:27.656 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:16:27.657 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:16:40.396 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:16:40.397 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:16:40.407 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:16:40.407 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:16:40.407 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:16:40.407 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 596)[0m
+[36m2026-05-03 18:16:40.410 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:16:40.410 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:16:40.410 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:16:40.410 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 421)[0m
+[36m2026-05-03 18:17:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Running device status check[0m
+[36m2026-05-03 18:17:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:17:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:17:10.378 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.12[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.17[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.21[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.8[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Using configured IP address: 192.168.0.9[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.12[0m
+[36m2026-05-03 18:17:10.379 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.12 status[0m
+[36m2026-05-03 18:17:10.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.17[0m
+[36m2026-05-03 18:17:10.382 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.17 status[0m
+[36m2026-05-03 18:17:10.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.21[0m
+[36m2026-05-03 18:17:10.384 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.21 status[0m
+[36m2026-05-03 18:17:10.386 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.8[0m
+[36m2026-05-03 18:17:10.386 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.8 status[0m
+[36m2026-05-03 18:17:10.391 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking status for device at 192.168.0.9[0m
+[36m2026-05-03 18:17:10.391 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Executing command: catt -d 192.168.0.9 status[0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:15:11 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Kitchen display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:17:12.293 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Kitchen display, continuing with normal checks[0m
+[36m2026-05-03 18:17:12.294 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:17:12.294 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.21[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:10:56 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Emilys Office display: 06:30:00-01:00:00[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Emilys Office display, continuing with normal checks[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:17:12.461 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.9[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stdout: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)
+Volume: 50
+Volume muted: False[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command stderr: [0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Status command return code: 0[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Dashboard found: Title: Dummy 18:12:37 GMT+0100 (British Summer Time)[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Office display: 06:00:00-03:00:00[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Office display, continuing with normal checks[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] Checking if media is playing on device at 192.168.0.12[0m
+[36m2026-05-03 18:17:12.529 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.device] No media playing on device at 192.168.0.12[0m
+[33m2026-05-03 18:17:25.397 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.17[0m
+[33m2026-05-03 18:17:25.397 WARNING (MainThread) [custom_components.continuously_casting_dashboards.device] Status check timed out for 192.168.0.8[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Living Room display: 06:00:00-01:00:00[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Living Room display, continuing with normal checks[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Living Room display (192.168.0.17) — already unreachable[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Living Room display (192.168.0.17) still unreachable (consecutive count: 597)[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.utils] Found matching time window for Basement display: 07:00:00-03:00:00[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Inside casting time window for Basement display, continuing with normal checks[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Skipping idle check for Basement display (192.168.0.8) — already unreachable[0m
+[36m2026-05-03 18:17:25.408 DEBUG (MainThread) [custom_components.continuously_casting_dashboards.monitoring] Device Basement display (192.168.0.8) still unreachable (consecutive count: 422)[0m

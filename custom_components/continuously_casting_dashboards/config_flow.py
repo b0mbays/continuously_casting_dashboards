@@ -33,6 +33,11 @@ from .const import (
     DEFAULT_START_TIME,
     DEFAULT_END_TIME,
     LOGGING_LEVELS,
+    CONF_ENABLE_AUTO_REBOOT,
+    CONF_REBOOT_AFTER_UNREACHABLE_COUNT,
+    CONF_REBOOT_COOLDOWN_SECONDS,
+    CONF_REBOOT_POWER_OFF_SECONDS,
+    CONF_REBOOT_SWITCH_ENTITY_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -490,6 +495,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         self._device_name: str = ""
         self._device_ip: str = ""
         self._device_alias: str = ""
+        self._reboot_switch_entity_id: str = ""
+        self._enable_auto_reboot: bool = False
+        self._reboot_after_unreachable_count: int = 5
+        self._reboot_power_off_seconds: int = 10
+        self._reboot_cooldown_seconds: int = 1800
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -545,10 +555,23 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                             errors["device_name"] = "device_already_exists"
                             break
 
+                reboot_switch_entity_id = user_input.get(CONF_REBOOT_SWITCH_ENTITY_ID, "").strip()
+                enable_auto_reboot = user_input.get(CONF_ENABLE_AUTO_REBOOT, False)
+                if enable_auto_reboot:
+                    if not reboot_switch_entity_id:
+                        errors[CONF_REBOOT_SWITCH_ENTITY_ID] = "entity_not_found"
+                    elif self.hass and self.hass.states.get(reboot_switch_entity_id) is None:
+                        errors[CONF_REBOOT_SWITCH_ENTITY_ID] = "entity_not_found"
+
                 if not errors:
                     self._device_name = device_name
                     self._device_ip = device_ip
                     self._device_alias = device_alias
+                    self._reboot_switch_entity_id = reboot_switch_entity_id
+                    self._enable_auto_reboot = enable_auto_reboot
+                    self._reboot_after_unreachable_count = user_input.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5)
+                    self._reboot_power_off_seconds = user_input.get(CONF_REBOOT_POWER_OFF_SECONDS, 10)
+                    self._reboot_cooldown_seconds = user_input.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800)
                     self._dashboards = []
                     return await self.async_step_add_dashboard()
 
@@ -561,6 +584,17 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 vol.Optional("device_name", default=""): cv.string,
                 vol.Optional("device_ip", default=""): cv.string,
                 vol.Optional("device_alias", default=""): cv.string,
+                vol.Optional(CONF_ENABLE_AUTO_REBOOT, default=False): cv.boolean,
+                vol.Optional(CONF_REBOOT_SWITCH_ENTITY_ID, default=""): cv.string,
+                vol.Optional(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, default=5): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=50)
+                ),
+                vol.Optional(CONF_REBOOT_POWER_OFF_SECONDS, default=10): vol.All(
+                    vol.Coerce(int), vol.Range(min=1, max=300)
+                ),
+                vol.Optional(CONF_REBOOT_COOLDOWN_SECONDS, default=1800): vol.All(
+                    vol.Coerce(int), vol.Range(min=60, max=86400)
+                ),
             }
         )
 
@@ -709,6 +743,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 "device_name": self._device_name,
                 "device_ip": self._device_ip,
                 "device_alias": self._device_alias,
+                CONF_REBOOT_SWITCH_ENTITY_ID: self._reboot_switch_entity_id,
+                CONF_ENABLE_AUTO_REBOOT: self._enable_auto_reboot,
+                CONF_REBOOT_AFTER_UNREACHABLE_COUNT: self._reboot_after_unreachable_count,
+                CONF_REBOOT_POWER_OFF_SECONDS: self._reboot_power_off_seconds,
+                CONF_REBOOT_COOLDOWN_SECONDS: self._reboot_cooldown_seconds,
                 "dashboards": cleaned_dashboards,
             },
         )
@@ -727,6 +766,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
         self._device_name = subentry.data.get("device_name", "")
         self._device_ip = subentry.data.get("device_ip", "")
         self._device_alias = subentry.data.get("device_alias", "")
+        self._reboot_switch_entity_id = subentry.data.get(CONF_REBOOT_SWITCH_ENTITY_ID, "")
+        self._enable_auto_reboot = subentry.data.get(CONF_ENABLE_AUTO_REBOOT, False)
+        self._reboot_after_unreachable_count = subentry.data.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5)
+        self._reboot_power_off_seconds = subentry.data.get(CONF_REBOOT_POWER_OFF_SECONDS, 10)
+        self._reboot_cooldown_seconds = subentry.data.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800)
         self._dashboards = copy.deepcopy(subentry.data.get("dashboards", []))
 
         # If device has exactly one dashboard, go directly to edit it
@@ -879,6 +923,8 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 new_device_name = user_input.get("device_name", "").strip()
                 new_device_ip = user_input.get("device_ip", "").strip()
                 new_device_alias = user_input.get("device_alias", "").strip()
+                reboot_switch_entity_id = user_input.get(CONF_REBOOT_SWITCH_ENTITY_ID, "").strip()
+                enable_auto_reboot = user_input.get(CONF_ENABLE_AUTO_REBOOT, False)
 
                 if not new_device_name and not new_device_ip:
                     errors["device_name"] = "device_name_or_ip_required"
@@ -916,10 +962,21 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                                     errors["device_name"] = "device_already_exists"
                                     break
 
+                if enable_auto_reboot:
+                    if not reboot_switch_entity_id:
+                        errors[CONF_REBOOT_SWITCH_ENTITY_ID] = "entity_not_found"
+                    elif self.hass and self.hass.states.get(reboot_switch_entity_id) is None:
+                        errors[CONF_REBOOT_SWITCH_ENTITY_ID] = "entity_not_found"
+
                 if not errors:
                     self._device_name = new_device_name
                     self._device_ip = new_device_ip
                     self._device_alias = new_device_alias
+                    self._reboot_switch_entity_id = reboot_switch_entity_id
+                    self._enable_auto_reboot = enable_auto_reboot
+                    self._reboot_after_unreachable_count = user_input.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5)
+                    self._reboot_power_off_seconds = user_input.get(CONF_REBOOT_POWER_OFF_SECONDS, 10)
+                    self._reboot_cooldown_seconds = user_input.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800)
 
                 # Dashboard URL - validate format and security
                 dashboard_url = user_input.get("dashboard_url", "").strip()
@@ -1003,6 +1060,22 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             vol.Optional(
                 "device_alias", default=self._device_alias
             ): cv.string,
+            vol.Optional(CONF_ENABLE_AUTO_REBOOT, default=self._enable_auto_reboot): cv.boolean,
+            vol.Optional(
+                CONF_REBOOT_SWITCH_ENTITY_ID, default=self._reboot_switch_entity_id
+            ): cv.string,
+            vol.Optional(
+                CONF_REBOOT_AFTER_UNREACHABLE_COUNT,
+                default=self._reboot_after_unreachable_count,
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=50)),
+            vol.Optional(
+                CONF_REBOOT_POWER_OFF_SECONDS,
+                default=self._reboot_power_off_seconds,
+            ): vol.All(vol.Coerce(int), vol.Range(min=1, max=300)),
+            vol.Optional(
+                CONF_REBOOT_COOLDOWN_SECONDS,
+                default=self._reboot_cooldown_seconds,
+            ): vol.All(vol.Coerce(int), vol.Range(min=60, max=86400)),
             vol.Required(
                 "dashboard_url", default=current.get("dashboard_url", "")
             ): cv.string,
@@ -1107,6 +1180,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
             self._device_name = new_device_name
             self._device_ip = new_device_ip
             self._device_alias = new_device_alias
+            self._reboot_switch_entity_id = user_input.get(CONF_REBOOT_SWITCH_ENTITY_ID, "").strip()
+            self._enable_auto_reboot = user_input.get(CONF_ENABLE_AUTO_REBOOT, False)
+            self._reboot_after_unreachable_count = user_input.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5)
+            self._reboot_power_off_seconds = user_input.get(CONF_REBOOT_POWER_OFF_SECONDS, 10)
+            self._reboot_cooldown_seconds = user_input.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800)
 
         # Update the dashboard
         if cleaned_input.get("dashboard_url"):
@@ -1301,6 +1379,11 @@ class DeviceSubentryFlow(ConfigSubentryFlow):
                 "device_name": self._device_name,
                 "device_ip": self._device_ip,
                 "device_alias": self._device_alias,
+                CONF_REBOOT_SWITCH_ENTITY_ID: self._reboot_switch_entity_id,
+                CONF_ENABLE_AUTO_REBOOT: self._enable_auto_reboot,
+                CONF_REBOOT_AFTER_UNREACHABLE_COUNT: self._reboot_after_unreachable_count,
+                CONF_REBOOT_POWER_OFF_SECONDS: self._reboot_power_off_seconds,
+                CONF_REBOOT_COOLDOWN_SECONDS: self._reboot_cooldown_seconds,
                 "dashboards": cleaned_dashboards,
             },
         )

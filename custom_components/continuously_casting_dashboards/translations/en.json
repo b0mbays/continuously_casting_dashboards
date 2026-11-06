@@ -91,12 +91,21 @@
                     "data": {
                         "device_name": "Device Name",
                         "device_ip": "IP Address",
-                        "device_alias": "Alias (Display Name)"
+                        "device_alias": "Alias (Display Name)",
+                        "enable_auto_reboot": "Automatically reboot when unreachable",
+                        "reboot_switch_entity_id": "Power control entity",
+                        "reboot_after_unreachable_count": "Reboot after missed checks",
+                        "reboot_power_off_seconds": "Power off duration",
+                        "reboot_cooldown_seconds": "Reboot cooldown"
                     },
                     "data_description": {
                         "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
                         "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
-                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')"
+                        "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')",
+                        "reboot_switch_entity_id": "A Home Assistant entity that controls power to the display, such as a smart plug switch",
+                        "reboot_after_unreachable_count": "How many consecutive unreachable checks must happen before power-cycling",
+                        "reboot_power_off_seconds": "How long to leave power off before turning it back on",
+                        "reboot_cooldown_seconds": "Minimum time between automatic reboots for this device"
                     }
                 },
                 "add_dashboard": {
@@ -132,6 +141,11 @@
                         "device_name": "Device Name",
                         "device_ip": "IP Address",
                         "device_alias": "Alias (Display Name)",
+                        "enable_auto_reboot": "Automatically reboot when unreachable",
+                        "reboot_switch_entity_id": "Power control entity",
+                        "reboot_after_unreachable_count": "Reboot after missed checks",
+                        "reboot_power_off_seconds": "Power off duration",
+                        "reboot_cooldown_seconds": "Reboot cooldown",
                         "dashboard_url": "Dashboard URL",
                         "volume": "Volume (0-100)",
                         "enable_time_window": "Use a custom casting time window",
@@ -150,6 +164,10 @@
                         "device_name": "Chromecast name from Google Home (e.g., 'Living Room Display')",
                         "device_ip": "Direct IP address (e.g., '192.168.1.50'). If both are set, IP is tried first.",
                         "device_alias": "Optional friendly name shown in the UI (e.g., 'Kitchen TV')",
+                        "reboot_switch_entity_id": "A Home Assistant entity that controls power to the display, such as a smart plug switch",
+                        "reboot_after_unreachable_count": "How many consecutive unreachable checks must happen before power-cycling",
+                        "reboot_power_off_seconds": "How long to leave power off before turning it back on",
+                        "reboot_cooldown_seconds": "Minimum time between automatic reboots for this device",
                         "dashboard_url": "Full URL (e.g., http://192.168.1.100:8123/lovelace/home?kiosk)",
                         "volume": "Device volume when casting (0 = silent, 100 = max)",
                         "start_time": "24-hour format — the dashboard starts casting at this time each day",

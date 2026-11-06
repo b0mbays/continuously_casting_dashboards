@@ -67,6 +67,11 @@ CONF_SPEAKER_GROUPS = "speaker_groups"
 CONF_DEVICE_NAME = "device_name"
 CONF_DEVICE_IP = "device_ip"
 CONF_DEVICE_ALIAS = "device_alias"
+CONF_REBOOT_SWITCH_ENTITY_ID = "reboot_switch_entity_id"
+CONF_ENABLE_AUTO_REBOOT = "enable_auto_reboot"
+CONF_REBOOT_AFTER_UNREACHABLE_COUNT = "reboot_after_unreachable_count"
+CONF_REBOOT_POWER_OFF_SECONDS = "reboot_power_off_seconds"
+CONF_REBOOT_COOLDOWN_SECONDS = "reboot_cooldown_seconds"
 
 # Translation strings
 ERR_DEVICE_ALREADY_EXISTS = "device_already_exists"

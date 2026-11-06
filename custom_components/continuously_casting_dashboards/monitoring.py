@@ -14,7 +14,12 @@ from .const import (
     EVENT_RECONNECT_FAILED,
     STATUS_CASTING_IN_PROGRESS,
     STATUS_ASSISTANT_ACTIVE,
-    CONF_SWITCH_ENTITY
+    CONF_SWITCH_ENTITY,
+    CONF_ENABLE_AUTO_REBOOT,
+    CONF_REBOOT_AFTER_UNREACHABLE_COUNT,
+    CONF_REBOOT_COOLDOWN_SECONDS,
+    CONF_REBOOT_POWER_OFF_SECONDS,
+    CONF_REBOOT_SWITCH_ENTITY_ID,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -58,6 +63,9 @@ class MonitoringManager:
         self._dummy_positions: dict = {}  # Reserved for future use
         self._unsubscribe_listeners: list = []  # Track listeners for cleanup
         self._unreachable_counts: dict[str, int] = {}  # Consecutive unreachable cycle count per device
+        self._last_rediscovery_attempt: dict[str, float] = {}  # Last forced name-scan per device
+        self._last_power_cycle_attempt: dict[str, float] = {}  # Last automatic power cycle per device
+        self._power_cycle_tasks: set[asyncio.Task] = set()
 
         # Set up switch entity state change listener if configured
         self.switch_entity_id = config.get(CONF_SWITCH_ENTITY)
@@ -81,6 +89,61 @@ class MonitoringManager:
             return await self.device_manager.async_get_device_ip_from_config(identifier)
         # Legacy fallback: device_key is the device name or IP directly
         return await self.device_manager.async_get_device_ip(device_key)
+
+    async def _async_try_rediscover_unreachable_device(self, device_name: str, ip: str, device_key: str) -> str | None:
+        """Force rediscovery for a named device after repeated status timeouts."""
+        identifier = self.device_identifiers.get(device_name)
+        if not identifier or not (identifier.get("device_name") or "").strip():
+            return None
+
+        current_time = time.time()
+        last_attempt = self._last_rediscovery_attempt.get(device_key, 0)
+        if current_time - last_attempt < 60:
+            return None
+
+        self._last_rediscovery_attempt[device_key] = current_time
+        _LOGGER.info(
+            "Trying name-based rediscovery for %s after repeated timeouts at %s",
+            device_name,
+            ip,
+        )
+
+        rediscovered_ip = await self.device_manager.async_rediscover_device_ip(identifier, previous_ip=ip)
+        if not rediscovered_ip:
+            _LOGGER.debug("Rediscovery did not find a new address for %s", device_name)
+            return None
+
+        if rediscovered_ip == ip:
+            _LOGGER.debug("Rediscovery found %s at the same address: %s", device_name, ip)
+            return None
+
+        # Runtime-only override. The user's saved config remains untouched, but
+        # subsequent resolution cycles will prefer this rediscovered address.
+        self.device_identifiers[device_name] = {
+            **identifier,
+            "device_ip": rediscovered_ip,
+        }
+        new_device_key = f"{device_name}_{rediscovered_ip}"
+        self._unreachable_counts.pop(device_key, None)
+        self._last_rediscovery_attempt.pop(device_key, None)
+        self.device_manager.remove_device(device_key)
+        self.device_manager.update_active_device(
+            device_key=new_device_key,
+            status='disconnected',
+            name=device_name,
+            ip=rediscovered_ip,
+            first_seen=datetime.now().isoformat(),
+            last_checked=datetime.now().isoformat(),
+            last_status_change=time.time(),
+            reconnect_attempts=0,
+        )
+        _LOGGER.info(
+            "Using rediscovered address for %s: %s instead of %s",
+            device_name,
+            rediscovered_ip,
+            ip,
+        )
+        return rediscovered_ip
 
     def _get_device_lock(self, device_name: str) -> asyncio.Lock:
         """Get or create a per-device asyncio lock.
@@ -110,11 +173,100 @@ class MonitoringManager:
 
         # Clear device locks
         self._device_locks.clear()
+        for task in list(self._power_cycle_tasks):
+            task.cancel()
+        self._power_cycle_tasks.clear()
 
         # Clear active device configs
         self.active_device_configs.clear()
 
         _LOGGER.debug("Monitoring manager cleanup complete")
+
+    async def _async_power_cycle_device(self, device_name: str, ip: str, device_key: str, device_config: dict) -> None:
+        """Power-cycle a device through a configured Home Assistant entity."""
+        reboot_entity = (device_config.get(CONF_REBOOT_SWITCH_ENTITY_ID) or "").strip()
+        if not reboot_entity:
+            return
+
+        power_off_seconds = int(device_config.get(CONF_REBOOT_POWER_OFF_SECONDS, 10) or 10)
+        _LOGGER.warning(
+            "Power-cycling %s (%s) using %s after repeated unreachable checks",
+            device_name,
+            ip,
+            reboot_entity,
+        )
+
+        self.device_manager.update_active_device(
+            device_key=device_key,
+            status='rebooting',
+            last_checked=datetime.now().isoformat(),
+            last_status_change=time.time(),
+        )
+
+        try:
+            await self.hass.services.async_call(
+                "homeassistant",
+                "turn_off",
+                {"entity_id": reboot_entity},
+                blocking=True,
+            )
+            await asyncio.sleep(power_off_seconds)
+            await self.hass.services.async_call(
+                "homeassistant",
+                "turn_on",
+                {"entity_id": reboot_entity},
+                blocking=True,
+            )
+            _LOGGER.info(
+                "Power-cycle command completed for %s; monitoring will resume casting when it responds",
+                device_name,
+            )
+        except Exception as ex:
+            _LOGGER.error(
+                "Failed to power-cycle %s using %s: %s",
+                device_name,
+                reboot_entity,
+                ex,
+            )
+
+    def _schedule_power_cycle_if_configured(
+        self,
+        device_name: str,
+        ip: str,
+        device_key: str,
+        unreachable_count: int,
+    ) -> bool:
+        """Schedule an automatic power-cycle if this device is configured for it."""
+        device_config = self.device_identifiers.get(device_name) or {}
+        if not device_config.get(CONF_ENABLE_AUTO_REBOOT):
+            return False
+
+        reboot_entity = (device_config.get(CONF_REBOOT_SWITCH_ENTITY_ID) or "").strip()
+        if not reboot_entity:
+            return False
+
+        threshold = int(device_config.get(CONF_REBOOT_AFTER_UNREACHABLE_COUNT, 5) or 5)
+        if unreachable_count < threshold:
+            return False
+
+        current_time = time.time()
+        cooldown = int(device_config.get(CONF_REBOOT_COOLDOWN_SECONDS, 1800) or 1800)
+        last_attempt = self._last_power_cycle_attempt.get(device_key, 0)
+        if current_time - last_attempt < cooldown:
+            _LOGGER.debug(
+                "Skipping automatic reboot for %s; cooldown has %ss remaining",
+                device_name,
+                int(cooldown - (current_time - last_attempt)),
+            )
+            return False
+
+        self._last_power_cycle_attempt[device_key] = current_time
+        task = self.hass.async_create_task(
+            self._async_power_cycle_device(device_name, ip, device_key, device_config)
+        )
+        self._power_cycle_tasks.add(task)
+        task.add_done_callback(self._power_cycle_tasks.discard)
+        return True
     
     def setup_switch_entity_listener(self):
         """Set up state change listeners for the global and per-device switch entities."""
@@ -590,8 +742,24 @@ class MonitoringManager:
                         _LOGGER.debug("Device %s (%s) still unreachable (consecutive count: %d)", device_name, ip, unreachable_count)
                         self.device_manager.update_active_device(device_key, 'disconnected', last_checked=datetime.now().isoformat())
 
+                    if unreachable_count >= 1:
+                        rediscovered_ip = await self._async_try_rediscover_unreachable_device(device_name, ip, device_key)
+                        if rediscovered_ip:
+                            _LOGGER.info(
+                                "Rediscovered %s at %s; it will be checked on the next monitoring cycle",
+                                device_name,
+                                rediscovered_ip,
+                            )
+                            return
+
                     if unreachable_count == 5 and self.config.get("enable_notifications", True):
                         notification_id = f"ccd_unreachable_{device_key.replace(' ', '_')}"
+                        reboot_config = self.device_identifiers.get(device_name) or {}
+                        reboot_message = (
+                            "CCD will power-cycle the configured power entity if it does not recover first. "
+                            if reboot_config.get(CONF_ENABLE_AUTO_REBOOT)
+                            else "Try rebooting the device if it doesn't recover on its own. "
+                        )
                         self.hass.async_create_task(
                             self.hass.services.async_call(
                                 "persistent_notification", "create",
@@ -599,12 +767,19 @@ class MonitoringManager:
                                     "title": f"CCD: {device_name} unreachable",
                                     "message": (
                                         f"**{device_name}** ({ip}) has not responded to the last 5 status checks.\n\n"
-                                        f"Try rebooting the device if it doesn't recover on its own. "
+                                        f"{reboot_message}"
                                         f"The dashboard will resume automatically once it comes back online."
                                     ),
                                     "notification_id": notification_id,
                                 }
                             )
+                        )
+
+                    if self._schedule_power_cycle_if_configured(device_name, ip, device_key, unreachable_count):
+                        _LOGGER.warning(
+                            "Scheduled automatic power-cycle for %s after %d unreachable checks",
+                            device_name,
+                            unreachable_count,
                         )
                 else:
                     # Device has other content

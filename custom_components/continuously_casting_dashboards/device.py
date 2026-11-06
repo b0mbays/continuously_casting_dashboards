@@ -95,6 +95,132 @@ class DeviceManager:
         self.active_devices = {}   # Track active devices
         self.active_checks = {}    # Track active status checks
         self.status_cache = {}     # Short-lived cache for catt status output
+        self.rediscovered_device_ips = {}  # Runtime IP overrides from forced rediscovery
+        self.scan_cache = {"devices": [], "timestamp": 0.0}  # Shared catt scan results
+        self.scan_lock = asyncio.Lock()  # Ensure only one catt scan runs at a time
+        self.status_semaphore = asyncio.Semaphore(2)  # Limit concurrent catt status calls
+
+    def _device_cache_key(self, device_name: str) -> str:
+        """Return a normalized key for device-name based caches."""
+        return (device_name or "").strip().lower()
+
+    def _cache_device_ip(self, device_name: str, ip: str, rediscovered: bool = False) -> None:
+        """Cache the IP address for a device name."""
+        if not device_name or not ip:
+            return
+        cache_entry = {
+            'ip': ip,
+            'timestamp': time.time()
+        }
+        self.device_ip_cache[device_name] = cache_entry
+        self.device_ip_cache[self._device_cache_key(device_name)] = cache_entry
+        if rediscovered:
+            self.rediscovered_device_ips[self._device_cache_key(device_name)] = cache_entry
+
+    def _get_cached_device_ip(self, device_name: str, max_age: float = 300.0, rediscovered_only: bool = False) -> str | None:
+        """Return a cached IP address for a device name if it is fresh."""
+        cache = self.rediscovered_device_ips if rediscovered_only else self.device_ip_cache
+        cached = cache.get(self._device_cache_key(device_name)) or cache.get(device_name)
+        if not cached:
+            return None
+        if (time.time() - cached.get('timestamp', 0)) > max_age:
+            return None
+        return cached.get('ip')
+
+    def _get_cached_scan_results(self, max_age: float = 30.0) -> list[tuple[str, str]] | None:
+        """Return recent shared scan results as (name, ip) tuples."""
+        if (time.time() - self.scan_cache.get("timestamp", 0)) > max_age:
+            return None
+        return self.scan_cache.get("devices", [])
+
+    def _cache_scan_results(self, found_devices: list[tuple[str, str]]) -> None:
+        """Cache a whole scan result and seed the per-device IP cache."""
+        self.scan_cache = {
+            "devices": found_devices,
+            "timestamp": time.time(),
+        }
+        for found_name, ip in found_devices:
+            self._cache_device_ip(found_name, ip)
+
+    def _parse_scan_output(self, scan_output: str) -> list[tuple[str, str]]:
+        """Parse catt scan output into (device_name, ip) tuples."""
+        found_devices = []
+        for line in scan_output.splitlines():
+            if "Scanning Chromecasts..." in line or not line.strip():
+                continue
+
+            # Format: IP - Name. The name may contain " - ", so split once.
+            parts = line.split(' - ', 1)
+            if len(parts) < 2:
+                continue
+
+            ip = parts[0].strip()
+            found_name = parts[1].strip()
+            if is_valid_ipv4(ip) and found_name:
+                found_devices.append((found_name, ip))
+        return found_devices
+
+    async def _async_scan_devices(self, use_cache: bool = True) -> list[tuple[str, str]]:
+        """Run a shared Chromecast scan and return all discovered devices.
+
+        Multiple callers share the same scan result so several unreachable
+        devices do not spawn several concurrent mDNS scans.
+        """
+        cached = self._get_cached_scan_results() if use_cache else self._get_cached_scan_results(max_age=5.0)
+        if cached is not None:
+            _LOGGER.debug("Using cached Chromecast scan results with %s devices", len(cached))
+            return cached
+
+        async with self.scan_lock:
+            cached = self._get_cached_scan_results() if use_cache else self._get_cached_scan_results(max_age=5.0)
+            if cached is not None:
+                _LOGGER.debug("Using cached Chromecast scan results with %s devices", len(cached))
+                return cached
+
+            _LOGGER.info("Scanning for Chromecast devices")
+            process = await asyncio.create_subprocess_exec(
+                'catt', 'scan',
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+
+            stdout = stderr = None
+            try:
+                try:
+                    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=TIMEOUT_SCAN)
+                except asyncio.TimeoutError:
+                    _LOGGER.warning("Chromecast scan timed out after %ss", TIMEOUT_SCAN)
+                    self._cache_scan_results([])
+                    return []
+            finally:
+                if process.returncode is None:
+                    process.terminate()
+                    try:
+                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_SCAN_TERMINATE)
+                    except (asyncio.TimeoutError, asyncio.CancelledError):
+                        process.kill()
+                        try:
+                            await asyncio.shield(process.wait())
+                        except Exception:
+                            pass
+
+            if stdout is None:
+                self._cache_scan_results([])
+                return []
+
+            scan_output = stdout.decode()
+            stderr_str = stderr.decode().strip() if stderr else ""
+            _LOGGER.debug("Full scan output: %s", scan_output)
+
+            if process.returncode != 0:
+                _LOGGER.warning("Catt scan failed: %s", stderr_str)
+                self._cache_scan_results([])
+                return []
+
+            found_devices = self._parse_scan_output(scan_output)
+            self._cache_scan_results(found_devices)
+            _LOGGER.debug("Chromecast scan found devices: %s", [name for name, _ in found_devices])
+            return found_devices
 
     def _cache_status_output(self, ip, output):
         """Cache catt status output briefly to avoid duplicate network calls.
@@ -183,22 +309,23 @@ class DeviceManager:
         cmd = ['catt', '-d', ip, 'status']
         _LOGGER.debug("Executing command: %s", ' '.join(cmd))
 
-        process = await asyncio.create_subprocess_exec(
-            *cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
-        )
+        async with self.status_semaphore:
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
 
-        try:
-            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
-        except asyncio.TimeoutError:
-            _LOGGER.warning("Status check timed out for %s", ip)
-            process.terminate()
             try:
-                await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
+                stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=timeout)
             except asyncio.TimeoutError:
-                process.kill()
-            return None, None, None, False
+                _LOGGER.warning("Status check timed out for %s", ip)
+                process.terminate()
+                try:
+                    await asyncio.wait_for(process.wait(), timeout=TIMEOUT_PROCESS_TERMINATE)
+                except asyncio.TimeoutError:
+                    process.kill()
+                return None, None, None, False
 
         stdout_str = stdout.decode().strip()
         stderr_str = stderr.decode().strip()
@@ -243,6 +370,23 @@ class DeviceManager:
         device_ip = (device_config.get("device_ip") or "").strip()
         device_name = (device_config.get("device_name") or "").strip()
 
+        # If we previously recovered this named device at a different address,
+        # prefer that runtime override until it ages out. This keeps working
+        # across DHCP lease changes without mutating the user's saved config.
+        if device_name:
+            rediscovered_ip = self._get_cached_device_ip(
+                device_name,
+                max_age=24 * 60 * 60,
+                rediscovered_only=True,
+            )
+            if rediscovered_ip:
+                _LOGGER.debug(
+                    "Using rediscovered IP address for %s: %s",
+                    device_name,
+                    rediscovered_ip,
+                )
+                return rediscovered_ip
+
         # Try direct IP first if provided
         if device_ip:
             if is_valid_ipv4(device_ip):
@@ -270,11 +414,40 @@ class DeviceManager:
 
         return None
 
-    async def _async_get_ip_by_name(self, device_name: str) -> str | None:
+    async def async_rediscover_device_ip(self, device_config: dict, previous_ip: str | None = None) -> str | None:
+        """Force a fresh name-based scan for a device that stopped responding.
+
+        Args:
+            device_config: Dict with 'device_name' and optional 'device_ip'.
+            previous_ip: IP address that recently failed status checks.
+
+        Returns:
+            The discovered IP address, or None when the named device is not found.
+        """
+        device_name = (device_config.get("device_name") or "").strip()
+        if not device_name:
+            return None
+
+        discovered_ip = await self._async_get_ip_by_name(device_name, use_cache=False)
+        if not discovered_ip:
+            return None
+
+        self._cache_device_ip(device_name, discovered_ip, rediscovered=True)
+        if previous_ip and discovered_ip != previous_ip:
+            _LOGGER.info(
+                "Rediscovered %s at %s (was configured as %s)",
+                device_name,
+                discovered_ip,
+                previous_ip,
+            )
+        return discovered_ip
+
+    async def _async_get_ip_by_name(self, device_name: str, use_cache: bool = True) -> str | None:
         """Scan for a Chromecast device by name and return its IP address.
 
         Args:
             device_name: The Chromecast display name to search for.
+            use_cache: When True, return a recent cached match before scanning.
 
         Returns:
             The IP address if found, or None.
@@ -282,76 +455,16 @@ class DeviceManager:
         try:
             _LOGGER.info("Scanning for device by name: %s", device_name)
             # Check if we've already cached the device to speed up lookups
-            if device_name in self.device_ip_cache and self.device_ip_cache[device_name]['timestamp'] > (time.time() - 300):
-                _LOGGER.debug("Using cached IP for %s: %s", device_name, self.device_ip_cache[device_name]['ip'])
-                return self.device_ip_cache[device_name]['ip']
+            cached_ip = self._get_cached_device_ip(device_name) if use_cache else None
+            if cached_ip:
+                _LOGGER.debug("Using cached IP for %s: %s", device_name, cached_ip)
+                return cached_ip
 
-            # Do a fresh scan
-            process = await asyncio.create_subprocess_exec(
-                'catt', 'scan',
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-
-            stdout = stderr = None
-            try:
-                try:
-                    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=TIMEOUT_SCAN)
-                except asyncio.TimeoutError:
-                    _LOGGER.warning("Scan for device %s timed out after %ss", device_name, TIMEOUT_SCAN)
-                    return None
-            finally:
-                # Always terminate the subprocess — including when this coroutine is cancelled
-                # by an outer asyncio.wait_for. Without this guard, orphaned `catt scan`
-                # processes accumulate and cause a memory leak.
-                if process.returncode is None:
-                    process.terminate()
-                    try:
-                        await asyncio.wait_for(process.wait(), timeout=TIMEOUT_SCAN_TERMINATE)
-                    except (asyncio.TimeoutError, asyncio.CancelledError):
-                        process.kill()
-                        try:
-                            await asyncio.shield(process.wait())
-                        except Exception:
-                            pass
-
-            if stdout is None:
-                return None
-
-            scan_output = stdout.decode()
-            _LOGGER.debug("Full scan output: %s", scan_output)
-
-            if process.returncode != 0:
-                _LOGGER.warning("Catt scan failed: %s", stderr.decode().strip())
-                return None
-
-            # Parse scan results and find exact matching device
-            found_devices = []
-            for line in scan_output.splitlines():
-                # Skip the header line or empty lines
-                if "Scanning Chromecasts..." in line or not line.strip():
-                    continue
-
-                # Parse format: IP - Name (name may itself contain " - ", so split on first only)
-                parts = line.split(' - ', 1)
-                if len(parts) < 2:
-                    continue
-
-                ip = parts[0].strip()
-                found_name = parts[1].strip()
-
-                # Collect all found devices for logging
-                found_devices.append((found_name, ip))
-
-                # Update the cache for all found devices to speed up future lookups
-                self.device_ip_cache[found_name] = {
-                    'ip': ip,
-                    'timestamp': time.time()
-                }
-
-                # Exact match check (case-insensitive)
+            found_devices = await self._async_scan_devices(use_cache=use_cache)
+            for found_name, ip in found_devices:
                 if found_name.lower() == device_name.lower():
                     _LOGGER.info("Matched device '%s' with IP %s", device_name, ip)
+                    self._cache_device_ip(device_name, ip)
                     return ip
 
             # If we get here, no exact match was found
@@ -698,6 +811,17 @@ class DeviceManager:
         for ip in stale_status:
             del self.status_cache[ip]
 
+        if current_time - self.scan_cache.get("timestamp", 0) > 60.0:
+            self.scan_cache = {"devices": [], "timestamp": 0.0}
+
+        # Clean up runtime rediscovery overrides
+        stale_rediscovered = [
+            name for name, data in self.rediscovered_device_ips.items()
+            if current_time - data.get('timestamp', 0) > 24 * 60 * 60
+        ]
+        for name in stale_rediscovered:
+            del self.rediscovered_device_ips[name]
+
         # Clean up stale active checks (shouldn't happen, but safety)
         stale_checks = [
             check_id for check_id, timestamp in self.active_checks.items()
@@ -706,17 +830,20 @@ class DeviceManager:
         for check_id in stale_checks:
             del self.active_checks[check_id]
 
-        if stale_ips or stale_status or stale_checks:
+        if stale_ips or stale_status or stale_checks or stale_rediscovered:
             _LOGGER.debug(
-                "Cleaned up caches: %s IPs, %s status, %s checks",
+                "Cleaned up caches: %s IPs, %s status, %s checks, %s rediscovered IPs",
                 len(stale_ips),
                 len(stale_status),
                 len(stale_checks),
+                len(stale_rediscovered),
             )
 
     def clear_all_caches(self) -> None:
         """Clear all caches. Call on integration unload."""
         self.device_ip_cache.clear()
+        self.rediscovered_device_ips.clear()
+        self.scan_cache = {"devices": [], "timestamp": 0.0}
         self.status_cache.clear()
         self.active_checks.clear()
         self.active_devices.clear()

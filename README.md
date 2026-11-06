@@ -35,6 +35,7 @@ A Home Assistant integration that automatically casts dashboards to your Chromec
 - **Multiple dashboards** - Different dashboards at different times on the same device
 - **Entity control** - Start/stop casting based on any Home Assistant entity state
 - **Speaker group aware** - Won't cast if device is part of an active speaker group
+- **Automatic power-cycle** - Optionally reboot an unresponsive display through a configured smart plug/switch
 - **Per-device settings** - Volume, time windows, and dashboards configured per device
 
 ## 📋 Requirements
@@ -139,6 +140,23 @@ continuously_casting_dashboards:
 
 ### Per-Device Options
 
+These are configured on each Chromecast device.
+
+| Option | Required | Default | Description |
+|--------|----------|---------|-------------|
+| `device_name` | No* | - | Chromecast name from Google Home |
+| `device_ip` | No* | - | Direct IP address. If both name and IP are set, IP is tried first |
+| `device_alias` | No | - | Friendly display name |
+| `enable_auto_reboot` | No | `false` | Power-cycle this device when it stays unreachable |
+| `reboot_switch_entity_id` | No | - | HA entity that controls power to the display, such as `switch.living_room_display_plug` |
+| `reboot_after_unreachable_count` | No | `5` | Consecutive unreachable checks before rebooting |
+| `reboot_power_off_seconds` | No | `10` | Seconds to leave the display powered off |
+| `reboot_cooldown_seconds` | No | `1800` | Minimum seconds between automatic reboots |
+
+\* At least one of `device_name` or `device_ip` is required.
+
+### Per-Dashboard Options
+
 | Option | Required | Default | Description |
 |--------|----------|---------|-------------|
 | `dashboard_url` | Yes | - | Full URL to the dashboard |
@@ -148,6 +166,12 @@ continuously_casting_dashboards:
 | `switch_entity_id` | No | - | Entity that controls this specific device |
 | `switch_entity_state` | No | `on` | State value that enables casting for this device |
 | `speaker_groups` | No | - | Speaker groups to check before casting |
+
+### Automatically Reboot Unresponsive Displays
+
+If a display stops responding to `catt status`, CCD can power-cycle it using a Home Assistant entity that controls the display power. This needs a smart plug, switched outlet, or similar entity in Home Assistant.
+
+In the device configuration, enable **Automatically reboot when unreachable** and set **Power control entity** to the switch that powers that display. After the configured number of missed checks, CCD calls `homeassistant.turn_off`, waits for the configured off duration, then calls `homeassistant.turn_on`. The normal monitor will resume casting once the display comes back online.
 
 ---
 
