@@ -638,6 +638,10 @@ class MonitoringManager:
                     # Device is showing our dashboard
                     self._media_hold_until.pop(device_key, None)
                     self.reconnect_backoff.record_success(device_key)
+                    self.device_manager.update_active_device(
+                        device_key, 'connected',
+                        last_error=None, retry_in_seconds=0,
+                    )
                     if previous_status != 'connected':
                         self.device_manager.update_active_device(
                             device_key=device_key,
@@ -1241,6 +1245,13 @@ class MonitoringManager:
         
         # Exponential retry backoff: never permanently disable a recovering device.
         if not self.reconnect_backoff.can_retry(device_key):
+            self.device_manager.update_active_device(
+                device_key, 'disconnected',
+                retry_in_seconds=round(
+                    self.reconnect_backoff.remaining(device_key)
+                ),
+                last_error="Retry backoff active",
+            )
             _LOGGER.debug(
                 "Reconnect deferred for %s (%.0fs remaining)",
                 device_name, self.reconnect_backoff.remaining(device_key),
@@ -1306,6 +1317,10 @@ class MonitoringManager:
         
         if success:
             self.reconnect_backoff.record_success(device_key)
+            self.device_manager.update_active_device(
+                device_key, 'connected',
+                last_error=None, retry_in_seconds=0,
+            )
             _LOGGER.info("Successfully reconnected to %s (%s)", device_name, ip)
             if active_device:
                 self.device_manager.update_active_device(
@@ -1320,6 +1335,11 @@ class MonitoringManager:
             return True
         else:
             retry_delay = self.reconnect_backoff.record_failure(device_key)
+            self.device_manager.update_active_device(
+                device_key, 'disconnected',
+                retry_in_seconds=round(retry_delay),
+                last_error="Reconnect failed; retry scheduled",
+            )
             _LOGGER.error(
                 "Failed to reconnect to %s (%s); next attempt in %.0fs",
                 device_name, ip, retry_delay,
