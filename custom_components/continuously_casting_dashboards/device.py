@@ -13,6 +13,7 @@ import re
 from datetime import datetime
 from homeassistant.core import HomeAssistant
 from .const import (
+    DASHCAST_APP_ID,
     TIMEOUT_STATUS_CHECK,
     TIMEOUT_PROCESS_TERMINATE,
     TIMEOUT_SCAN,
@@ -536,6 +537,12 @@ class DeviceManager:
                 
                 # Check for "idle" state that only shows volume info
                 if len(stdout_str.splitlines()) <= 2 and all(line.startswith("Volume") for line in stdout_str.splitlines()):
+                    # DashCast (DASHCAST_APP_ID) renders dashboard URLs as webpages but
+                    # registers no Chromecast media session, so catt status returns only
+                    # volume info even when the dashboard is actively displayed.
+                    # Fall back to checking the HA media_player entity for this device.
+                    if await self._async_check_dashcast_via_ha(ip):
+                        return True
                     _LOGGER.debug("Device at %s is idle (only volume info returned)", ip)
                     return False
 
@@ -713,6 +720,110 @@ class DeviceManager:
                 len(stale_status),
                 len(stale_checks),
             )
+
+    async def _async_check_dashcast_via_ha(self, ip: str) -> bool:
+        """Return True if DashCast is actively running on the cast device at *ip*.
+
+        DashCast (DASHCAST_APP_ID) renders dashboard URLs as webpages but
+        registers no Chromecast media session, so ``catt status`` reports only
+        volume info even when the dashboard is displayed.  This method queries
+        HA's internal media_player state — which *does* track the running app —
+        as a fallback detection mechanism.
+
+        Lookup is done in two stages:
+        1. Match the configured device name for this IP to its HA media_player
+           entity using HA's slugify convention (precise, works for all setups).
+        2. If no name match, accept a single active DashCast session anywhere on
+           cast media_player entities — safe for single-device setups; skipped
+           when multiple DashCast sessions are active to avoid false positives.
+        """
+        try:
+            from homeassistant.util import slugify
+            from homeassistant.helpers import entity_registry as er
+
+            ent_reg = er.async_get(self.hass)
+
+            # Build a lookup of all cast media_player entities and their current state
+            cast_media_players: dict[str, object] = {}
+            for entry in ent_reg.entities.values():
+                if entry.platform != "cast" or entry.domain != "media_player":
+                    continue
+                state = self.hass.states.get(entry.entity_id)
+                if state:
+                    cast_media_players[entry.entity_id] = state
+
+            # Strategy 1: match the CCD-configured device name for this IP to its
+            # HA media_player entity using HA's slugify convention.
+            # Supports both IP-configured devices (device_ip set) and name-only
+            # devices (device_ip absent -- IP resolved at runtime via catt scan and
+            # stored in device_ip_cache).
+            for _key, identifier in self.config.get("device_identifiers", {}).items():
+                configured_ip = identifier.get("device_ip", "")
+                device_name = (identifier.get("device_name") or "").strip()
+
+                # Determine whether this entry corresponds to our IP.
+                # Primary: exact match on the configured static IP.
+                # Fallback: look up the name in the runtime IP cache (populated by
+                # _async_get_ip_by_name when a catt scan resolves the device).
+                ip_matches = configured_ip == ip
+                if not ip_matches and device_name:
+                    cached_ip = self.device_ip_cache.get(device_name, {}).get("ip")
+                    ip_matches = cached_ip == ip
+
+                if not ip_matches:
+                    continue
+
+                # Found the entry for this IP -- now check its HA media_player state.
+                if not device_name:
+                    break  # IP matched but no name to build entity_id from; try strategy 2
+
+                entity_id = f"media_player.{slugify(device_name)}"
+                # Check cast entities first, fall back to any HA state (covers edge cases)
+                state = cast_media_players.get(entity_id) or self.hass.states.get(entity_id)
+                if state is not None:
+                    if state.attributes.get("app_id") == DASHCAST_APP_ID:
+                        _LOGGER.debug(
+                            "DashCast detected on %s via HA entity %s"
+                            " -- treating as casting our dashboard",
+                            ip, entity_id,
+                        )
+                        return True
+                    _LOGGER.debug(
+                        "HA entity %s found for %s but DashCast not active (app_id: %s)",
+                        entity_id, ip, state.attributes.get("app_id"),
+                    )
+                    return False
+                break  # IP matched but entity not found; fall through to strategy 2
+
+            # Strategy 2: no name match or entity not found.
+            # Reliable only when exactly one DashCast session is active across all
+            # cast devices -- skipped when multiple are active to avoid false positives.
+            dashcast_entities = [
+                eid for eid, state in cast_media_players.items()
+                if state.attributes.get("app_id") == DASHCAST_APP_ID
+            ]
+
+            if len(dashcast_entities) == 1:
+                _LOGGER.debug(
+                    "DashCast detected via HA fallback (entity: %s)"
+                    " -- treating as casting our dashboard on %s",
+                    dashcast_entities[0], ip,
+                )
+                return True
+
+            if len(dashcast_entities) > 1:
+                _LOGGER.warning(
+                    "DashCast fallback: %d sessions active but device name for %s"
+                    " could not be resolved to an HA entity. Configure 'device_name'"
+                    " in CCD to match the Chromecast friendly name for reliable detection.",
+                    len(dashcast_entities), ip,
+                )
+
+            return False
+
+        except Exception as exc:
+            _LOGGER.debug("HA DashCast fallback check failed for %s: %s", ip, exc)
+            return False
 
     def clear_all_caches(self) -> None:
         """Clear all caches. Call on integration unload."""
